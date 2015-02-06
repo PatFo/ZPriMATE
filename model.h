@@ -27,6 +27,7 @@ namespace fundamental{
       void update_xlcharge(float xlc);
       void update_xrcharge(float xrc);
       void change_mass(float new_mass);    
+  protected:
       //Constructor
       fermion(int fam, int t3, float m, float emc, float xlc, float xrc);
   };
