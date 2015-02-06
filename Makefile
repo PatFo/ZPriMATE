@@ -11,8 +11,9 @@ SOURCES = $(shell find $(SRCDIR) -type f -name *.$(SRCEXT))
 OBJECTS = $(patsubst $(SRCDIR)/%,$(BUILDDIR)/%,$(SOURCES:.$(SRCEXT)=.o))
 
 
+
 $(TARGET) : $(OBJECTS)
-	$(CC) $(LFLAGS) $(OBJS) -o $@
+	$(CC) $(LFLAGS) $(OBJECTS) -o $@
 
 $(BUILDDIR)/%.o : $(SRCDIR)/%.cpp
 	@mkdir -p $(BUILDDIR)

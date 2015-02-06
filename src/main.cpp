@@ -35,5 +35,10 @@ int main(int argc, char** argv){
   <<"\n\tQxr:\t\t"<<up.get_xrcharge()
   <<endl;
   
+  
+  pheno::muon mu;
+  cout<<mu.get_mass()<<endl;
+  
+  
   return 0;
 }
