@@ -4,6 +4,7 @@
 #include <math.h>
 #include "model.h"
 #include "pheno.h"
+#include "read_config.h"
 
 
 using namespace std;
@@ -56,6 +57,12 @@ int main(int argc, char** argv){
   <<"\nqzpl="<<muco.q_zpl
   <<"\nqzpr="<<muco.q_zpr
   <<endl;
+  
+  conf_reader reader(argv[1]);
+  
+  dict parameters=reader.get_config();
+  
+  cout<<(parameters["up"])["cxl"];
   
   return 0;
 }

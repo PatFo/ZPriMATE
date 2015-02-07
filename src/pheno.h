@@ -93,6 +93,18 @@ namespace pheno{
   
   
   
+  //************************************//
+  //            ZP-MODEL CLASS          //
+  //************************************//
+  
+  class zpmodel: public fundamental::bsm_parameters{
+   /// Zp model class consisiting of all parameters, couplings and fermions
+    public:
+      zpmodel(float g_x, float m_zp, float mix = 0);
+  };
+  
+  
+  
 }
 
 
