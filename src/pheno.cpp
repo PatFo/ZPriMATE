@@ -1,4 +1,5 @@
 #include "pheno.h"
+#include <iostream>
 
 using namespace pheno;
 
@@ -61,4 +62,22 @@ nu_el::nu_el(float xlc, float xrc): fermion(1, 1./2, 0, 0, xlc, xrc) { }
 nu_mu::nu_mu(float xlc, float xrc): fermion(2, 1./2, 0, 0, xlc, xrc) { }
 
 nu_tau::nu_tau(float xlc, float xrc): fermion(3, 1./2, 0, 0, xlc, xrc) { }
+
+
+
+
+
+//************************************//
+//            ZP-MODEL CLASS          //
+//************************************//
+
+zpmodel::zpmodel(const char* configfile): bsm_parameters(0.1, 1500, 0)
+{
+
+    conf_reader reader(configfile);
+    dict init = reader.get_config();
+    
+    
+  
+}
 

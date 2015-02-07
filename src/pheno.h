@@ -3,6 +3,7 @@
 
 
 #include "model.h"
+#include "read_config.h"
 
 namespace pheno{
 
@@ -100,7 +101,23 @@ namespace pheno{
   class zpmodel: public fundamental::bsm_parameters{
    /// Zp model class consisiting of all parameters, couplings and fermions
     public:
-      zpmodel(float g_x, float m_zp, float mix = 0);
+      //Quarks
+      down 	d;
+      up 	u;
+      strange 	s;
+      charm 	c;
+      bottom 	b;
+      top 	t;
+      //Leptons
+      electron 	el;
+      muon 	mu;
+      tauon 	ta;
+      nu_el 	ne;
+      nu_mu 	nm;
+      nu_tau	nt;
+      
+      //Constructor
+      zpmodel(const char* configfile);
   };
   
   

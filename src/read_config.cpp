@@ -12,10 +12,13 @@ const char* const DELIMITER = " $=";
 
 
 
+
+
 int split_line(const char** itemlist,  char* line)
 ///Split a line into ites components separated by the DELIMITERS
 {
   itemlist[0] = std::strtok(line, DELIMITER); //Split the string
+  std::cout<<itemlist[0]<<std::endl;
   
   int len=1;
   for (int n = 1; n < MAX_ITEMS; n++)
@@ -23,11 +26,13 @@ int split_line(const char** itemlist,  char* line)
     // 'NULL' means continue splitting after last successful split
     itemlist[n] = std::strtok(NULL, DELIMITER); 
     if (!itemlist[n]) break; // no more tokens
+    std::cout<<itemlist[n]<<std::endl;
     ++len;
   }
   
   return len;
 }
+
 
 
 
@@ -96,6 +101,9 @@ conf_reader::conf_reader(const char* filename)
 
 
 
+
+
+//Returns the config dictionarry that has been set up
 dict conf_reader::get_config()
 {
   return config;

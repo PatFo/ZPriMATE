@@ -64,5 +64,7 @@ int main(int argc, char** argv){
   
   cout<<(parameters["up"])["cxl"];
   
+  pheno::zpmodel m(argv[1]);
+  
   return 0;
 }
