@@ -8,23 +8,23 @@
 
 const int MAX_CHARS(100);
 const int MAX_ITEMS(10);
-const char* const DELIMITER = " $=";
+const char* const DELIMITERS = " $=";
 
 
 
 
 
 int split_line(const char** itemlist,  char* line)
-///Split a line into ites components separated by the DELIMITERS
+///Split a line into its components separated by the DELIMITERS
 {
-  itemlist[0] = std::strtok(line, DELIMITER); //Split the string
+  itemlist[0] = std::strtok(line, DELIMITERS); //Split the string
   std::cout<<itemlist[0]<<std::endl;
   
   int len=1;
   for (int n = 1; n < MAX_ITEMS; n++)
   {
     // 'NULL' means continue splitting after last successful split
-    itemlist[n] = std::strtok(NULL, DELIMITER); 
+    itemlist[n] = std::strtok(NULL, DELIMITERS); 
     if (!itemlist[n]) break; // no more tokens
     std::cout<<itemlist[n]<<std::endl;
     ++len;
@@ -39,6 +39,7 @@ int split_line(const char** itemlist,  char* line)
 
 
 void extract_config(dict &config, std::ifstream &istr)
+///Read config file and set up dictionary for initialization of model
 {
   while(!istr.eof())
   {
@@ -90,7 +91,7 @@ conf_reader::conf_reader(const char* filename)
   
   //Check whether specified file is readable. Else raise error and exit.
   if (!ifs.good())
-    throw std::runtime_error("ERROR: Cannot open config file.");  
+    throw std::runtime_error("ERROR: Cannot open config file. Make sure that a config file is specified on startupDELI.");  
   std::cout<<"Opened config file "<<filename<<std::endl;
   
   //Set up the dictionary with initial parameters
