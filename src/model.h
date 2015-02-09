@@ -12,7 +12,7 @@ namespace fundamental{
   class fermion{
     private:
       //Fermion attributes
-      int family;
+      int pdg;
       float iso3;
       float mass;
       float emcharge;
@@ -20,7 +20,7 @@ namespace fundamental{
       float xrcharge;    
     public:
       //Get parameters
-      int get_family();
+      int get_pdg();
       float get_iso3();
       float get_emcharge();
       float get_xlcharge();
@@ -32,7 +32,7 @@ namespace fundamental{
       void update_xrcharge(float xrc);
       void change_mass(float new_mass);
       //Constructor
-      fermion(int fam, float t3, float m, float emc, float xlc, float xrc);
+      fermion(int n_pdg, float t3, float m, float emc, float xlc, float xrc);
   };
   
   
@@ -120,7 +120,14 @@ namespace fundamental{
     private:
       //Pointer for storage of vector coupling object
       vcoeff* pvecc;
+      //Number of color
+      bool is_massive;
+      int nc;
     public:
+      //Gives the user defined mass
+      float m();
+      //Returns nc
+      int Nc();
       //Vector coupling handling
       void set_vecc(vcoeff* ptr);
       vcoeff vecc();
@@ -128,7 +135,7 @@ namespace fundamental{
       ~fermionExt();
     protected:
       //Constructor can only be used by derived classes
-      fermionExt(bool massive, int fam, float t3, float m, float emc, float xlc, float xrc);
+      fermionExt(bool massive, int fam, float t3, float m, float emc, float xlc, float xrc, int n);
   };
   
 }

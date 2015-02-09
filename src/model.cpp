@@ -17,9 +17,9 @@ using namespace fundamental;
 
 
 //Implementation of constructor of fermion class
-fermion::fermion(int fam, float t3, float m, float emc, float xlc, float xrc)
+fermion::fermion(int n_pdg, float t3, float m, float emc, float xlc, float xrc)
 {
-  family=fam;
+  pdg=n_pdg;
   iso3=t3;
   
   mass=m;
@@ -31,9 +31,9 @@ fermion::fermion(int fam, float t3, float m, float emc, float xlc, float xrc)
 
 //Read parameters of fermion object
 
-int fermion::get_family()
+int fermion::get_pdg()
 {
-  return family;
+  return pdg;
 }
 
 float fermion::get_iso3()
@@ -260,13 +260,10 @@ vcoeff::vcoeff(fermion f, bsm_parameters paras)
 
 
 //Constructor of extended fermion class: initialize base class
-fermionExt::fermionExt(bool massive, int fam, float t3, float m, float emc, float xlc, float xrc): fermion(fam, t3, m, emc, xlc, xrc), pvecc() 
+fermionExt::fermionExt(bool massive, int n_pdg, float t3, float m, float emc, float xlc, float xrc, int n): fermion(n_pdg, t3, m, emc, xlc, xrc), pvecc() 
 {
-  if(!massive)
-  {
-    this->change_mass(0);
-  }
-
+  nc=n;
+  is_massive = massive;
 }
 
 
@@ -280,6 +277,20 @@ fermionExt::~fermionExt()
     std::cout<<"Deleting pointer of type vcoeff\n";
     delete pvecc;
   }
+}
+
+
+
+int fermionExt::Nc()
+{
+  return nc;
+}
+
+
+float fermionExt::m()
+{
+  if(is_massive)return get_mass();
+  else return 0;
 }
 
 

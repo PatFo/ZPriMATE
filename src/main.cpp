@@ -14,7 +14,7 @@ int main(int argc, char** argv){
   pheno::up up;
   
   std::cout<<"The pheno-up parameters:"
-  <<"\n\tFamily:\t\t"<<up.get_family()
+  <<"\n\tPDG:\t\t"<<up.get_pdg()
   <<"\n\tIsospin:\t"<<up.get_iso3()
   <<"\n\tMass:\t\t"<<up.get_mass()
   <<"\n\tE.m. charge:\t"<<up.get_emcharge()
@@ -71,6 +71,8 @@ int main(int argc, char** argv){
   pheno::zpmodel m(argv[1]);
   
   cout<<"B quark Qzpl:"<<m.b.vecc().q_zpl<<endl;
+  
+  cout<<m.wzp_();
 
   
   return 0;

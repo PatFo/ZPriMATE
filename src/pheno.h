@@ -100,6 +100,7 @@ namespace pheno{
   
   
   typedef std::map<std::string, fundamental::fermionExt*> fermion_list;
+
   
   
   //************************************//
@@ -123,13 +124,18 @@ namespace pheno{
       nu_el 	ne;
       nu_mu 	nm;
       nu_tau	nt;
-      
     private:
       fermion_list flst;
-      
+      //Zp width related
+      double* partial_widths;
+      double higgs_width;
+      double wzp;
+      double calc_width(fundamental::fermionExt &f);    
     public:
       //Constructor
       zpmodel(const char* configfile);
+      //Width of Zp
+      double wzp_();
   };
   
   
