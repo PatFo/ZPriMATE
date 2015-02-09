@@ -11,6 +11,7 @@ namespace fundamental{
   
   class fermion{
     private:
+      //Fermion attributes
       int family;
       float iso3;
       float mass;
@@ -29,8 +30,7 @@ namespace fundamental{
       void update_emcharge(float emc);
       void update_xlcharge(float xlc);
       void update_xrcharge(float xrc);
-      void change_mass(float new_mass);    
-    protected:
+      void change_mass(float new_mass);
       //Constructor
       fermion(int fam, float t3, float m, float emc, float xlc, float xrc);
   };
@@ -43,7 +43,7 @@ namespace fundamental{
   class bsm_parameters{
     private:
       //SM parameters from PDG (http://pdg.lbl.gov/2014/reviews/rpp2014-rev-phys-constants.pdf)
-      const static float aew=1./128;
+      const static float aew=1./128;  // @q=MZ
       const static float as=0.1184;
       const static float mw=80.385;
       const static float mz=91.1876;
@@ -105,6 +105,30 @@ namespace fundamental{
       float q_zpr;
       //Constructor
       vcoeff(fermion f, bsm_parameters paras);    
+  };
+  
+  
+  
+  
+  //*************************************************************//
+  //          FERMION CLASS EXTENDED BY VECTOR COUPLING          //
+  //*************************************************************//
+  
+  
+  
+  class fermionExt: public fermion{
+    private:
+      //Pointer for storage of vector coupling object
+      vcoeff* pvecc;
+    public:
+      //Vector coupling handling
+      void set_vecc(vcoeff* ptr);
+      vcoeff vecc();
+      //Destuctor should take care of vcoeff pointer
+      ~fermionExt();
+    protected:
+      //Constructor can only be used by derived classes
+      fermionExt(bool massive, int fam, float t3, float m, float emc, float xlc, float xrc);
   };
   
 }

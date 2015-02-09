@@ -1,6 +1,7 @@
 #define _USE_MATH_DEFINES
 
-
+#include <stdexcept>
+#include <iostream> //Only for debugging
 #include <cmath>
 #include "model.h"
 
@@ -26,6 +27,7 @@ fermion::fermion(int fam, float t3, float m, float emc, float xlc, float xrc)
   xlcharge=xlc;
   xrcharge=xrc;
 }
+
 
 //Read parameters of fermion object
 
@@ -250,6 +252,55 @@ vcoeff::vcoeff(fermion f, bsm_parameters paras)
 }
 
 
+
+
+//*************************************************************//
+//          FERMION CLASS EXTENDED BY VECTOR COUPLING          //
+//*************************************************************//
+
+
+//Constructor of extended fermion class: initialize base class
+fermionExt::fermionExt(bool massive, int fam, float t3, float m, float emc, float xlc, float xrc): fermion(fam, t3, m, emc, xlc, xrc), pvecc() 
+{
+  if(!massive)
+  {
+    this->change_mass(0);
+  }
+
+}
+
+
+
+
+//Destructor: make sure to free vcoef pointer if it has been assigned a value
+fermionExt::~fermionExt()
+{
+  if(pvecc)
+  {
+    std::cout<<"Deleting pointer of type vcoeff\n";
+    delete pvecc;
+  }
+}
+
+
+//Handling of vector couplings
+
+void fermionExt::set_vecc(vcoeff* ptr)
+{
+  pvecc=ptr;
+}
+
+
+
+vcoeff fermionExt::vecc()
+{
+  if(pvecc)
+  {
+    return *pvecc;
+  }else{
+    throw std::runtime_error("ERROR: Trying to access uninitialized instance of type vcoeff in fermion class!");
+  }  
+}
 
 
 

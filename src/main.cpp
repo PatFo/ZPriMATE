@@ -22,6 +22,7 @@ int main(int argc, char** argv){
   <<"\n\tQxr:\t\t"<<up.get_xrcharge()
   <<endl;
   
+  
 //   up.change_mass(9.5e-2);
 //   up.update_emcharge(4./7);
 //   up.update_xlcharge(1./2);
@@ -44,8 +45,11 @@ int main(int argc, char** argv){
   fundamental::vcoeff upco(up, par);
   fundamental::vcoeff muco(mu, par);
   
+  up.set_vecc( new fundamental::vcoeff(up, par));
+
+  
   cout<<"\nUp-quark vector couplings:\n-------------------"
-  <<"\nqzl="<<upco.q_zl
+  <<"\nqzl="<<upco.q_zl<<"\t up.qzl="<<up.vecc().q_zl
   <<"\nqzr="<<upco.q_zr
   <<"\nqzpl="<<upco.q_zpl
   <<"\nqzpr="<<upco.q_zpr
@@ -65,6 +69,7 @@ int main(int argc, char** argv){
   cout<<(parameters["up"])["cxl"];
   
   pheno::zpmodel m(argv[1]);
+
   
   return 0;
 }
