@@ -52,13 +52,63 @@ nu_tau::nu_tau(float xlc, float xrc): fermionExt(false, 3, 1./2, 0, 0, xlc, xrc)
 //            ZP-MODEL CLASS          //
 //************************************//
 
-zpmodel::zpmodel(const char* configfile): bsm_parameters(0.1, 1500, 0)
+//Constructor: The whole model is set up HERE
+zpmodel::zpmodel(const char* configfile): bsm_parameters(0.1, 1500, 0)  //Default values if no parameters are specified in config file
 {
-
-    conf_reader reader(configfile);
-    dict init = reader.get_config();
-    
-    
+  //Set up list of pointers to fermions for map iteration
+  flst["up"]=&u; flst["charm"]=&c; flst["top"]=&t;
+  flst["down"]=&d; flst["strange"]=&s; flst["bottom"]=&b;
   
+  flst["electron"]=&el; flst["muon"]=&mu; flst["tauon"]=&tau;  
+  flst["nu_el"]=&nt; flst["nu_mu"]=&nm; flst["nu_tau"]=&nt;
+
+  //Get model configuration from config file
+  conf_reader reader(configfile);
+  dict init = reader.get_config();
+  
+  std::cout<<"Applying configuration:\n";
+  
+  //Set up MODEL PARAMETERS
+  dict::iterator it= init.find("model_parameters");
+  if(it == init.end())
+  {
+    std::cout<<"No model parameters specified. Using default:\n";
+  }
+  else
+  {
+    std::cout<<"Found \"$"<<it->first<<"\":\n";
+    set_gx( (it->second)["gx"] );
+    set_mzp( (it->second)["mzp"] );
+    set_mixing( (it->second)["chi"] );
+  }
+  std::cout<<"\ngx="<<gx_()<<"\nmzp="<<mzp_()<<"\nmixing="<<mixing_()<<"\n\n";
+  
+  
+  //Applying FERMION CONFIGURATION:
+  //Iterate over the whole fermion list and check for initialization values passed in config file
+  for (fermion_list::iterator ferms=flst.begin(); ferms!=flst.end(); ++ferms)
+  {
+    it = init.find(ferms->first);  //Fermion label(string)
+    if(it == init.end())
+    {
+      std::cout<<ferms->first<<": default.\n";
+    }
+    else
+    {
+      //Set new fermion parameters
+      (ferms->second)->update_xlcharge( (it->second)["cxl"] );
+      (ferms->second)->update_xrcharge( (it->second)["cxr"] );
+      if( !(it->second)["massive"] )
+      {
+        (ferms->second)->change_mass(0);
+      }
+      
+      //Initialize fermion vector couplings
+      (ferms->second)->set_vecc( new fundamental::vcoeff( *(ferms->second), *this) );
+      
+      //Print fermion parameters after initialization
+      std::cout<<ferms->first<<":\t\tcxl="<<(ferms->second)->get_xlcharge()<<"\tcxr="<<(ferms->second)->get_xlcharge()<<"\tmass:"<<(ferms->second)->get_mass()<<"\tqgam:"<<((ferms->second)->vecc()).q_gam/e_()<<"\n";
+    }
+  }  
 }
 

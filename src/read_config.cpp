@@ -18,7 +18,7 @@ int split_line(const char** itemlist,  char* line)
 ///Split a line into its components separated by the DELIMITERS
 {
   itemlist[0] = std::strtok(line, DELIMITERS); //Split the string
-  std::cout<<itemlist[0]<<std::endl;
+//   std::cout<<itemlist[0]<<std::endl;  // ###################################### DEBUG ####################### 
   
   int len=1;
   for (int n = 1; n < MAX_ITEMS; n++)
@@ -26,7 +26,7 @@ int split_line(const char** itemlist,  char* line)
     // 'NULL' means continue splitting after last successful split
     itemlist[n] = std::strtok(NULL, DELIMITERS); 
     if (!itemlist[n]) break; // no more tokens
-    std::cout<<itemlist[n]<<std::endl;
+//     std::cout<<itemlist[n]<<std::endl; // ###################################### DEBUG ####################### 
     ++len;
   }
   
