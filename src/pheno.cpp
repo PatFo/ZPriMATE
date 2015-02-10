@@ -16,17 +16,17 @@ using namespace pheno;
 
 ///Implemenation of quark constructors
 
-down::down(float xlc, float xrc, bool massive): fermionExt(massive, 1, -1./2, 4.8e-3, -1./3, xlc, xrc, 3) { }
+down::down(double xlc, double xrc, bool massive): fermionExt(massive, 1, -1./2, 4.8e-3, -1./3, xlc, xrc, 3) { }
 
-up::up(float xlc, float xrc, bool massive): fermionExt(massive, 2, 1./2, 2.3e-3, 2./3, xlc, xrc, 3) { }
+up::up(double xlc, double xrc, bool massive): fermionExt(massive, 2, 1./2, 2.3e-3, 2./3, xlc, xrc, 3) { }
 
-strange::strange(float xlc, float xrc, bool massive): fermionExt(massive, 3, -1./2, 9.5e-2, -1./3, xlc, xrc, 3) { }
+strange::strange(double xlc, double xrc, bool massive): fermionExt(massive, 3, -1./2, 9.5e-2, -1./3, xlc, xrc, 3) { }
 
-charm::charm(float xlc, float xrc, bool massive): fermionExt(massive, 4, 1./2, 1.275, 2./3, xlc, xrc, 3) { }
+charm::charm(double xlc, double xrc, bool massive): fermionExt(massive, 4, 1./2, 1.275, 2./3, xlc, xrc, 3) { }
 
-bottom::bottom(float xlc, float xrc, bool massive): fermionExt(massive, 5, -1./2, 4.18, -1./3, xlc, xrc, 3) { }
+bottom::bottom(double xlc, double xrc, bool massive): fermionExt(massive, 5, -1./2, 4.18, -1./3, xlc, xrc, 3) { }
 
-top::top(float xlc, float xrc, bool massive): fermionExt(massive, 6, 1./2, 173.5, 2./3, xlc, xrc, 3) { }
+top::top(double xlc, double xrc, bool massive): fermionExt(massive, 6, 1./2, 173.5, 2./3, xlc, xrc, 3) { }
 
 
 
@@ -37,17 +37,17 @@ top::top(float xlc, float xrc, bool massive): fermionExt(massive, 6, 1./2, 173.5
 
 ///Implemenation of lepton constructors
 
-electron::electron(float xlc, float xrc, bool massive): fermionExt(massive, 11, -1./2, 5.11e-4, -1, xlc, xrc, 1) { }
+electron::electron(double xlc, double xrc, bool massive): fermionExt(massive, 11, -1./2, 5.11e-4, -1, xlc, xrc, 1) { }
 
-muon::muon(float xlc, float xrc, bool massive): fermionExt(massive, 13, -1./2, 0.1057, -1, xlc, xrc, 1) { }
+muon::muon(double xlc, double xrc, bool massive): fermionExt(massive, 13, -1./2, 0.1057, -1, xlc, xrc, 1) { }
 
-tauon::tauon(float xlc, float xrc, bool massive): fermionExt(massive, 15, -1./2, 1.777, -1, xlc, xrc, 1) { }
+tauon::tauon(double xlc, double xrc, bool massive): fermionExt(massive, 15, -1./2, 1.777, -1, xlc, xrc, 1) { }
 
-nu_el::nu_el(float xlc, float xrc): fermionExt(false, 12, 1./2, 0, 0, xlc, xrc, 1) { }
+nu_el::nu_el(double xlc, double xrc): fermionExt(false, 12, 1./2, 0, 0, xlc, xrc, 1) { }
 
-nu_mu::nu_mu(float xlc, float xrc): fermionExt(false, 14, 1./2, 0, 0, xlc, xrc, 1) { }
+nu_mu::nu_mu(double xlc, double xrc): fermionExt(false, 14, 1./2, 0, 0, xlc, xrc, 1) { }
 
-nu_tau::nu_tau(float xlc, float xrc): fermionExt(false, 16, 1./2, 0, 0, xlc, xrc, 1) { }
+nu_tau::nu_tau(double xlc, double xrc): fermionExt(false, 16, 1./2, 0, 0, xlc, xrc, 1) { }
 
 
 
@@ -146,11 +146,14 @@ double zpmodel::wzp_()
 {
   if(wzp==-1) //-1 means not yet calculated
   {
+    std::printf("\nCalculating Zp width:\n\n%14s %14s\n", "Decay channel", "Partial width");
     wzp=0;
     for(fermion_list::iterator it=flst.begin(); it!=flst.end(); ++it)
     {
-      wzp+=calc_width( *(it->second) );
-      std::cout<<calc_width( *(it->second) )<<std::endl;
+      double pwidth = calc_width( *(it->second) );
+      wzp+= pwidth;
+      std::printf("%14s|%14g\n", it->first.c_str(), pwidth);
+//       std::cout<<"Partial width to "<< it->first<<"\t"<<calc_width( *(it->second) )<<std::endl;
     }
     //Higgs width
     if(mixing_()!=0)
@@ -162,8 +165,9 @@ double zpmodel::wzp_()
       double fac2 = sqrt( pow(mzp_()*mzp_()+mz_()*mz_() -mh*mh, 2) - pow(2*mz_()*mzp_(),2) );
       higgs_width= pref*fac1*fac2;
       wzp+=higgs_width;
-      std::cout<<higgs_width<<std::endl;
+      std::printf("%14s|%14g\n", "Higgs Z", higgs_width);
     }
+    std::printf("%14s:%14g\n","Total width",  wzp);
   }
   return wzp;  
 }

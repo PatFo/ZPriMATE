@@ -17,7 +17,7 @@ using namespace fundamental;
 
 
 //Implementation of constructor of fermion class
-fermion::fermion(int n_pdg, float t3, float m, float emc, float xlc, float xrc)
+fermion::fermion(int n_pdg, double t3, double m, double emc, double xlc, double xrc)
 {
   pdg=n_pdg;
   iso3=t3;
@@ -36,49 +36,49 @@ int fermion::get_pdg()
   return pdg;
 }
 
-float fermion::get_iso3()
+double fermion::get_iso3()
 {
   return iso3;
 }
 
-float fermion::get_emcharge()
+double fermion::get_emcharge()
 {
   return emcharge;
 }
 
-float fermion::get_xlcharge()
+double fermion::get_xlcharge()
 {
   return xlcharge;
 }
 
-float fermion::get_xrcharge()
+double fermion::get_xrcharge()
 {
   return xrcharge;
 }
 
-float fermion::get_mass()
+double fermion::get_mass()
 {
   return mass;
 }
 
 //Set parameters of fermion object
 
-void fermion::update_emcharge(float emc)
+void fermion::update_emcharge(double emc)
 {
   emcharge=emc;
 }
 
-void fermion::update_xlcharge(float xlc)
+void fermion::update_xlcharge(double xlc)
 {
   xlcharge=xlc;
 }
 
-void fermion::update_xrcharge(float xrc)
+void fermion::update_xrcharge(double xrc)
 {
   xrcharge=xrc;
 }
 
-void fermion::change_mass(float new_mass)
+void fermion::change_mass(double new_mass)
 {
   mass=new_mass;
 }
@@ -92,7 +92,7 @@ void fermion::change_mass(float new_mass)
 
 
 //Constructor
-bsm_parameters::bsm_parameters(float cpl, float mass, float mix)
+bsm_parameters::bsm_parameters(double cpl, double mass, double mix)
 {
   //Calculate SM parameters
   e=sqrt(4*M_PI*aew);
@@ -105,72 +105,71 @@ bsm_parameters::bsm_parameters(float cpl, float mass, float mix)
   mzp=mass;
   mixing_angle=mix;
   //Calculate BSM parameters
-  //fef=(MZp Cos[chi] Sqrt[4 MZp^2 - (gw/cw)^2 vev^2 - g1^2 vev^2 Tan[chi]^2])/(gx Sqrt[8 MZp^2 - 2 (gw/cw)^2 vev^2])
-  fef= mzp* cos(mixing_angle)* sqrt( 4* pow(mzp,2) - pow(gz,2) * pow(vev,2) - pow(g1,2)*pow(vev,2)*pow(tan(mixing_angle),2) )/( gx * sqrt(8*pow(mzp,2) - 2*pow(gz,2)*pow(vev,2)) );
+  fef= mzp* cos(mixing_angle)/gx* sqrt( (gz*gz+pow(g1*tan(mixing_angle), 2)-pow(2*mzp/vev, 2))/(2*gz*gz-8*pow(mzp/vev, 2)) );
   //If mixing angle is 0 also xi should be 0
   if(mix==0)
   {
     xi=0;
   }else{
     //xi=ArcTan[ (2 g1 gw/cw Tan[chi] vev^2) / (8 gx^2 Sec[chi]^2 fef^2 + vev^2 (-(gw/cw)^2 +g1^2 Tan[chi]^2)) ]/2
-    xi=atan( (2*g1*gz*tan(mixing_angle)*pow(vev,2))/(8*pow(gx*fef/cos(mixing_angle),2) + pow(vev,2)*( - pow(gz,2)+pow(g1*tan(mixing_angle),2) ) ) )/2;
+    xi=atan( (2*g1*gz*tan(mixing_angle))/(8*pow(gx*fef/(vev*cos(mixing_angle)), 2) - pow(gz,2) + pow(g1*tan(mixing_angle),2)  ) )/2;
   }
 }
 
 //Read parameters of model
 //SM parameters
 
-float bsm_parameters::e_()
+double bsm_parameters::e_()
 {
   return e;
 }
 
-float bsm_parameters::g1_()
+double bsm_parameters::g1_()
 {
   return g1;
 }
 
-float bsm_parameters::g2_()
+double bsm_parameters::g2_()
 {
   return g2;
 }
 
-float bsm_parameters::gz_()
+double bsm_parameters::gz_()
 {
   return gz;
 }
 
-float bsm_parameters::vev_()
+double bsm_parameters::vev_()
 {
   return vev;
 }
 
-float bsm_parameters::aew_()
+double bsm_parameters::aew_()
 {
   return aew;
 }
 
-float bsm_parameters::as_()
+double bsm_parameters::as_()
 {
   return as;
 }
 
-float bsm_parameters::mw_()
+double bsm_parameters::mw_()
 {
   return mw;
 }
 
-float bsm_parameters::mz_()
+double bsm_parameters::mz_()
 {
   return mz;
 }
 
-float bsm_parameters::wz_()
+double bsm_parameters::wz_()
 {
   return wz;
 }
 
-float bsm_parameters::sw2_()
+double bsm_parameters::sw2_()
 {
   return sw2;
 }
@@ -179,27 +178,27 @@ float bsm_parameters::sw2_()
 
 //BSM
 
-float bsm_parameters::gx_()
+double bsm_parameters::gx_()
 {
   return gx;
 }
 
-float bsm_parameters::mzp_()
+double bsm_parameters::mzp_()
 {
   return mzp;
 }
 
-float bsm_parameters::mixing_()
+double bsm_parameters::mixing_()
 {
   return mixing_angle;
 }
 
-float bsm_parameters::fef_()
+double bsm_parameters::fef_()
 {
   return fef;
 }
 
-float bsm_parameters::xi_()
+double bsm_parameters::xi_()
 {
   return xi;
 }
@@ -208,17 +207,17 @@ float bsm_parameters::xi_()
 
 //Set parameters
 
-void bsm_parameters::set_gx(float g)
+void bsm_parameters::set_gx(double g)
 {
   gx=g;
 }
 
-void bsm_parameters::set_mzp(float m)
+void bsm_parameters::set_mzp(double m)
 {
   mzp=m;
 }
 
-void bsm_parameters::set_mixing(float mix)
+void bsm_parameters::set_mixing(double mix)
 {
   mixing_angle=mix;
 }
@@ -238,10 +237,10 @@ vcoeff::vcoeff(fermion f, bsm_parameters paras)
   
   
   //Calculate couplings before mixing
-  float czl  =  f.get_iso3() - (hypl/2 + f.get_iso3())*paras.sw2_();
-  float czr  = -hypr/2 * paras.sw2_();
-  float czpl = -paras.g1_()/2*hypl*tan(paras.mixing_()) + paras.gx_()*f.get_xlcharge()/cos(paras.mixing_()); //-g1/2*hypl*Tan[chi] + gx*QxqL/Cos[chi]
-  float czpr = -paras.g1_()/2*hypr*tan(paras.mixing_()) + paras.gx_()*f.get_xrcharge()/cos(paras.mixing_()); 
+  double czl  =  f.get_iso3() - (hypl/2 + f.get_iso3())*paras.sw2_();
+  double czr  = -hypr/2 * paras.sw2_();
+  double czpl = -paras.g1_()/2*hypl*tan(paras.mixing_()) + paras.gx_()*f.get_xlcharge()/cos(paras.mixing_()); //-g1/2*hypl*Tan[chi] + gx*QxqL/Cos[chi]
+  double czpr = -paras.g1_()/2*hypr*tan(paras.mixing_()) + paras.gx_()*f.get_xrcharge()/cos(paras.mixing_()); 
   
   //Calculate full couplings after mixing
   q_gam = f.get_emcharge()*paras.e_();
@@ -260,7 +259,7 @@ vcoeff::vcoeff(fermion f, bsm_parameters paras)
 
 
 //Constructor of extended fermion class: initialize base class
-fermionExt::fermionExt(bool massive, int n_pdg, float t3, float m, float emc, float xlc, float xrc, int n): fermion(n_pdg, t3, m, emc, xlc, xrc), pvecc() 
+fermionExt::fermionExt(bool massive, int n_pdg, double t3, double m, double emc, double xlc, double xrc, int n): fermion(n_pdg, t3, m, emc, xlc, xrc), pvecc() 
 {
   nc=n;
   is_massive = massive;
@@ -274,7 +273,7 @@ fermionExt::~fermionExt()
 {
   if(pvecc)
   {
-    std::cout<<"Deleting pointer of type vcoeff\n";
+//     std::cout<<"Deleting pointer of type vcoeff\n";
     delete pvecc;
   }
 }
@@ -287,7 +286,7 @@ int fermionExt::Nc()
 }
 
 
-float fermionExt::m()
+double fermionExt::m()
 {
   if(is_massive)return get_mass();
   else return 0;

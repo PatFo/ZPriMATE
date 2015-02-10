@@ -72,7 +72,8 @@ int main(int argc, char** argv){
   
   cout<<"B quark Qzpl:"<<m.b.vecc().q_zpl<<endl;
   
-  cout<<m.wzp_();
+  double w =m.wzp_();
+  w=2*w;
 
   
   return 0;

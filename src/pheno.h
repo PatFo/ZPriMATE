@@ -16,37 +16,37 @@ namespace pheno{
   class down : public fundamental::fermionExt{
   /// Down-quark class that has default U(1)_X charges xlc=1, xrc=1
     public:
-      down(float xlc=1., float xrc=1., bool massive = true);
+      down(double xlc=1., double xrc=1., bool massive = true);
   };
   
   class up : public fundamental::fermionExt{
   /// Up-quark class that has default U(1)_X charges xlc=1, xrc=1
     public:
-      up(float xlc=1., float xrc=1., bool massive = true);
+      up(double xlc=1., double xrc=1., bool massive = true);
   };
   
   class strange : public fundamental::fermionExt{
   /// Strange-quark class that has default U(1)_X charges xlc=1, xrc=1
     public:
-      strange(float xlc=1., float xrc=1., bool massive = true);
+      strange(double xlc=1., double xrc=1., bool massive = true);
   };
   
   class charm : public fundamental::fermionExt{
   /// Charm-quark class that has default U(1)_X charges xlc=1, xrc=1
     public:
-      charm(float xlc=1., float xrc=1., bool massive = true);
+      charm(double xlc=1., double xrc=1., bool massive = true);
   };
   
   class bottom : public fundamental::fermionExt{
   /// Bottom-quark class that has default U(1)_X charges xlc=1, xrc=1
     public:
-      bottom(float xlc=1., float xrc=1., bool massive = true);
+      bottom(double xlc=1., double xrc=1., bool massive = true);
   };
   
   class top : public fundamental::fermionExt{
   /// Top-quark class that has default U(1)_X charges xlc=1, xrc=1
     public:
-      top(float xlc=1., float xrc=1., bool massive = true);
+      top(double xlc=1., double xrc=1., bool massive = true);
   };
 
 
@@ -59,38 +59,38 @@ namespace pheno{
   class electron : public fundamental::fermionExt{
   /// Electron class that has default U(1)_X charges xlc=1, xrc=1
     public:
-      electron(float xlc=1., float xrc=1., bool massive = true);
+      electron(double xlc=1., double xrc=1., bool massive = true);
   };
   
   class muon : public fundamental::fermionExt{
   /// Muon class that has default U(1)_X charges xlc=1, xrc=1
     public:
-      muon(float xlc=1., float xrc=1., bool massive = true);
+      muon(double xlc=1., double xrc=1., bool massive = true);
   };
   
   class tauon : public fundamental::fermionExt{
   /// Tauon class that has default U(1)_X charges xlc=1, xrc=1
     public:
-      tauon(float xlc=1., float xrc=1., bool massive = true);
+      tauon(double xlc=1., double xrc=1., bool massive = true);
   };
   
   //Neutrinos
   class nu_el : public fundamental::fermionExt{
   /// Electron neutrino class that has default U(1)_X charges xlc=1, xrc=0 (no right-handed neutrino in SM)
     public:
-      nu_el(float xlc=1., float xrc=1.);
+      nu_el(double xlc=1., double xrc=1.);
   };
   
   class nu_mu : public fundamental::fermionExt{
   /// Muon neutrino class that has default U(1)_X charges xlc=1, xrc=0 (no right-handed neutrino in SM)
     public:
-      nu_mu(float xlc=1., float xrc=1.);
+      nu_mu(double xlc=1., double xrc=1.);
   };
   
   class nu_tau : public fundamental::fermionExt{
   /// Tauon neutrino class that has default U(1)_X charges xlc=1, xrc=0 (no right-handed neutrino in SM)
     public:
-      nu_tau(float xlc=1., float xrc=1.);
+      nu_tau(double xlc=1., double xrc=1.);
   };
   
   

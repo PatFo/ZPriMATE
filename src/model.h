@@ -13,26 +13,26 @@ namespace fundamental{
     private:
       //Fermion attributes
       int pdg;
-      float iso3;
-      float mass;
-      float emcharge;
-      float xlcharge;
-      float xrcharge;    
+      double iso3;
+      double mass;
+      double emcharge;
+      double xlcharge;
+      double xrcharge;    
     public:
       //Get parameters
       int get_pdg();
-      float get_iso3();
-      float get_emcharge();
-      float get_xlcharge();
-      float get_xrcharge();
-      float get_mass();
+      double get_iso3();
+      double get_emcharge();
+      double get_xlcharge();
+      double get_xrcharge();
+      double get_mass();
       //Set parameters
-      void update_emcharge(float emc);
-      void update_xlcharge(float xlc);
-      void update_xrcharge(float xrc);
-      void change_mass(float new_mass);
+      void update_emcharge(double emc);
+      void update_xlcharge(double xlc);
+      void update_xrcharge(double xrc);
+      void change_mass(double new_mass);
       //Constructor
-      fermion(int n_pdg, float t3, float m, float emc, float xlc, float xrc);
+      fermion(int n_pdg, double t3, double m, double emc, double xlc, double xrc);
   };
   
   
@@ -43,48 +43,48 @@ namespace fundamental{
   class bsm_parameters{
     private:
       //SM parameters from PDG (http://pdg.lbl.gov/2014/reviews/rpp2014-rev-phys-constants.pdf)
-      const static float aew=1./128;  // @q=MZ
-      const static float as=0.1184;
-      const static float mw=80.385;
-      const static float mz=91.1876;
-      const static float wz=2.4952;
-      const static float sw2=0.23155;
-      float e;
-      float g1;
-      float g2;
-      float gz;
-      float vev;
+      const static double aew=1./128;  // @q=MZ
+      const static double as=0.1184;
+      const static double mw=80.385;
+      const static double mz=91.1876;
+      const static double wz=2.4952;
+      const static double sw2=0.23155;
+      double e;
+      double g1;
+      double g2;
+      double gz;
+      double vev;
       //BSM parameters
-      float gx;
-      float mzp;
-      float mixing_angle;
-      float fef;
-      float xi;
+      double gx;
+      double mzp;
+      double mixing_angle;
+      double fef;
+      double xi;
     public:
       //Get SM parameters
-      float e_();
-      float g1_();
-      float g2_();
-      float gz_();
-      float vev_();
-      float aew_();
-      float as_();
-      float mw_();
-      float mz_();
-      float wz_();
-      float sw2_();
+      double e_();
+      double g1_();
+      double g2_();
+      double gz_();
+      double vev_();
+      double aew_();
+      double as_();
+      double mw_();
+      double mz_();
+      double wz_();
+      double sw2_();
       //Get BSM parameters
-      float gx_();
-      float mzp_();
-      float mixing_();
-      float fef_();
-      float xi_();
+      double gx_();
+      double mzp_();
+      double mixing_();
+      double fef_();
+      double xi_();
       //Set parameters
-      void set_gx(float g);
-      void set_mzp(float m);
-      void set_mixing(float mix);
+      void set_gx(double g);
+      void set_mzp(double m);
+      void set_mixing(double mix);
       //Constructor
-      bsm_parameters(float cpl, float mass, float mix=0);
+      bsm_parameters(double cpl, double mass, double mix=0);
   };
   
   
@@ -95,14 +95,14 @@ namespace fundamental{
   
   class vcoeff{
     private:
-      float hypl;
-      float hypr;
+      double hypl;
+      double hypr;
     public:
-      float q_gam;
-      float q_zl;
-      float q_zr;
-      float q_zpl;
-      float q_zpr;
+      double q_gam;
+      double q_zl;
+      double q_zr;
+      double q_zpl;
+      double q_zpr;
       //Constructor
       vcoeff(fermion f, bsm_parameters paras);    
   };
@@ -125,7 +125,7 @@ namespace fundamental{
       int nc;
     public:
       //Gives the user defined mass
-      float m();
+      double m();
       //Returns nc
       int Nc();
       //Vector coupling handling
@@ -135,7 +135,7 @@ namespace fundamental{
       ~fermionExt();
     protected:
       //Constructor can only be used by derived classes
-      fermionExt(bool massive, int fam, float t3, float m, float emc, float xlc, float xrc, int n);
+      fermionExt(bool massive, int fam, double t3, double m, double emc, double xlc, double xrc, int n);
   };
   
 }
