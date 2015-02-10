@@ -2,6 +2,7 @@
 
 #include "pheno.h"
 #include <iostream>
+#include <cstdio>
 #include <cmath>
 
 using namespace pheno;
@@ -91,6 +92,7 @@ zpmodel::zpmodel(const char* configfile): bsm_parameters(0.1, 1500, 0) /*partial
   
   //Applying FERMION CONFIGURATION:
   //Iterate over the whole fermion list and check for initialization values passed in config file
+  std::printf("%10s %5s %5s %5s %10s %10s %10s %10s %10s\n","Fermion", "mass", "cxl", "cxr", "qgam/e", "qzl", "qzr", "qzpl", "qzpr");
   for (fermion_list::iterator ferms=flst.begin(); ferms!=flst.end(); ++ferms)
   {
     it = init.find(ferms->first);  //Fermion label(string)
@@ -112,7 +114,9 @@ zpmodel::zpmodel(const char* configfile): bsm_parameters(0.1, 1500, 0) /*partial
       (ferms->second)->set_vecc( new fundamental::vcoeff( *(ferms->second), *this) );
       
       //Print fermion parameters after initialization
-      std::cout<<ferms->first<<":\t\tcxl="<<(ferms->second)->get_xlcharge()<<"\tcxr="<<(ferms->second)->get_xlcharge()<<"\tmass:"<<(ferms->second)->m()<<"\tqgam:"<<((ferms->second)->vecc()).q_gam/e_()<<"\n";      
+      std::printf("%10s|%5g|%5g|%5g|%10g|%10g|%10g|%10g|%10g\n"
+                  ,ferms->first.c_str(), (ferms->second)->m(), (ferms->second)->get_xlcharge(), (ferms->second)->get_xrcharge(), ((ferms->second)->vecc()).q_gam/e_()
+                  ,((ferms->second)->vecc()).q_zl,((ferms->second)->vecc()).q_zr, ((ferms->second)->vecc()).q_zpl,((ferms->second)->vecc()).q_zpr);     
     }
   }  
     
@@ -132,7 +136,7 @@ double zpmodel::calc_width(fundamental::fermionExt& f)
   double ratio = pow(f.get_mass()/mzp_(), 2);
 //   std::cout<<f.get_mass();
   double kin = 1 - 4*ratio;
-  return  double(f.Nc()) /(24*M_PI) * sqrt(kin) * ( (pow(f.vecc().q_zpl, 2) + pow(f.vecc().q_zpr, 2))*kin + 6*f.vecc().q_zpl*f.vecc().q_zpr*ratio );
+  return mzp_()* double(f.Nc()) /(24*M_PI) * sqrt(kin) * ( (pow(f.vecc().q_zpl, 2) + pow(f.vecc().q_zpr, 2))*kin + 6*f.vecc().q_zpl*f.vecc().q_zpr*ratio );
 }
 
 

@@ -76,19 +76,19 @@ namespace pheno{
   
   //Neutrinos
   class nu_el : public fundamental::fermionExt{
-  /// Electron neutrino class that has default U(1)_X charges xlc=1, xrc=1
+  /// Electron neutrino class that has default U(1)_X charges xlc=1, xrc=0 (no right-handed neutrino in SM)
     public:
       nu_el(float xlc=1., float xrc=1.);
   };
   
   class nu_mu : public fundamental::fermionExt{
-  /// Muon neutrino class that has default U(1)_X charges xlc=1, xrc=1
+  /// Muon neutrino class that has default U(1)_X charges xlc=1, xrc=0 (no right-handed neutrino in SM)
     public:
       nu_mu(float xlc=1., float xrc=1.);
   };
   
   class nu_tau : public fundamental::fermionExt{
-  /// Tauon neutrino class that has default U(1)_X charges xlc=1, xrc=1
+  /// Tauon neutrino class that has default U(1)_X charges xlc=1, xrc=0 (no right-handed neutrino in SM)
     public:
       nu_tau(float xlc=1., float xrc=1.);
   };
