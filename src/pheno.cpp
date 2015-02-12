@@ -66,7 +66,7 @@ zpmodel::zpmodel(const char* configfile): bsm_parameters(0.1, 1500, 0) /*partial
   flst["down"]=&d; flst["strange"]=&s; flst["bottom"]=&b;
   
   flst["electron"]=&el; flst["muon"]=&mu; flst["tauon"]=&tau;  
-  flst["nu_el"]=&nt; flst["nu_mu"]=&nm; flst["nu_tau"]=&nt;
+  flst["nu_el"]=&ne; flst["nu_mu"]=&nm; flst["nu_tau"]=&nt;
 
   //Get model configuration from config file
   conf_reader reader(configfile);

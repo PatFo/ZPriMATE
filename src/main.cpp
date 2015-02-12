@@ -75,6 +75,12 @@ int main(int argc, char** argv){
   double w =m.wzp_();
   w=2*w;
 
+  cout<<m.nm.vecc().q_zpl;
+  cout<<"nu_el parameters\nNc="<<m.ne.Nc()
+  <<"\nmass="<<m.ne.get_mass()
+  <<"\nqzpl="<<m.ne.vecc().q_zpl
+  <<"\nqzpr="<<m.ne.vecc().q_zpr
+  <<endl;
   
   return 0;
 }
