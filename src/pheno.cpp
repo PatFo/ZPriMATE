@@ -88,8 +88,7 @@ zpmodel::zpmodel(const char* configfile): bsm_parameters(0.1, 1500, 0) /*partial
     set_mixing( (it->second)["chi"] );
   }
   std::cout<<"\ngx="<<gx_()<<"\nmzp="<<mzp_()<<"\nmixing="<<mixing_()<<"\n\n";
-  
-  
+    
   //Applying FERMION CONFIGURATION:
   //Iterate over the whole fermion list and check for initialization values passed in config file
   std::printf("%10s %7s %5s %5s %10s %10s %10s %10s %10s\n","Fermion", "mass", "cxl", "cxr", "qgam/e", "qzl", "qzr", "qzpl", "qzpr");
@@ -118,8 +117,7 @@ zpmodel::zpmodel(const char* configfile): bsm_parameters(0.1, 1500, 0) /*partial
                   ,ferms->first.c_str(), (ferms->second)->m(), (ferms->second)->get_xlcharge(), (ferms->second)->get_xrcharge(), ((ferms->second)->vecc()).q_gam/e_()
                   ,((ferms->second)->vecc()).q_zl,((ferms->second)->vecc()).q_zr, ((ferms->second)->vecc()).q_zpl,((ferms->second)->vecc()).q_zpr);     
     }
-  }  
-    
+  }     
   //Initialize widths to -1 ("not yet calculated")
   partial_widths=NULL;
   higgs_width=-1.;
@@ -164,10 +162,8 @@ double zpmodel::calc_wwidth()
 
 
 //Calculate total Zp width
-double zpmodel::wzp_()
+void zpmodel::update_width()
 {
-  if(wzp==-1) //-1 means not yet calculated
-  {
     std::printf("\nCalculating Zp width:\n\n%14s %14s\n", "Decay channel", "Partial width");
     wzp=0;
     for(fermion_list::iterator it=flst.begin(); it!=flst.end(); ++it)
@@ -186,8 +182,17 @@ double zpmodel::wzp_()
     wzp+=ww_width;
     std::printf("%14s|%14g\n", "WW", ww_width);
 
-    std::printf("%14s:%14g\n","Total width",  wzp);
-  }
+    std::printf("%14s:%14g\n\n","Total width",  wzp);
+}
+
+
+
+
+//Return Zp width
+double zpmodel::wzp_()
+{
+  if(wzp==-1)  update_width(); //-1 means not yet calculated
+
   return wzp;  
 }
 
