@@ -26,7 +26,7 @@ charm::charm(double xlc, double xrc, bool massive): fermionExt(massive, 4, 1./2,
 
 bottom::bottom(double xlc, double xrc, bool massive): fermionExt(massive, 5, -1./2, 4.18, -1./3, xlc, xrc, 3) { }
 
-top::top(double xlc, double xrc, bool massive): fermionExt(massive, 6, 1./2, 173.5, 2./3, xlc, xrc, 3) { }
+top::top(double xlc, double xrc, bool massive): fermionExt(massive, 6, 1./2, 173.5, 2./3, xlc, xrc, 3) { }  //PDG=173.5
 
 
 
@@ -92,7 +92,7 @@ zpmodel::zpmodel(const char* configfile): bsm_parameters(0.1, 1500, 0) /*partial
   
   //Applying FERMION CONFIGURATION:
   //Iterate over the whole fermion list and check for initialization values passed in config file
-  std::printf("%10s %5s %5s %5s %10s %10s %10s %10s %10s\n","Fermion", "mass", "cxl", "cxr", "qgam/e", "qzl", "qzr", "qzpl", "qzpr");
+  std::printf("%10s %7s %5s %5s %10s %10s %10s %10s %10s\n","Fermion", "mass", "cxl", "cxr", "qgam/e", "qzl", "qzr", "qzpl", "qzpr");
   for (fermion_list::iterator ferms=flst.begin(); ferms!=flst.end(); ++ferms)
   {
     it = init.find(ferms->first);  //Fermion label(string)
@@ -114,7 +114,7 @@ zpmodel::zpmodel(const char* configfile): bsm_parameters(0.1, 1500, 0) /*partial
       (ferms->second)->set_vecc( new fundamental::vcoeff( *(ferms->second), *this) );
       
       //Print fermion parameters after initialization
-      std::printf("%10s|%5g|%5g|%5g|%10g|%10g|%10g|%10g|%10g\n"
+      std::printf("%10s|%7g|%5g|%5g|%10g|%10g|%10g|%10g|%10g\n"
                   ,ferms->first.c_str(), (ferms->second)->m(), (ferms->second)->get_xlcharge(), (ferms->second)->get_xrcharge(), ((ferms->second)->vecc()).q_gam/e_()
                   ,((ferms->second)->vecc()).q_zl,((ferms->second)->vecc()).q_zr, ((ferms->second)->vecc()).q_zpl,((ferms->second)->vecc()).q_zpr);     
     }
@@ -131,12 +131,34 @@ zpmodel::zpmodel(const char* configfile): bsm_parameters(0.1, 1500, 0) /*partial
 
 
 //Calculate partial fermionic width of Zp
-double zpmodel::calc_width(fundamental::fermionExt& f)
+double zpmodel::calc_fwidth(fundamental::fermionExt& f)
 {
   double ratio = pow(f.get_mass()/mzp_(), 2);
 //   std::cout<<f.get_mass();
   double kin = 1 - 4*ratio;
   return mzp_()* double(f.Nc()) /(24*M_PI) * sqrt(kin) * ( (pow(f.vecc().q_zpl, 2) + pow(f.vecc().q_zpr, 2))*kin + 6*f.vecc().q_zpl*f.vecc().q_zpr*ratio );
+}
+
+
+//Calculate partial width  Zp-> Z H
+double zpmodel::calc_zhwidth()
+{
+  double mh = 125.36;
+  double geff = (gz_()*sin(xi_()) + g1_()*cos(xi_())*tan(mixing_()))*(gz_()*cos(xi_()) - g1_()*sin(xi_())*tan(mixing_()));
+  double pref = pow(geff*vev_(),2)/(96*sqrt(2)*M_PI*pow(mzp_(),3));
+  double fac1 = 2 + pow( (mh*mh - (mz_()*mz_()+ mzp_()*mzp_()))/(2*mz_()*mzp_()) ,2);
+  double fac2 = sqrt( pow(mzp_()*mzp_()+mz_()*mz_() -mh*mh, 2) - pow(2*mz_()*mzp_(),2) );
+  return pref*fac1*fac2;
+}
+
+
+//Calculate partial width  Zp-> Z H
+double zpmodel::calc_wwidth()
+{
+  double ratio = pow(mw_()/mzp_(), 2);
+  double pref = (1-sw2_())*pow(g2_()*sin(xi_()), 2.0)/(192*M_PI*mzp_());
+  double matr = -48*pow(mw_(),2)-68*pow(mzp_(),2)+16*pow(mzp_(),2)/ratio+pow(mzp_()/ratio,2);
+  return pref*sqrt(1-4*ratio)*matr;
 }
 
 
@@ -150,23 +172,20 @@ double zpmodel::wzp_()
     wzp=0;
     for(fermion_list::iterator it=flst.begin(); it!=flst.end(); ++it)
     {
-      double pwidth = calc_width( *(it->second) );
+      double pwidth = calc_fwidth( *(it->second) );
       wzp+= pwidth;
       std::printf("%14s|%14g\n", it->first.c_str(), pwidth);
-//       std::cout<<"Partial width to "<< it->first<<"\t"<<calc_width( *(it->second) )<<std::endl;
     }
     //Higgs width
-    if(mixing_()!=0)
-    {
-      double mh = 125.36;
-      double geff = (gz_()*sin(xi_()) + g1_()*cos(xi_())*tan(mixing_()))*(gz_()*cos(xi_()) - g1_()*sin(xi_())*tan(mixing_()));
-      double pref = pow(geff*vev_(),2)/(96*sqrt(2)*M_PI*pow(mzp_(),3));
-      double fac1 = 2 + pow( (mh*mh - (mz_()*mz_()+ mzp_()*mzp_()))/(2*mz_()*mzp_()) ,2);
-      double fac2 = sqrt( pow(mzp_()*mzp_()+mz_()*mz_() -mh*mh, 2) - pow(2*mz_()*mzp_(),2) );
-      higgs_width= pref*fac1*fac2;
-      wzp+=higgs_width;
-      std::printf("%14s|%14g\n", "Higgs Z", higgs_width);
-    }
+    higgs_width=calc_zhwidth();
+    wzp+=higgs_width;
+    std::printf("%14s|%14g\n", "Higgs Z", higgs_width);
+    
+    //WW width
+    ww_width=calc_wwidth();
+    wzp+=ww_width;
+    std::printf("%14s|%14g\n", "WW", ww_width);
+
     std::printf("%14s:%14g\n","Total width",  wzp);
   }
   return wzp;  

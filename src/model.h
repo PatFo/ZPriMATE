@@ -43,12 +43,12 @@ namespace fundamental{
   class bsm_parameters{
     private:
       //SM parameters from PDG (http://pdg.lbl.gov/2014/reviews/rpp2014-rev-phys-constants.pdf)
-      const static double aew=1./128;  // @q=MZ
+      const static double aew=1./127.9;  // @q=MZ
       const static double as=0.1184;
       const static double mw=80.385;
       const static double mz=91.1876;
       const static double wz=2.4952;
-      const static double sw2=0.23155;
+      const static double sw2=0.233699;// PDG=0.23155;
       double e;
       double g1;
       double g2;
@@ -60,6 +60,9 @@ namespace fundamental{
       double mixing_angle;
       double fef;
       double xi;
+      void calc_fef();
+      void calc_xi();
+      void update();
     public:
       //Get SM parameters
       double e_();
@@ -103,6 +106,8 @@ namespace fundamental{
       double q_zr;
       double q_zpl;
       double q_zpr;
+      double get_hypl();
+      double get_hypr();
       //Constructor
       vcoeff(fermion f, bsm_parameters paras);    
   };

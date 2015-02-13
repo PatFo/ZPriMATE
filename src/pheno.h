@@ -129,8 +129,11 @@ namespace pheno{
       //Zp width related
       double* partial_widths;
       double higgs_width;
+      double ww_width;
       double wzp;
-      double calc_width(fundamental::fermionExt &f);    
+      double calc_fwidth(fundamental::fermionExt &f);    
+      double calc_zhwidth();
+      double calc_wwidth();
     public:
       //Constructor
       zpmodel(const char* configfile);

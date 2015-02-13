@@ -91,13 +91,30 @@ void fermion::change_mass(double new_mass)
 //***************************************//
 
 
+void bsm_parameters::calc_fef()
+{
+  fef= mzp* cos(mixing_angle)/gx* sqrt( (pow(gz, 2.0)+pow((g1*tan(mixing_angle)), 2.0)-pow((2*mzp/vev), 2.0))/(2*pow(gz, 2.0)-8*pow((mzp/vev), 2)) );
+}
+
+void bsm_parameters::calc_xi()
+{
+  xi=atan( (2*g1*gz*tan(mixing_angle))/(8*pow(gx*fef/(vev*cos(mixing_angle)), 2) - pow(gz,2) + pow(g1*tan(mixing_angle),2)  ) )/2;
+}
+
+void bsm_parameters::update()
+{
+  calc_fef();
+  calc_xi();
+}
+
+
 //Constructor
 bsm_parameters::bsm_parameters(double cpl, double mass, double mix)
 {
   //Calculate SM parameters
-  e=sqrt(4*M_PI*aew);
-  g1=e/sqrt(1-sw2);
-  g2=e/sqrt(sw2);
+  e=0.313451;//sqrt(4*M_PI*aew);
+  g1=0.358072;//e/sqrt(1-sw2);
+  g2=0.648397;//e/sqrt(sw2);
   gz=g2/sqrt(1-sw2);
   vev=2*mw*sqrt(sw2)/e;
   //Set BSM parameters
@@ -105,15 +122,10 @@ bsm_parameters::bsm_parameters(double cpl, double mass, double mix)
   mzp=mass;
   mixing_angle=mix;
   //Calculate BSM parameters
-  fef= mzp* cos(mixing_angle)/gx* sqrt( (gz*gz+pow(g1*tan(mixing_angle), 2)-pow(2*mzp/vev, 2))/(2*gz*gz-8*pow(mzp/vev, 2)) );
-  //If mixing angle is 0 also xi should be 0
-  if(mix==0)
-  {
-    xi=0;
-  }else{
-    //xi=ArcTan[ (2 g1 gw/cw Tan[chi] vev^2) / (8 gx^2 Sec[chi]^2 fef^2 + vev^2 (-(gw/cw)^2 +g1^2 Tan[chi]^2)) ]/2
-    xi=atan( (2*g1*gz*tan(mixing_angle))/(8*pow(gx*fef/(vev*cos(mixing_angle)), 2) - pow(gz,2) + pow(g1*tan(mixing_angle),2)  ) )/2;
-  }
+  //Value         -> (MZp Cos[cchi] Sqrt[4 MZp^2 - (gw/cw)^2 vev^2 - g1^2 vev^2 Tan[cchi]^2])/(gx Sqrt[8 MZp^2 - 2 (gw/cw)^2 vev^2]),
+
+
+  update();
 }
 
 //Read parameters of model
@@ -210,16 +222,19 @@ double bsm_parameters::xi_()
 void bsm_parameters::set_gx(double g)
 {
   gx=g;
+  update();
 }
 
 void bsm_parameters::set_mzp(double m)
 {
   mzp=m;
+  update();
 }
 
 void bsm_parameters::set_mixing(double mix)
 {
   mixing_angle=mix;
+  update();
 }
 
 
@@ -237,8 +252,8 @@ vcoeff::vcoeff(fermion f, bsm_parameters paras)
   
   
   //Calculate couplings before mixing
-  double czl  =  f.get_iso3() - (hypl/2 + f.get_iso3())*paras.sw2_();
-  double czr  = -hypr/2 * paras.sw2_();
+  double czl  =  f.get_iso3() - f.get_emcharge()*paras.sw2_();
+  double czr  = -f.get_emcharge() * paras.sw2_();
   double czpl = -paras.g1_()/2*hypl*tan(paras.mixing_()) + paras.gx_()*f.get_xlcharge()/cos(paras.mixing_()); //-g1/2*hypl*Tan[chi] + gx*QxqL/Cos[chi]
   double czpr = -paras.g1_()/2*hypr*tan(paras.mixing_()) + paras.gx_()*f.get_xrcharge()/cos(paras.mixing_()); 
   
@@ -250,6 +265,17 @@ vcoeff::vcoeff(fermion f, bsm_parameters paras)
   q_zpr = paras.gz_()*czr*sin(paras.xi_()) + czpr*cos(paras.xi_());
 }
 
+
+double vcoeff::get_hypl()
+{
+  return hypl;
+}
+
+
+double vcoeff::get_hypr()
+{
+  return hypr;
+}
 
 
 

@@ -70,16 +70,29 @@ int main(int argc, char** argv){
   
   pheno::zpmodel m(argv[1]);
   
-  cout<<"B quark Qzpl:"<<m.b.vecc().q_zpl<<endl;
+  cout<<"\nsw2="<<m.sw2_()
+  <<"\ng1="<<m.g1_()
+  <<"\ng2="<<m.g2_()
+  <<"\naew="<<m.aew_()
+  <<"\ne="<<m.e_()
+  <<"\nxi="<<m.xi_()
+  <<"\nvev="<<m.vev_()
+  <<"\nfef="<<m.fef_()
+  <<"\ngz="<<m.gz_()
+  <<"\ntan chi="<<tan(m.mixing_())
+  <<"\nmzp="<<m.mzp_()
+  <<endl;
   
   double w =m.wzp_();
   w=2*w;
 
-  cout<<m.nm.vecc().q_zpl;
+
   cout<<"nu_el parameters\nNc="<<m.ne.Nc()
   <<"\nmass="<<m.ne.get_mass()
   <<"\nqzpl="<<m.ne.vecc().q_zpl
   <<"\nqzpr="<<m.ne.vecc().q_zpr
+  <<"\nyl="<<m.ne.vecc().get_hypl()
+  <<"\nyr="<<m.ne.vecc().get_hypr()
   <<endl;
   
   return 0;
