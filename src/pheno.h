@@ -134,6 +134,7 @@ namespace pheno{
       double calc_fwidth(fundamental::fermionExt &f);    
       double calc_zhwidth();
       double calc_wwidth();
+      void update_width();
     public:
       //Constructor
       zpmodel(const char* configfile);
