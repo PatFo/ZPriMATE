@@ -4,6 +4,7 @@
 #include <math.h>
 #include "model.h"
 #include "pheno.h"
+#include "xsec.h"
 #include "read_config.h"
 
 
@@ -94,6 +95,10 @@ int main(int argc, char** argv){
   <<"\nyl="<<m.ne.vecc().get_hypl()
   <<"\nyr="<<m.ne.vecc().get_hypr()
   <<endl;
+  
+  pheno::PartonXSec xsec(m.u, m.mu, &m);
+  
+  cout<<xsec.sigTot(1000.)<<endl;
   
   return 0;
 }

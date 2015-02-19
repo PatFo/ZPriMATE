@@ -5,11 +5,18 @@
 
 
 namespace pheno{
+  
+  
+  //*******************************************************//
+  //            Class for partonic cross sections          //
+  //*******************************************************//
 
   
   class PartonXSec{
     ///Class for calculcation of partonic cross sections of f_in f_in~ --> f_out f_out~
     private:
+      //
+      pheno::zpmodel *  _model;      
       //Numerical factors for partial cross sections
       double numGam;
       double numZ;
@@ -29,8 +36,8 @@ namespace pheno{
       double sigSM(double Ecm);
       double sigInt(double Ecm);
       double sigTot(double Ecm);
-      //Class Constructor
-      PartonXSec(fundamental::fermion f_in, fundamental::fermion f_out);
+      //Class Constructor: Give model as reference &model
+      PartonXSec(fundamental::fermionExt f_in, fundamental::fermionExt f_out, pheno::zpmodel* p_model);
   };
 
 }
