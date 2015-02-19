@@ -26,7 +26,7 @@ charm::charm(double xlc, double xrc, bool massive): fermionExt(massive, 4, 1./2,
 
 bottom::bottom(double xlc, double xrc, bool massive): fermionExt(massive, 5, -1./2, 4.18, -1./3, xlc, xrc, 3) { }
 
-top::top(double xlc, double xrc, bool massive): fermionExt(massive, 6, 1./2, 173.5, 2./3, xlc, xrc, 3) { }  //PDG=173.5
+top::top(double xlc, double xrc, bool massive): fermionExt(massive, 6, 1./2, 172, 2./3, xlc, xrc, 3) { }  //PDG=173.5
 
 
 
@@ -121,7 +121,7 @@ zpmodel::zpmodel(const char* configfile): bsm_parameters(0.1, 1500, 0) /*partial
   }  
     
   //Initialize widths to -1 ("not yet calculated")
-  partial_widths=NULL;
+  partial_fwidths=NULL;
   higgs_width=-1.;
   wzp=-1.;
 }
@@ -135,8 +135,13 @@ double zpmodel::calc_fwidth(fundamental::fermionExt& f)
 {
   double ratio = pow(f.get_mass()/mzp_(), 2);
 //   std::cout<<f.get_mass();
-  double kin = 1 - 4*ratio;
-  return mzp_()* double(f.Nc()) /(24*M_PI) * sqrt(kin) * ( (pow(f.vecc().q_zpl, 2) + pow(f.vecc().q_zpr, 2))*kin + 6*f.vecc().q_zpl*f.vecc().q_zpr*ratio );
+  if(ratio>0.5*0.5)
+  {
+    std::cout<<"Following decay channel kinematically not possible: 2*mf>mzp !\nSet to zero:\n";
+    return 0;
+  }else{
+    return mzp_()* double(f.Nc()) /(24*M_PI) * sqrt(1.-4*ratio) * ( (pow(f.vecc().q_zpl, 2) + pow(f.vecc().q_zpr, 2))*(1.-ratio) + 6*f.vecc().q_zpl*f.vecc().q_zpr*ratio );
+  }
 }
 
 
@@ -145,8 +150,8 @@ double zpmodel::calc_zhwidth()
 {
   double mh = 125.36;
   double geff = (gz_()*sin(xi_()) + g1_()*cos(xi_())*tan(mixing_()))*(gz_()*cos(xi_()) - g1_()*sin(xi_())*tan(mixing_()));
-  double pref = pow(geff*vev_(),2)/(96*sqrt(2)*M_PI*pow(mzp_(),3));
-  double fac1 = 2 + pow( (mh*mh - (mz_()*mz_()+ mzp_()*mzp_()))/(2*mz_()*mzp_()) ,2);
+  double pref = pow(geff*vev_(),2)/(96*M_PI*pow(mzp_(),3));
+  double fac1 = 1 + pow( (mh*mh - mz_()*mz_() - mzp_()*mzp_())/(mz_()*mzp_()) ,2)/8;
   double fac2 = sqrt( pow(mzp_()*mzp_()+mz_()*mz_() -mh*mh, 2) - pow(2*mz_()*mzp_(),2) );
   return pref*fac1*fac2;
 }

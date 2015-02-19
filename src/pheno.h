@@ -127,7 +127,7 @@ namespace pheno{
     private:
       fermion_list flst;
       //Zp width related
-      double* partial_widths;
+      double* partial_fwidths;
       double higgs_width;
       double ww_width;
       double wzp;
