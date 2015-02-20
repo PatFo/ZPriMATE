@@ -37,7 +37,7 @@ namespace pheno{
       double sigInt(double Ecm);
       double sigTot(double Ecm);
       //Class Constructor: Give model as reference &model
-      PartonXSec(fundamental::fermionExt f_in, fundamental::fermionExt f_out, pheno::zpmodel* p_model);
+      PartonXSec(fundamental::fermionExt* f_in, fundamental::fermionExt* f_out, pheno::zpmodel* p_model);
   };
 
 }

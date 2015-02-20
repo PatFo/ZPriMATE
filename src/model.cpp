@@ -299,7 +299,7 @@ fermionExt::~fermionExt()
 {
   if(pvecc)
   {
-//     std::cout<<"Deleting pointer of type vcoeff\n";
+    std::cout<<"Deleting pointer of type vcoeff\n";
     delete pvecc;
   }
 }

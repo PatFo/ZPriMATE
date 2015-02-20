@@ -22,7 +22,7 @@ double kinematics(double Ecm, double m1, double m2, double w1, double w2, bool s
   {
     kinematics += one/( (kin1+bw1)*(kin2-bw2) );
   }
-  std::printf("Kinematics: (%g, %g)\n", std::real(kinematics), std::imag(kinematics));
+//   std::printf("Kinematics: (%g, %g)\n", std::real(kinematics), std::imag(kinematics));
   return std::real(kinematics);
 }
 
@@ -49,63 +49,67 @@ double couplings(double cinL1, double cinL2, double cinR1, double cinR2, double 
 
 
 //Constructor: Initialize the coupling-prefactors
-pheno::PartonXSec::PartonXSec(fundamental::fermionExt f_in, fundamental::fermionExt f_out, pheno::zpmodel* p_model): _model(p_model)
+pheno::PartonXSec::PartonXSec(fundamental::fermionExt* f_in, fundamental::fermionExt* f_out, pheno::zpmodel* p_model): _model(p_model)
 {
   //Store for every partial cross section the prefactor consisting of couplings, color factors and phase space constants
-  numGam = f_in.Nc()*f_out.Nc()/(48*M_PI) * couplings(f_in.vecc().q_gam, 
-                                                      f_in.vecc().q_gam, 
-                                                      f_in.vecc().q_gam, 
-                                                      f_in.vecc().q_gam, 
-                                                      f_out.vecc().q_gam,
-                                                      f_out.vecc().q_gam,
-                                                      f_out.vecc().q_gam,
-                                                      f_out.vecc().q_gam);
+  numGam = f_in->Nc()*f_out->Nc()/(48*M_PI) * couplings(f_in->vecc().q_gam, 
+                                                      f_in->vecc().q_gam, 
+                                                      f_in->vecc().q_gam, 
+                                                      f_in->vecc().q_gam, 
+                                                      f_out->vecc().q_gam,
+                                                      f_out->vecc().q_gam,
+                                                      f_out->vecc().q_gam,
+                                                      f_out->vecc().q_gam);
   
-  numZ = f_in.Nc()*f_out.Nc()/(48*M_PI) * couplings(f_in.vecc().q_zl, 
-                                                    f_in.vecc().q_zl, 
-                                                    f_in.vecc().q_zr, 
-                                                    f_in.vecc().q_zr, 
-                                                    f_out.vecc().q_zl,
-                                                    f_out.vecc().q_zl,
-                                                    f_out.vecc().q_zr,
-                                                    f_out.vecc().q_zr);
+  numZ = f_in->Nc()*f_out->Nc()/(48*M_PI) * couplings(f_in->vecc().q_zl, 
+                                                    f_in->vecc().q_zl, 
+                                                    f_in->vecc().q_zr, 
+                                                    f_in->vecc().q_zr, 
+                                                    f_out->vecc().q_zl,
+                                                    f_out->vecc().q_zl,
+                                                    f_out->vecc().q_zr,
+                                                    f_out->vecc().q_zr);
   
-  numZp = f_in.Nc()*f_out.Nc()/(48*M_PI) * couplings(f_in.vecc().q_zpl, 
-                                                    f_in.vecc().q_zpl, 
-                                                    f_in.vecc().q_zpr, 
-                                                    f_in.vecc().q_zpr, 
-                                                    f_out.vecc().q_zpl,
-                                                    f_out.vecc().q_zpl,
-                                                    f_out.vecc().q_zpr,
-                                                    f_out.vecc().q_zpr);
+  numZp = f_in->Nc()*f_out->Nc()/(48*M_PI) * couplings(f_in->vecc().q_zpl, 
+                                                    f_in->vecc().q_zpl, 
+                                                    f_in->vecc().q_zpr, 
+                                                    f_in->vecc().q_zpr, 
+                                                    f_out->vecc().q_zpl,
+                                                    f_out->vecc().q_zpl,
+                                                    f_out->vecc().q_zpr,
+                                                    f_out->vecc().q_zpr);
   
-  numGamZ = f_in.Nc()*f_out.Nc()/(24*M_PI) * couplings(f_in.vecc().q_gam, 
-                                                        f_in.vecc().q_zl, 
-                                                        f_in.vecc().q_gam, 
-                                                        f_in.vecc().q_zr, 
-                                                        f_out.vecc().q_gam,
-                                                        f_out.vecc().q_zl,
-                                                        f_out.vecc().q_gam,
-                                                        f_out.vecc().q_zr);
+  numGamZ = f_in->Nc()*f_out->Nc()/(48*M_PI) * couplings(f_in->vecc().q_gam, 
+                                                        f_in->vecc().q_zl, 
+                                                        f_in->vecc().q_gam, 
+                                                        f_in->vecc().q_zr, 
+                                                        f_out->vecc().q_gam,
+                                                        f_out->vecc().q_zl,
+                                                        f_out->vecc().q_gam,
+                                                        f_out->vecc().q_zr);
   
-  numGamZp = f_in.Nc()*f_out.Nc()/(24*M_PI) * couplings(f_in.vecc().q_gam, 
-                                                        f_in.vecc().q_zpl, 
-                                                        f_in.vecc().q_gam, 
-                                                        f_in.vecc().q_zpr, 
-                                                        f_out.vecc().q_gam,
-                                                        f_out.vecc().q_zpl,
-                                                        f_out.vecc().q_gam,
-                                                        f_out.vecc().q_zpr);
+  numGamZp = f_in->Nc()*f_out->Nc()/(48*M_PI) * couplings(f_in->vecc().q_gam, 
+                                                        f_in->vecc().q_zpl, 
+                                                        f_in->vecc().q_gam, 
+                                                        f_in->vecc().q_zpr, 
+                                                        f_out->vecc().q_gam,
+                                                        f_out->vecc().q_zpl,
+                                                        f_out->vecc().q_gam,
+                                                        f_out->vecc().q_zpr);
   
-  numZZp = f_in.Nc()*f_out.Nc()/(24*M_PI) * couplings(f_in.vecc().q_zl, 
-                                                      f_in.vecc().q_zpl, 
-                                                      f_in.vecc().q_zr, 
-                                                      f_in.vecc().q_zpr, 
-                                                      f_out.vecc().q_zl,
-                                                      f_out.vecc().q_zpl,
-                                                      f_out.vecc().q_zr,
-                                                      f_out.vecc().q_zpr);
+  numZZp = f_in->Nc()*f_out->Nc()/(48*M_PI) * couplings(f_in->vecc().q_zl, 
+                                                      f_in->vecc().q_zpl, 
+                                                      f_in->vecc().q_zr, 
+                                                      f_in->vecc().q_zpr, 
+                                                      f_out->vecc().q_zl,
+                                                      f_out->vecc().q_zpl,
+                                                      f_out->vecc().q_zr,
+                                                      f_out->vecc().q_zpr);
 }
+
+
+
+
 
 
 

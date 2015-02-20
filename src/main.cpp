@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <iostream>
+#include <fstream>
 #include <math.h>
 #include "model.h"
 #include "pheno.h"
@@ -96,9 +97,24 @@ int main(int argc, char** argv){
   <<"\nyr="<<m.ne.vecc().get_hypr()
   <<endl;
   
-  pheno::PartonXSec xsec(m.u, m.mu, &m);
+  pheno::PartonXSec xsec(&m.u, &m.mu, &m);
   
   cout<<xsec.sigTot(1000.)<<endl;
   
+  std::ofstream outf("sample_data.dat");
+  float low(20), high(1.5*m.mzp_());
+  float step = (high-low)/1000;
+  
+  for(float E=low; E<high;E+=step)
+  {
+    outf<<E<<"\t\t"<<xsec.sigTot(E)<<"\t\t"<<xsec.sigInt(E)<<"\n";
+//     cout<<E<<"\t\t"<<xsec.sigTot(E)<<"\t\t"<<xsec.sigInt(E)<<"\n";
+    
+  }
+  outf.close();
+  
+  cout<<"File written.\n";
+  
+
   return 0;
 }
