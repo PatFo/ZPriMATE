@@ -53,7 +53,7 @@ void extract_config(dict &config, std::ifstream &istr)
       
       int len = split_line(classes, buf);      
       if(len!=1)
-	throw std::runtime_error("ERROR: More then one item as class definition in conifg file.");
+	throw std::runtime_error("ERROR: More than one item as class definition in conifg file.");
       
       std::string clas(classes[0]);
       parmap itemmap; 

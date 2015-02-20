@@ -5,7 +5,8 @@ LFLAGS = -Wall $(DEBUG) -lm
 BUILDDIR = build
 SRCDIR = src
 SRCEXT = cpp
-TARGET = bin/cscan
+BINDIR = bin
+TARGET = $(BINDIR)/cscan
 
 SOURCES = $(shell find $(SRCDIR) -type f -name *.$(SRCEXT))
 OBJECTS = $(patsubst $(SRCDIR)/%,$(BUILDDIR)/%,$(SOURCES:.$(SRCEXT)=.o))
@@ -21,7 +22,7 @@ $(BUILDDIR)/%.o : $(SRCDIR)/%.cpp
 
 
 clean:
-	$(RM) -r  $(BUILDDIR) $(SRCDIR)/*~  *~ $(TARGET)
+	$(RM) -r   *~  $(TARGET)  $(BINDIR)/*~   $(BUILDDIR)  $(SRCDIR)/*~ 
 
 #tar:
 #	tar cfv $(EXECUTABLE).tar main.cpp

@@ -101,6 +101,8 @@ int main(int argc, char** argv){
   
   cout<<xsec.sigTot(1000.)<<endl;
   
+  
+  //Plotting the partonic cross section
   std::ofstream outf("sample_data.dat");
   float low(5), high(1.5*m.mzp_());
   float step = (high-low)/1000;
