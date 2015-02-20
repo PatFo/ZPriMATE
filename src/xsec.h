@@ -38,6 +38,7 @@ namespace pheno{
       double sigTot(double Ecm);
       //Class Constructor: Give model as reference &model
       PartonXSec(fundamental::fermionExt* f_in, fundamental::fermionExt* f_out, pheno::zpmodel* p_model);
+      ///Give the two fermions and the model as reference to the constructor!
   };
 
 }

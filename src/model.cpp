@@ -102,6 +102,7 @@ void bsm_parameters::calc_xi()
 }
 
 void bsm_parameters::update()
+///Should be called everytime a parameter of the model gets changed
 {
   calc_fef();
   calc_xi();
@@ -121,10 +122,7 @@ bsm_parameters::bsm_parameters(double cpl, double mass, double mix)
   gx=cpl;
   mzp=mass;
   mixing_angle=mix;
-  //Calculate BSM parameters
-  //Value         -> (MZp Cos[cchi] Sqrt[4 MZp^2 - (gw/cw)^2 vev^2 - g1^2 vev^2 Tan[cchi]^2])/(gx Sqrt[8 MZp^2 - 2 (gw/cw)^2 vev^2]),
-
-
+  //Calculate the BSM parameters
   update();
 }
 
@@ -299,7 +297,7 @@ fermionExt::~fermionExt()
 {
   if(pvecc)
   {
-    std::cout<<"Deleting pointer of type vcoeff\n";
+//     std::cout<<"Deleting pointer of type vcoeff\n";
     delete pvecc;
   }
 }

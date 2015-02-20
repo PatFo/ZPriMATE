@@ -102,12 +102,12 @@ int main(int argc, char** argv){
   cout<<xsec.sigTot(1000.)<<endl;
   
   std::ofstream outf("sample_data.dat");
-  float low(20), high(1.5*m.mzp_());
+  float low(5), high(1.5*m.mzp_());
   float step = (high-low)/1000;
   
   for(float E=low; E<high;E+=step)
   {
-    outf<<E<<"\t\t"<<xsec.sigTot(E)<<"\t\t"<<xsec.sigInt(E)<<"\n";
+    outf<<E<<"\t\t"<<xsec.sigTot(E)<<"\t\t"<<xsec.sigSM(E)<<"\n";
 //     cout<<E<<"\t\t"<<xsec.sigTot(E)<<"\t\t"<<xsec.sigInt(E)<<"\n";
     
   }
