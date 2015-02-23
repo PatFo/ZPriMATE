@@ -2,6 +2,8 @@
 #define XSEC_H
 
 #include "pheno.h"
+//PDF package
+#include <mstwpdf.h>
 
 
 namespace pheno{
@@ -62,11 +64,14 @@ namespace pheno{
       PartonXSec* sxsec;
       PartonXSec* cxsec;
       PartonXSec* bxsec;
+      c_mstwpdf* pdf;
+      //Subroutine for pdf convoluted cross sections
+      double pdfconv_xsec();
     public:
       //Hadronic cross sections
       double sigTot(double Ecm);
       //Constructor and destructor to take care of memory allocations
-      HadronXSec(fundamental::fermionExt* f_out, pheno::zpmodel* p_model);
+      HadronXSec(fundamental::fermionExt* f_out, pheno::zpmodel* p_model, char* pdf_grid_file);
       ~HadronXSec();
     
     

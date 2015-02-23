@@ -9,9 +9,9 @@ DEPENDENCIES:
 
 You need to get the MSTW2008 package from https://mstwpdf.hepforge.org/code/code.html. 
 Untar the source files into a local directory and then untar the "Grids" directory in that same location.
-Finally you have to add the local MSTW directory to your include path by adding to your ~/.bashrc the following line:
+Finally you have to set variable MSTWDIR in the Makefile to point to your local MSTW source directory:
 
-  export CPLUS_INCLUDE_PATH=$CPLUS_INCLUDE_PATH:/path/to/local/MSTW/directory
+  MSTWDIR = /path/to/local/MSTW/directory
 
   
   

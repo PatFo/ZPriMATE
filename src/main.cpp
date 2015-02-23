@@ -117,7 +117,8 @@ int main(int argc, char** argv){
   
   cout<<"File written.\n";
   
-  pheno::HadronXSec hsec(&m.mu, &m);
+  char pdfset[] = "/remote/pi104a/foldenauer/local/MSTW/Grids/mstw2008nnlo.00.dat";
+  pheno::HadronXSec hsec(&m.mu, &m, pdfset);
   cout<<"Total hadronic cross section for E=1000GeV:  "<<hsec.sigTot(1000.)<<endl;
   
 

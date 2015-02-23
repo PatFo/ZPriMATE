@@ -3,6 +3,7 @@
 #include "xsec.h"
 #include <complex>
 #include <cstdio>
+#include <string>
 //PDF package
 #include <mstwpdf.h>
 //Numerical integration
@@ -197,7 +198,7 @@ double pheno::PartonXSec::sigTot(double Ecm)
 
 
 
-pheno::HadronXSec::HadronXSec(fundamental::fermionExt* f_out, pheno::zpmodel* p_model)
+pheno::HadronXSec::HadronXSec(fundamental::fermionExt* f_out, pheno::zpmodel* p_model,  char* pdf_grid_file)
 {
   //Allocate partonic cross sections
   dxsec = new pheno::PartonXSec(&p_model->d, f_out, p_model);
@@ -205,16 +206,21 @@ pheno::HadronXSec::HadronXSec(fundamental::fermionExt* f_out, pheno::zpmodel* p_
   sxsec = new pheno::PartonXSec(&p_model->s, f_out, p_model);
   cxsec = new pheno::PartonXSec(&p_model->c, f_out, p_model);
   bxsec = new pheno::PartonXSec(&p_model->b, f_out, p_model);
+  //Allocate pdf object
+  std::string filestr(pdf_grid_file);
+  pdf = new c_mstwpdf(filestr);
 }
 
 
 pheno::HadronXSec::~HadronXSec()
 {
+  //Free all pointers
   delete dxsec;
   delete uxsec;
   delete sxsec;
   delete cxsec;
   delete bxsec;
+  delete pdf;
 }
 
 
