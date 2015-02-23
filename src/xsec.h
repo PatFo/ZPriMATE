@@ -41,6 +41,38 @@ namespace pheno{
       ///Give the two fermions and the model as reference to the constructor!
   };
 
+  
+  
+  
+  
+  
+  
+  
+  //*******************************************************//
+  //            Class for hadronic cross sections          //
+  //*******************************************************//
+
+  
+  class HadronXSec{
+    ///Class for calculcation of partonic cross sections of p p --> f_out f_out~
+    private:
+      //Internal parton cross sections: no top, as pdf negligible
+      PartonXSec* dxsec;
+      PartonXSec* uxsec;
+      PartonXSec* sxsec;
+      PartonXSec* cxsec;
+      PartonXSec* bxsec;
+    public:
+      //Hadronic cross sections
+      double sigTot(double Ecm);
+      //Constructor and destructor to take care of memory allocations
+      HadronXSec(fundamental::fermionExt* f_out, pheno::zpmodel* p_model);
+      ~HadronXSec();
+    
+    
+  };
+
+  
 }
 
 #endif

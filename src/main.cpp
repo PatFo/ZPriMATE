@@ -117,6 +117,9 @@ int main(int argc, char** argv){
   
   cout<<"File written.\n";
   
+  pheno::HadronXSec hsec(&m.mu, &m);
+  cout<<"Total hadronic cross section for E=1000GeV:  "<<hsec.sigTot(1000.)<<endl;
+  
 
   return 0;
 }

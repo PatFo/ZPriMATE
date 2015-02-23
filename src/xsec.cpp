@@ -3,7 +3,10 @@
 #include "xsec.h"
 #include <complex>
 #include <cstdio>
-
+//PDF package
+#include <mstwpdf.h>
+//Numerical integration
+#include <gsl/gsl_monte_vegas.h>
 
 
 
@@ -173,4 +176,49 @@ double pheno::PartonXSec::sigInt(double Ecm)
 double pheno::PartonXSec::sigTot(double Ecm)
 {
   return sigGam(Ecm)+sigGamZ(Ecm)+sigZ(Ecm)+sigGamZp(Ecm)+sigZZp(Ecm)+sigZp(Ecm);
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+//*******************************************************//
+//            Class for hadronic cross sections          //
+//*******************************************************//
+
+
+
+
+pheno::HadronXSec::HadronXSec(fundamental::fermionExt* f_out, pheno::zpmodel* p_model)
+{
+  //Allocate partonic cross sections
+  dxsec = new pheno::PartonXSec(&p_model->d, f_out, p_model);
+  uxsec = new pheno::PartonXSec(&p_model->u, f_out, p_model);
+  sxsec = new pheno::PartonXSec(&p_model->s, f_out, p_model);
+  cxsec = new pheno::PartonXSec(&p_model->c, f_out, p_model);
+  bxsec = new pheno::PartonXSec(&p_model->b, f_out, p_model);
+}
+
+
+pheno::HadronXSec::~HadronXSec()
+{
+  delete dxsec;
+  delete uxsec;
+  delete sxsec;
+  delete cxsec;
+  delete bxsec;
+}
+
+
+double pheno::HadronXSec::sigTot(double Ecm)
+{
+  return dxsec->sigTot(Ecm);
 }
