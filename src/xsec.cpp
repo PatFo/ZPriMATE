@@ -108,6 +108,7 @@ pheno::PartonXSec::PartonXSec(fundamental::fermionExt* f_in, fundamental::fermio
                                                       f_out->vecc().q_zpl,
                                                       f_out->vecc().q_zr,
                                                       f_out->vecc().q_zpr);
+  pdgin = int(f_in->get_pdg());
 }
 
 
@@ -180,6 +181,11 @@ double pheno::PartonXSec::sigTot(double Ecm)
 
 
 
+//Return pdg code of in-particle
+int pheno::PartonXSec::pdg_in()
+{
+  return pdgin;
+}
 
 
 
@@ -197,8 +203,42 @@ double pheno::PartonXSec::sigTot(double Ecm)
 
 
 
-pheno::HadronXSec::HadronXSec(fundamental::fermionExt* f_out, pheno::zpmodel* p_model,  char* pdf_grid_file)
+//Functors for partial cross section calculataions
+//------------------------------------------------------------
+//SM cross section
+struct SigSM{
+  double operator() (pheno::PartonXSec* pxsec, double Ecm)
+  {
+    return pxsec->sigSM(Ecm);
+  }
+};
+
+
+//Interference cross section
+struct SigInt{
+  double operator() (pheno::PartonXSec* pxsec, double Ecm)
+  {
+    return pxsec->sigInt(Ecm);
+  }
+};
+
+
+//Zp cross section
+struct SigZp{
+  double operator() (pheno::PartonXSec* pxsec, double Ecm)
+  {
+    return pxsec->sigZp(Ecm);
+  }
+};
+
+
+
+//CLASS IMPLEMENTATION
+//-------------------------------------------------------------
+//Constructor
+pheno::HadronXSec::HadronXSec(fundamental::fermionExt* f_out, pheno::zpmodel* p_model, char* pdf_grid_file, double Ecoll)
 {
+  Epp = Ecoll;
   //Allocate partonic cross sections
   dxsec = new pheno::PartonXSec(&p_model->d, f_out, p_model);
   uxsec = new pheno::PartonXSec(&p_model->u, f_out, p_model);
@@ -222,8 +262,11 @@ pheno::HadronXSec::~HadronXSec()
 }
 
 
+
+
+
 double pheno::HadronXSec::sigTot(double Ecm)
 {
-  double x = 1e-3, q = 1e1;
-  return dxsec->sigTot(Ecm)*pdf->parton(1,x,q);
+  double x = 1e-3;
+  return pdf_xsec<SigSM>(dxsec, Ecm , x);
 }

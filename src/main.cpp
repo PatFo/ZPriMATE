@@ -99,7 +99,7 @@ int main(int argc, char** argv){
   
   pheno::PartonXSec xsec(&m.u, &m.mu, &m);
   
-  cout<<xsec.sigTot(1000.)<<endl;
+  cout<<"CrossX of pdg="<<xsec.pdg_in()<<" is "<<xsec.sigTot(1000.)<<endl;
   
   
   //Plotting the partonic cross section
