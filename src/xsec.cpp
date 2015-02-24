@@ -3,7 +3,6 @@
 #include "xsec.h"
 #include <complex>
 #include <cstdio>
-#include <string>
 //PDF package
 #include <mstwpdf.h>
 //Numerical integration
@@ -207,8 +206,7 @@ pheno::HadronXSec::HadronXSec(fundamental::fermionExt* f_out, pheno::zpmodel* p_
   cxsec = new pheno::PartonXSec(&p_model->c, f_out, p_model);
   bxsec = new pheno::PartonXSec(&p_model->b, f_out, p_model);
   //Allocate pdf object
-  std::string filestr(pdf_grid_file);
-  pdf = new c_mstwpdf(filestr);
+  pdf = new c_mstwpdf(pdf_grid_file);
 }
 
 
@@ -226,5 +224,6 @@ pheno::HadronXSec::~HadronXSec()
 
 double pheno::HadronXSec::sigTot(double Ecm)
 {
-  return dxsec->sigTot(Ecm);
+  double x = 1e-3, q = 1e1;
+  return dxsec->sigTot(Ecm)*pdf->parton(1,x,q);
 }

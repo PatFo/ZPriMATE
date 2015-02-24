@@ -1,6 +1,11 @@
+# The variable MSTWDIR must point to the MSTW source directory
+MSTWDIR = /remote/pi104a/foldenauer/local/MSTW
+MSTW = mstwpdf
+
+# Macros
 CC = g++
 DEBUG = -g
-CFLAGS = -Wall -c $(DEBUG)
+CFLAGS = -Wall -c $(DEBUG) -I$(MSTWDIR)
 LFLAGS = -Wall $(DEBUG) -lm
 BUILDDIR = build
 SRCDIR = src
@@ -8,9 +13,6 @@ SRCEXT = cpp
 BINDIR = bin
 TARGET = $(BINDIR)/cscan
 
-# The variable MSTWDIR must point to the MSTW source directory
-MSTWDIR = /remote/pi104a/foldenauer/local/MSTW
-MSTW = mstwpdf
 
 SOURCES = $(shell find $(SRCDIR) -type f -name *.$(SRCEXT))
 OBJECTS := $(patsubst $(SRCDIR)/%,$(BUILDDIR)/%,$(SOURCES:.$(SRCEXT)=.o))
