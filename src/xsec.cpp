@@ -5,8 +5,7 @@
 #include <cstdio>
 //PDF package
 #include <mstwpdf.h>
-//Numerical integration
-#include <gsl/gsl_monte_vegas.h>
+
 
 
 
@@ -267,6 +266,7 @@ pheno::HadronXSec::~HadronXSec()
 
 double pheno::HadronXSec::sigTot(double Ecm)
 {
-  double x = 1e-3;
-  return pdf_xsec<SigSM>(dxsec, Ecm , x);
+//   double x = 1e-3;
+//   return pdf_xsec<SigSM>(dxsec, Ecm , x);
+  return pdfconvoluted<SigSM>(dxsec, Ecm);
 }

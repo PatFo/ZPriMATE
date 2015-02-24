@@ -5,8 +5,8 @@ MSTW = mstwpdf
 # Macros
 CC = g++
 DEBUG = -g
-CFLAGS = -Wall -c $(DEBUG) -I$(MSTWDIR)
-LFLAGS = -Wall $(DEBUG) -lm
+CFLAGS = -Wall -c $(DEBUG) -I$(MSTWDIR) 
+LFLAGS = -Wall $(DEBUG) -lm -lgsl -lgslcblas
 BUILDDIR = build
 SRCDIR = src
 SRCEXT = cpp
@@ -20,11 +20,11 @@ OBJECTS := $(OBJECTS) $(BUILDDIR)/$(MSTW).o
 
 
 $(TARGET) : $(OBJECTS)
-	$(CC) $(LFLAGS) $(OBJECTS) -o $@
+	$(CC)  $(OBJECTS) -o $@ $(LFLAGS)
 
 $(BUILDDIR)/%.o : $(SRCDIR)/%.cpp
 	@mkdir -p $(BUILDDIR)
-	$(CC) $(CFLAGS) -c -o  $@ $<
+	$(CC) $(CFLAGS) -c -o  $@ $< 
 
 # Build the MSTWPDF object file in the local build directory
 $(BUILDDIR)/$(MSTW).o : $(MSTWDIR)/$(MSTW).cc  $(MSTWDIR)/$(MSTW).h
