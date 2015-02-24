@@ -3,6 +3,7 @@
 
 #include "pheno.h"
 #include <stdexcept>
+#include <vector>
 //PDF package
 #include <mstwpdf.h>
 //Numerical integration
@@ -75,7 +76,7 @@ namespace pheno{
       PartonXSec* bxsec;
       c_mstwpdf* pdf;
       //Subroutines for pdf convoluted cross sections: Specify partial cross section in functor object
-      template<class PartialCrossX> double pdf_xsec(PartonXSec* pxsec, double q, double x);
+//       template<class PartialCrossX> double pdf_xsec(PartonXSec* pxsec, double q, double x);
       template<class PartialCrossX> double pdfconvoluted( double Ecm);
     public:
       //Hadronic cross sections
@@ -83,17 +84,28 @@ namespace pheno{
       double sigInt   (double Ecm);
       double sigSignal(double Ecm);
       double sigTotal (double Ecm);
+      //Member function that fills EMPTY vector with sigSM, sigInt, sigSignal, sigTotal 
+      //ALWAYS use this function if more than one of these cross sections is needed at a time
+      void crossSections (double Ecm, std::vector<double> * results);
       //Constructor and destructor to take care of memory allocations
       HadronXSec(fundamental::fermionExt* f_out, pheno::zpmodel* p_model, char* pdf_grid_file, double Ecoll=8000.);
       ~HadronXSec();    
   };
   
   
-
+  
+  
+  
+  
+  //IMPLEMENTATION OF MEMBER TEMPLATE  
+  //---------------------------------------------------------------------------------------------------------
+  
+  
   
 
   //Parameter struct for integrable function
   struct parameters{ PartonXSec** ppx; int arr_size; c_mstwpdf* ppdf; double Ecm; double Ecoll; double* cross_sections; };
+  
   
   
   
@@ -124,10 +136,12 @@ namespace pheno{
   
   
   
+  
   //Function that integrates cross section 
   template<class PartialCrossX> 
   double pheno::HadronXSec::pdfconvoluted( double Ecm)
   {
+    //Construct parameters
     PartialCrossX f;
     PartonXSec* pp[]= {dxsec, uxsec, sxsec, cxsec, bxsec};
     double cxs[] = {f(dxsec, Ecm),
@@ -137,6 +151,7 @@ namespace pheno{
                     f(bxsec, Ecm)};
                     
     struct parameters local_pars = {pp, 5, pdf, Ecm, Epp, cxs};
+    
     //Define a gsl_monte_function to pass to the integrator
     gsl_monte_function F;
     F.f = &monte_pdf;

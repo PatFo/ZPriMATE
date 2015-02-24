@@ -3,6 +3,8 @@
 #include <iostream>
 #include <fstream>
 #include <math.h>
+#include <vector>
+
 #include "model.h"
 #include "pheno.h"
 #include "xsec.h"
@@ -105,8 +107,13 @@ int main(int argc, char** argv){
   char pdfset[] = "/remote/pi104a/foldenauer/local/MSTW/Grids/mstw2008nnlo.00.dat";
   pheno::HadronXSec hsec(&m.mu, &m, pdfset);
 //   cout<<"Total hadronic cross section for E=1000GeV:  "<<hsec.sigTotal(1000.)<<endl;
-//   std::printf("%10s|%10g|%10g|%10g|%10g\n","Cross Sec", hsec.sigSM(1000.), hsec.sigInt(1000.), hsec.sigSignal(1000.), hsec.sigTotal(1000.));
+  std::printf("%10s|%10g|%10g|%10g|%10g\n","Cross Sec", hsec.sigSM(1000.), hsec.sigInt(1000.), hsec.sigSignal(1000.), hsec.sigTotal(1000.));
   
+  std::vector<double> res;  
+  hsec.crossSections(1000., &res);
+  std::printf("%10s|%10g|%10g|%10g|%10g\n","Cross Sec", res[0], res[1], res[2], res[3]);
+  
+  /*
   //Plotting the partonic cross section
   std::ofstream outf("sample_data.dat");
   float low(5), high(1.5*m.mzp_());
@@ -120,8 +127,9 @@ int main(int argc, char** argv){
     
   }
   outf.close();
-  
+  */
   cout<<"File written.\n";
 
+  
   return 0;
 }
