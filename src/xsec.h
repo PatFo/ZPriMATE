@@ -76,11 +76,13 @@ namespace pheno{
       c_mstwpdf* pdf;
       //Subroutines for pdf convoluted cross sections: Specify partial cross section in functor object
       template<class PartialCrossX> double pdf_xsec(PartonXSec* pxsec, double q, double x);
-//       template<class PartialCrossX> double monte_pdf(double x[], size_t dim, void * p);
-      template<class PartialCrossX> double pdfconvoluted(PartonXSec* pxsec, double Ecm);
+      template<class PartialCrossX> double pdfconvoluted( double Ecm);
     public:
       //Hadronic cross sections
-      double sigTot(double Ecm);
+      double sigSM    (double Ecm);
+      double sigInt   (double Ecm);
+      double sigSignal(double Ecm);
+      double sigTotal (double Ecm);
       //Constructor and destructor to take care of memory allocations
       HadronXSec(fundamental::fermionExt* f_out, pheno::zpmodel* p_model, char* pdf_grid_file, double Ecoll=8000.);
       ~HadronXSec();    
@@ -89,18 +91,9 @@ namespace pheno{
   
 
   
-  //Implementation of the member templates
-  template<class PartialCrossX> 
-  double pheno::HadronXSec::pdf_xsec(PartonXSec* pxsec, double q, double x)
-  {
-    PartialCrossX f;
-    return f(pxsec, q) * pheno::HadronXSec::pdf->parton(pxsec->pdg_in(), x, q);
-  }
-  
-  
-  
+
   //Parameter struct for integrable function
-  struct parameters{ PartonXSec* px; c_mstwpdf* ppdf; double Ecm; double Ecoll; double cross_section; };
+  struct parameters{ PartonXSec** ppx; int arr_size; c_mstwpdf* ppdf; double Ecm; double Ecoll; double* cross_sections; };
   
   
   
@@ -116,10 +109,15 @@ namespace pheno{
     //Define Bjorken x
     double x1 = x[0];
     double x2 = pars->Ecm * pars->Ecm/(x1 * pars->Ecoll * pars->Ecoll);
-    //Allocate cross section functor f
-    return pars->cross_section * 
-           pars->ppdf->parton(   pars->px->pdg_in(),  x1, pars->Ecm )/x1 * 
-           pars->ppdf->parton(  -pars->px->pdg_in(),  x2, pars->Ecm )/x2;
+    //Calculate sum of cross sections
+    double sum = 0. ;
+    for(int i=0; i<pars->arr_size; ++i)
+    {
+      sum += pars->cross_sections[i] * 
+           pars->ppdf->parton(   (pars->ppx[i])->pdg_in(),  x1, pars->Ecm )/x1 * 
+           pars->ppdf->parton(  -(pars->ppx[i])->pdg_in(),  x2, pars->Ecm )/x2;
+    }
+    return sum;
   }
   
   
@@ -128,10 +126,17 @@ namespace pheno{
   
   //Function that integrates cross section 
   template<class PartialCrossX> 
-  double pheno::HadronXSec::pdfconvoluted(PartonXSec* pxsec, double Ecm)
+  double pheno::HadronXSec::pdfconvoluted( double Ecm)
   {
     PartialCrossX f;
-    struct parameters local_pars = {pxsec, pdf, Ecm, Epp, f(pxsec, Ecm)};
+    PartonXSec* pp[]= {dxsec, uxsec, sxsec, cxsec, bxsec};
+    double cxs[] = {f(dxsec, Ecm),
+                    f(uxsec, Ecm), 
+                    f(sxsec, Ecm),
+                    f(cxsec, Ecm),
+                    f(bxsec, Ecm)};
+                    
+    struct parameters local_pars = {pp, 5, pdf, Ecm, Epp, cxs};
     //Define a gsl_monte_function to pass to the integrator
     gsl_monte_function F;
     F.f = &monte_pdf;

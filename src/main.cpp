@@ -102,25 +102,26 @@ int main(int argc, char** argv){
   cout<<"CrossX of pdg="<<xsec.pdg_in()<<" is "<<xsec.sigTot(1000.)<<endl;
   
   
+  char pdfset[] = "/remote/pi104a/foldenauer/local/MSTW/Grids/mstw2008nnlo.00.dat";
+  pheno::HadronXSec hsec(&m.mu, &m, pdfset);
+//   cout<<"Total hadronic cross section for E=1000GeV:  "<<hsec.sigTotal(1000.)<<endl;
+//   std::printf("%10s|%10g|%10g|%10g|%10g\n","Cross Sec", hsec.sigSM(1000.), hsec.sigInt(1000.), hsec.sigSignal(1000.), hsec.sigTotal(1000.));
+  
   //Plotting the partonic cross section
   std::ofstream outf("sample_data.dat");
   float low(5), high(1.5*m.mzp_());
-  float step = (high-low)/1000;
+  float step = (high-low)/500;
   
   for(float E=low; E<high;E+=step)
   {
-    outf<<E<<"\t\t"<<xsec.sigTot(E)<<"\t\t"<<xsec.sigSM(E)<<"\n";
+//     outf<<E<<"\t\t"<<xsec.sigTot(E)<<"\t\t"<<xsec.sigSM(E)<<"\n";
+    outf<<E<<"\t\t"<<hsec.sigTotal(E)<<"\t\t"<<hsec.sigSM(E)<<"\n";
 //     cout<<E<<"\t\t"<<xsec.sigTot(E)<<"\t\t"<<xsec.sigInt(E)<<"\n";
     
   }
   outf.close();
   
   cout<<"File written.\n";
-  
-  char pdfset[] = "/remote/pi104a/foldenauer/local/MSTW/Grids/mstw2008nnlo.00.dat";
-  pheno::HadronXSec hsec(&m.mu, &m, pdfset);
-  cout<<"Total hadronic cross section for E=1000GeV:  "<<hsec.sigTot(1000.)<<endl;
-  
 
   return 0;
 }

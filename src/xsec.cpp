@@ -263,10 +263,28 @@ pheno::HadronXSec::~HadronXSec()
 
 
 
-
-double pheno::HadronXSec::sigTot(double Ecm)
+double pheno::HadronXSec::sigSM(double Ecm)
 {
-//   double x = 1e-3;
-//   return pdf_xsec<SigSM>(dxsec, Ecm , x);
-  return pdfconvoluted<SigSM>(dxsec, Ecm);
+  return pdfconvoluted<SigSM>(Ecm);
+}
+
+
+
+double pheno::HadronXSec::sigInt(double Ecm)
+{
+  return sigSM(Ecm) + pdfconvoluted<SigInt>(Ecm);
+}
+
+
+
+double pheno::HadronXSec::sigSignal(double Ecm)
+{
+  return sigSM(Ecm) + pdfconvoluted<SigZp>(Ecm);
+}
+
+
+
+double pheno::HadronXSec::sigTotal(double Ecm)
+{
+  return sigInt(Ecm) +  pdfconvoluted<SigZp>(Ecm);
 }
