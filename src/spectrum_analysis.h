@@ -13,10 +13,11 @@ namespace pheno {
   //            Class for scanning spectrum                //
   //*******************************************************//
   
+  template<class CrossSection>
   class SpectrumScanner {
     private:
       zpmodel* _model;
-      HadronXSec* _hsec;
+      CrossSection* _hsec;
       //Sampling Regions
       bool is_default;
       std::vector<double*> samplingRegions;
@@ -26,7 +27,7 @@ namespace pheno {
     public:
       void set_interval(double low, double high, double step);
       void scan(char* outfile);
-      SpectrumScanner(pheno::zpmodel* pmod, pheno::HadronXSec* phsec);
+      SpectrumScanner(pheno::zpmodel* pmod, CrossSection* phsec);
       ~SpectrumScanner();
     
   };

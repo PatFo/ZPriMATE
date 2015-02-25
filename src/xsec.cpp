@@ -306,9 +306,9 @@ void pheno::HadronXSec::crossSections(double Ecm, std::vector< double >* results
   double xint = pdfconvoluted<SigInt>(Ecm);
   double xzp = pdfconvoluted<SigZp>(Ecm);
   
-  results->push_back(xsm);
+  results->push_back(xsm+xint+xzp);
   results->push_back(xsm+xint);
   results->push_back(xsm+xzp);
-  results->push_back(xsm+xint+xzp);
+  results->push_back(xsm);
 }
 

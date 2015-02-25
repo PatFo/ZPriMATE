@@ -4,9 +4,11 @@ MSTW = mstwpdf
 
 # Macros
 CC = g++
+RELEASE = -O2
 DEBUG = -g
-CFLAGS = -Wall -c $(DEBUG) -I$(MSTWDIR) 
-LFLAGS = -Wall $(DEBUG) -lm -lgsl -lgslcblas
+MODE = $(RELEASE)
+CFLAGS = -Wall -c $(MODE) -I$(MSTWDIR) 
+LFLAGS = -Wall $(MODE) -lm -lgsl -lgslcblas
 BUILDDIR = build
 SRCDIR = src
 SRCEXT = cpp

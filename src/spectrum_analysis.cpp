@@ -13,7 +13,8 @@
 
 
 //Constructor
-pheno::SpectrumScanner::SpectrumScanner(pheno::zpmodel* pmod, pheno::HadronXSec* phsec)
+template<class CrossSection>
+pheno::SpectrumScanner<CrossSection>::SpectrumScanner(pheno::zpmodel* pmod, CrossSection* phsec)
 {
   //Initialize
   _model=pmod;
@@ -22,17 +23,18 @@ pheno::SpectrumScanner::SpectrumScanner(pheno::zpmodel* pmod, pheno::HadronXSec*
   //Create default sampling region
   samplingRegions.clear(); 
   samplingRegions.push_back( new double[3]  );
-  double max = 1.5*_model->mzp_();
+  double max = 1.5*_model->mzp_(), min=5;
   //Fill array with low, high, step
-  samplingRegions.back()[0]=0;        //lower bound
+  samplingRegions.back()[0]=min;        //lower bound
   samplingRegions.back()[1]=max;      //upper bound
-  samplingRegions.back()[2]=max/200;  //sampling step
+  samplingRegions.back()[2]=(max-min)/200;  //sampling step
   //Set default flag
   is_default=true;
 }
 
 
-void pheno::SpectrumScanner::reset_regions()
+template<class CrossSection>
+void pheno::SpectrumScanner<CrossSection>::reset_regions()
 {
   //Delete all pointers in the container samplingRegions
   for(std::vector<double*>::iterator it=samplingRegions.begin(); it!=samplingRegions.end(); ++it)
@@ -47,7 +49,8 @@ void pheno::SpectrumScanner::reset_regions()
 
 
 //Destructor
-pheno::SpectrumScanner::~SpectrumScanner()
+template<class CrossSection>
+pheno::SpectrumScanner<CrossSection>::~SpectrumScanner()
 {
   reset_regions();
 }
@@ -56,7 +59,8 @@ pheno::SpectrumScanner::~SpectrumScanner()
 
 
 //Method which adds a new sampling range to the list
-void pheno::SpectrumScanner::set_interval(double low, double high, double step)
+template<class CrossSection>
+void pheno::SpectrumScanner<CrossSection>::set_interval(double low, double high, double step)
 {
   //If is default, clear regions
   if(is_default)
@@ -72,37 +76,47 @@ void pheno::SpectrumScanner::set_interval(double low, double high, double step)
 
 
 
-void pheno::SpectrumScanner::sampler(char* outfile, double low, double high, double step)
+
+//Sample Cross Section in given interval and append data to output file
+template<class CrossSection>
+void pheno::SpectrumScanner<CrossSection>::sampler(char* outfile, double low, double high, double step)
 {
   std::ofstream outf(outfile, std::ofstream::app);
   for(double E=low; E<high; E+=step)
   {
     std::vector<double> res;
     _hsec->crossSections(E, &res);
-    outf<<E<<"\t\t"<<res[0]<<"\t\t"<<res[3]<"\n";
+    char buffer[100];
+    int n= std::sprintf(buffer, "%-7g %-15g %-15g %-15g %-15g\n", E, res[0], res[1], res[2], res[3]);
+    outf<<buffer;
   }
+  outf.close();
 }
 
 
 
-/*
-//Sampling the cross section
-void pheno::SpectrumScanner::scan(char* outfile)
+
+//Sample the Cross Section over all sampling regions and write data to file
+template<class CrossSection>
+void pheno::SpectrumScanner<CrossSection>::scan(char* outfile)
 {
-  //Define sampling for Z-peak
-  float low(5), high(200);
-  float step = (high-low)/30;
-  sampler(outfile, low, high, step);
+  //Create file header
+  std::ofstream outf(outfile);
+  char buffer[100];
+  int n= std::sprintf(buffer, "%-7s %-15s %-15s %-15s %-15s\n", "E", "Xtot", "Xint", "Xsig", "Xsm");
+  outf<<buffer;
+  outf.close();
   
-  //Define sampling between peaks
-  double zpspread= _model->wzp_()*10;
-  low = high;
-  high = _model->mzp_() -zpspread;
-  if(low<high) //Make sure lower bound is smaller than upper 
+  //Loop over sampling regions
+  for(std::vector<double*>::iterator it=samplingRegions.begin(); it!=samplingRegions.end(); ++it)
   {
-    step =50;
-    sampler(outfile, low, high, step);
+    sampler(outfile, (*it)[0], (*it)[1], (*it)[2]);
   }
-  low = high;
-  high = _model->mzp_() + zpspread;
-}*/
+  
+}
+
+
+
+
+//Explicit instantiation so that linking works --> NOT used at all!
+template class pheno::SpectrumScanner<pheno::HadronXSec>;

@@ -107,13 +107,13 @@ int main(int argc, char** argv){
   
   char pdfset[] = "/remote/pi104a/foldenauer/local/MSTW/Grids/mstw2008nnlo.00.dat";
   pheno::HadronXSec hsec(&m.mu, &m, pdfset);
-//   cout<<"Total hadronic cross section for E=1000GeV:  "<<hsec.sigTotal(1000.)<<endl;
-  std::printf("%10s|%10g|%10g|%10g|%10g\n","Cross Sec", hsec.sigSM(1000.), hsec.sigInt(1000.), hsec.sigSignal(1000.), hsec.sigTotal(1000.));
-  
-  std::vector<double> res;  
-  hsec.crossSections(1000., &res);
-  std::printf("%10s|%10g|%10g|%10g|%10g\n","Cross Sec", res[0], res[1], res[2], res[3]);
-  
+// //   cout<<"Total hadronic cross section for E=1000GeV:  "<<hsec.sigTotal(1000.)<<endl;
+//   std::printf("%10s|%10g|%10g|%10g|%10g\n","Cross Sec", hsec.sigSM(1000.), hsec.sigInt(1000.), hsec.sigSignal(1000.), hsec.sigTotal(1000.));
+//   
+//   std::vector<double> res;  
+//   hsec.crossSections(1000., &res);
+//   std::printf("%10s|%10g|%10g|%10g|%10g\n","Cross Sec", res[0], res[1], res[2], res[3]);
+//   
   /*
   //Plotting the partonic cross section
   std::ofstream outf("sample_data.dat");
@@ -131,9 +131,13 @@ int main(int argc, char** argv){
   */
   cout<<"File written.\n";
   
-  pheno::SpectrumScanner scanner(&m, &hsec);    
-  scanner.set_interval(0, 150, 150./10);
-  scanner.set_interval(150, 2000, 2000./10);
+  pheno::SpectrumScanner<pheno::HadronXSec> scanner(&m, &hsec);    
+  scanner.set_interval(5, 150, 150./10);
+  scanner.set_interval(150, 3500, 3400./30);
+  scanner.set_interval(3500, 4500, 1000./50);
+  scanner.set_interval(4500, 6000, 1500./10);
+  char outfile[] = "/scratch/foldenauer/data/spectrum_scan.dat";
+  scanner.scan(outfile);
   cout<<"END\n";
 
 
