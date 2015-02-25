@@ -45,6 +45,9 @@ namespace pheno{
       double sigSM(double Ecm);
       double sigInt(double Ecm);
       double sigTot(double Ecm);
+      //Member function that fills EMPTY vector with sigSM, sigInt, sigSignal, sigTotal 
+      //ALWAYS use this function if more than one of these cross sections is needed at a time
+      void crossSections (double Ecm, std::vector<double> * results);
       //Class Constructor: Give model as reference &model
       PartonXSec(fundamental::fermionExt* f_in, fundamental::fermionExt* f_out, pheno::zpmodel* p_model);
       ///Give the two fermions and the model as reference to the constructor!
@@ -76,8 +79,7 @@ namespace pheno{
       PartonXSec* cxsec;
       PartonXSec* bxsec;
       c_mstwpdf* pdf;
-      //Subroutines for pdf convoluted cross sections: Specify partial cross section in functor object
-//       template<class PartialCrossX> double pdf_xsec(PartonXSec* pxsec, double q, double x);
+      //Subroutine for pdf convoluted cross sections: Specify partial cross section in functor object
       template<class PartialCrossX> double pdfconvoluted( double Ecm);
     public:
       void set_integ_calls(size_t int_calls);

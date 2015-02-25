@@ -87,7 +87,7 @@ void pheno::SpectrumScanner<CrossSection>::sampler(char* outfile, double low, do
     std::vector<double> res;
     _hsec->crossSections(E, &res);
     char buffer[100];
-    int n= std::sprintf(buffer, "%-7g %-15g %-15g %-15g %-15g\n", E, res[0], res[1], res[2], res[3]);
+    std::sprintf(buffer, "%-7g %-15g %-15g %-15g %-15g\n", E, res[0], res[1], res[2], res[3]);
     outf<<buffer;
   }
   outf.close();
@@ -103,7 +103,7 @@ void pheno::SpectrumScanner<CrossSection>::scan(char* outfile)
   //Create file header
   std::ofstream outf(outfile);
   char buffer[100];
-  int n= std::sprintf(buffer, "%-7s %-15s %-15s %-15s %-15s\n", "E", "Xtot", "Xint", "Xsig", "Xsm");
+  std::sprintf(buffer, "%-7s %-15s %-15s %-15s %-15s\n", "E", "Xtot", "Xint", "Xsig", "Xsm");
   outf<<buffer;
   outf.close();
   
@@ -118,5 +118,6 @@ void pheno::SpectrumScanner<CrossSection>::scan(char* outfile)
 
 
 
-//Explicit instantiation so that linking works --> NOT used at all!
+//Explicit instantiation so that linking works --> ONLY these types can be used
+template class pheno::SpectrumScanner<pheno::PartonXSec>;
 template class pheno::SpectrumScanner<pheno::HadronXSec>;
