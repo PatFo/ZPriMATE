@@ -237,6 +237,7 @@ struct SigZp{
 //Constructor
 pheno::HadronXSec::HadronXSec(fundamental::fermionExt* f_out, pheno::zpmodel* p_model, char* pdf_grid_file, double Ecoll)
 {
+  calls = 10000; //Default value for calls per integration point
   Epp = Ecoll;
   //Allocate partonic cross sections
   dxsec = new pheno::PartonXSec(&p_model->d, f_out, p_model);
@@ -258,6 +259,14 @@ pheno::HadronXSec::~HadronXSec()
   delete cxsec;
   delete bxsec;
   delete pdf;
+}
+
+
+
+//Set the number of calls of the cross section function per integration point
+void pheno::HadronXSec::set_integ_calls(size_t int_calls)
+{
+  calls=int_calls;
 }
 
 
@@ -290,7 +299,7 @@ double pheno::HadronXSec::sigTotal(double Ecm)
 }
 
 
-//Smart method for multiple cross sections
+//Fast method for multiple cross sections
 void pheno::HadronXSec::crossSections(double Ecm, std::vector< double >* results)
 {
   double xsm = pdfconvoluted<SigSM>(Ecm);

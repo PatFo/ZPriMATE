@@ -9,6 +9,7 @@
 #include "pheno.h"
 #include "xsec.h"
 #include "read_config.h"
+#include "spectrum_analysis.h"
 
 
 using namespace std;
@@ -129,6 +130,12 @@ int main(int argc, char** argv){
   outf.close();
   */
   cout<<"File written.\n";
+  
+  pheno::SpectrumScanner scanner(&m, &hsec);    
+  scanner.set_interval(0, 150, 150./10);
+  scanner.set_interval(150, 2000, 2000./10);
+  cout<<"END\n";
+
 
   
   return 0;

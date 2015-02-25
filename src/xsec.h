@@ -67,6 +67,7 @@ namespace pheno{
   class HadronXSec{
     ///Class for calculcation of partonic cross sections of p p --> f_out f_out~
     private:
+      size_t calls;
       double Epp;
       //Internal parton cross sections: no top, as pdf negligible
       PartonXSec* dxsec;
@@ -79,6 +80,7 @@ namespace pheno{
 //       template<class PartialCrossX> double pdf_xsec(PartonXSec* pxsec, double q, double x);
       template<class PartialCrossX> double pdfconvoluted( double Ecm);
     public:
+      void set_integ_calls(size_t int_calls);
       //Hadronic cross sections
       double sigSM    (double Ecm);
       double sigInt   (double Ecm);
@@ -159,7 +161,6 @@ namespace pheno{
     F.params = &local_pars;
     
     //Parameter and result objects
-    size_t calls = 10000;
     double res, err;
     double xl[1] = { Ecm*Ecm/(Epp*Epp) };  //lower integration limit
     double xu[1] = { 1 };
