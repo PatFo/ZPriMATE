@@ -113,9 +113,9 @@ void bsm_parameters::update()
 bsm_parameters::bsm_parameters(double cpl, double mass, double mix)
 {
   //Calculate SM parameters
-  e=0.313451;//sqrt(4*M_PI*aew);
-  g1=0.358072;//e/sqrt(1-sw2);
-  g2=0.648397;//e/sqrt(sw2);
+  e=sqrt(4*M_PI*aew);
+  g1=e/sqrt(1-sw2);
+  g2=e/sqrt(sw2);
   gz=g2/sqrt(1-sw2);
   vev=2*mw*sqrt(sw2)/e;
   //Set BSM parameters

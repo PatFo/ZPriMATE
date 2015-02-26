@@ -16,6 +16,7 @@ namespace pheno {
   template<class CrossSection>
   class SpectrumScanner {
     private:
+      unsigned int strategy;
       zpmodel* _model;
       CrossSection* _hsec;
       //Sampling Regions
@@ -27,7 +28,7 @@ namespace pheno {
     public:
       void set_interval(double low, double high, double step);
       void scan(char* outfile);
-      SpectrumScanner(pheno::zpmodel* pmod, CrossSection* phsec);
+      SpectrumScanner(pheno::zpmodel* pmod, CrossSection* phsec, unsigned int int_strategy=1);
       ~SpectrumScanner();
     
   };

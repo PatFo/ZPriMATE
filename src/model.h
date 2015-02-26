@@ -48,7 +48,7 @@ namespace fundamental{
       const static double mw=80.385;
       const static double mz=91.1876;
       const static double wz=2.4952;
-      const static double sw2=0.233699;// PDG=0.23155;
+      const static double sw2=0.23155;// PDG=0.23155;
       double e;
       double g1;
       double g2;

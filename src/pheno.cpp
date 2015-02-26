@@ -26,7 +26,7 @@ charm::charm(double xlc, double xrc, bool massive): fermionExt(massive, 4, 1./2,
 
 bottom::bottom(double xlc, double xrc, bool massive): fermionExt(massive, 5, -1./2, 4.18, -1./3, xlc, xrc, 3) { }
 
-top::top(double xlc, double xrc, bool massive): fermionExt(massive, 6, 1./2, 172, 2./3, xlc, xrc, 3) { }  //PDG=173.5
+top::top(double xlc, double xrc, bool massive): fermionExt(massive, 6, 1./2, 173.5, 2./3, xlc, xrc, 3) { }  //PDG=173.5
 
 
 

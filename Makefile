@@ -22,16 +22,16 @@ OBJECTS := $(OBJECTS) $(BUILDDIR)/$(MSTW).o
 
 
 $(TARGET) : $(OBJECTS)
-	$(CC)  $(OBJECTS) -o $@ $(LFLAGS)
+	$(CC) $(OBJECTS) -o $@ $(LFLAGS)
 
 $(BUILDDIR)/%.o : $(SRCDIR)/%.cpp
 	@mkdir -p $(BUILDDIR)
-	$(CC) $(CFLAGS)  -o  $@ $< 
+	$(CC) $(CFLAGS) -o $@ $< 
 
 # Build the MSTWPDF object file in the local build directory
 $(BUILDDIR)/$(MSTW).o : $(MSTWDIR)/$(MSTW).cc  $(MSTWDIR)/$(MSTW).h
 	@mkdir -p $(BUILDDIR)
-	$(CC) $(CFLAGS)  -o  $@  $<
+	$(CC) $(CFLAGS) -o $@  $<
 
 
 clean:

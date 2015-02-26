@@ -9,6 +9,7 @@
 //Numerical integration
 #include <gsl/gsl_monte.h>
 #include <gsl/gsl_monte_vegas.h>
+#include <gsl/gsl_integration.h>
 
 
 namespace pheno{
@@ -47,7 +48,8 @@ namespace pheno{
       double sigTot(double Ecm);
       //Member function that fills EMPTY vector with sigSM, sigInt, sigSignal, sigTotal 
       //ALWAYS use this function if more than one of these cross sections is needed at a time
-      void crossSections (double Ecm, std::vector<double> * results);
+      //Strategy only needed for interface with SpectrumScanner -> NOT USED
+      void crossSections (double Ecm, std::vector<double> * results, unsigned int int_strategy=1);
       //Class Constructor: Give model as reference &model
       PartonXSec(fundamental::fermionExt* f_in, fundamental::fermionExt* f_out, pheno::zpmodel* p_model);
       ///Give the two fermions and the model as reference to the constructor!
@@ -71,6 +73,7 @@ namespace pheno{
     ///Class for calculcation of partonic cross sections of p p --> f_out f_out~
     private:
       size_t calls;
+      double accuracy_goal;
       double Epp;
       //Internal parton cross sections: no top, as pdf negligible
       PartonXSec* dxsec;
@@ -80,17 +83,18 @@ namespace pheno{
       PartonXSec* bxsec;
       c_mstwpdf* pdf;
       //Subroutine for pdf convoluted cross sections: Specify partial cross section in functor object
-      template<class PartialCrossX> double pdfconvoluted( double Ecm);
+      template<class PartialCrossX> double pdfconvoluted( double Ecm, unsigned int int_strategy=1);
     public:
-      void set_integ_calls(size_t int_calls);
+      void set_accuracy(double accuracy);
+      void set_monte_calls(size_t int_calls);
       //Hadronic cross sections
-      double sigSM    (double Ecm);
-      double sigInt   (double Ecm);
-      double sigSignal(double Ecm);
-      double sigTotal (double Ecm);
+      double sigSM    (double Ecm, unsigned int int_strategy=1);
+      double sigInt   (double Ecm, unsigned int int_strategy=1);
+      double sigSignal(double Ecm, unsigned int int_strategy=1);
+      double sigTotal (double Ecm, unsigned int int_strategy=1);
       //Member function that fills EMPTY vector with sigSM, sigInt, sigSignal, sigTotal 
       //ALWAYS use this function if more than one of these cross sections is needed at a time
-      void crossSections (double Ecm, std::vector<double> * results);
+      void crossSections (double Ecm, std::vector<double> * results, unsigned int int_strategy=1);
       //Constructor and destructor to take care of memory allocations
       HadronXSec(fundamental::fermionExt* f_out, pheno::zpmodel* p_model, char* pdf_grid_file, double Ecoll=8000.);
       ~HadronXSec();    
@@ -112,18 +116,13 @@ namespace pheno{
   
   
   
-  
-  
-  //Implementation of gsl integrable function
-  inline double monte_pdf(double x[], size_t dim, void * p)
+  //Implementation of gsl monte carlo integrable function
+  inline double num_pdf(double x, void * p)
   {
-    //Check that integration vector is one dimensional
-    if(dim!=1)
-      throw std::runtime_error("ERROR: Integration dim!=1");
     //Get initialization parameters
     struct parameters * pars = (struct parameters *)p;
     //Define Bjorken x
-    double x1 = x[0];
+    double x1 = x;
     double x2 = pars->Ecm * pars->Ecm/(x1 * pars->Ecoll * pars->Ecoll);
     //Calculate sum of cross sections
     double sum = 0. ;
@@ -138,16 +137,27 @@ namespace pheno{
   
   
   
+  //Implementation of gsl monte carlo integrable function
+  inline double monte_pdf(double x[], size_t dim, void * p)
+  {
+    //Check that integration vector is one dimensional
+    if(dim!=1)
+      throw std::runtime_error("ERROR: Integration dim!=1");
+    //Use implementation for regular numerical integration
+    return num_pdf(x[0], p);
+  }
+  
   
   
   
   //Function that integrates cross section 
   template<class PartialCrossX> 
-  double pheno::HadronXSec::pdfconvoluted( double Ecm)
+  double pheno::HadronXSec::pdfconvoluted( double Ecm, unsigned int int_strategy)
   {
     //Construct parameters
     PartialCrossX f;
     PartonXSec* pp[]= {dxsec, uxsec, sxsec, cxsec, bxsec};
+    //Store partonic cross section of quarks at energy Ecm in array
     double cxs[] = {f(dxsec, Ecm),
                     f(uxsec, Ecm), 
                     f(sxsec, Ecm),
@@ -156,30 +166,52 @@ namespace pheno{
                     
     struct parameters local_pars = {pp, 5, pdf, Ecm, Epp, cxs};
     
-    //Define a gsl_monte_function to pass to the integrator
-    gsl_monte_function F;
-    F.f = &monte_pdf;
-    F.dim = 1;
-    F.params = &local_pars;
-    
     //Parameter and result objects
-    double res, err;
-    double xl[1] = { Ecm*Ecm/(Epp*Epp) };  //lower integration limit
-    double xu[1] = { 1 };
-
-    //Initialize random number gen for monte carlo
-    gsl_rng_env_setup ();
-
-    const gsl_rng_type *T;
-    gsl_rng *r;
-    T = gsl_rng_default;
-    r = gsl_rng_alloc (T);
-
-    //Integration
-    gsl_monte_vegas_state *s = gsl_monte_vegas_alloc (1);
-    gsl_monte_vegas_integrate (&F, xl, xu, 1, calls, r, s, &res, &err);
+    double result, error;
+    double xl = Ecm*Ecm/(Epp*Epp);  //lower integration limit
+    double xu = 1;  //Upper integration limit
     
-    return res;
+    if(int_strategy==1)
+    {
+      // QAG adaptive integration
+      //Define Integration function
+      gsl_function F;
+      F.function = &num_pdf;
+      F.params = &local_pars;
+      
+      //Integration
+      size_t bisection_lim =1000;
+      gsl_integration_workspace * w = gsl_integration_workspace_alloc (bisection_lim);
+      gsl_integration_qags (&F, xl, xu, 0, accuracy_goal, bisection_lim, w, &result, &error); 
+    }
+    else if(int_strategy==2)
+    {
+      // VEGAS Monte Carlo Integration
+      //Define a gsl_monte_function to pass to the integrator
+      gsl_monte_function F;
+      F.f = &monte_pdf;
+      F.dim = 1;
+      F.params = &local_pars;      
+
+      //Initialize random number gen for monte carlo
+      gsl_rng_env_setup ();
+      const gsl_rng_type *T;
+      gsl_rng *r;
+      T = gsl_rng_default;
+      r = gsl_rng_alloc (T);
+
+      //Integration
+      double axl[1] = {xl};
+      double axu[1] = {xu};
+      gsl_monte_vegas_state *s = gsl_monte_vegas_alloc (1);
+      gsl_monte_vegas_integrate (&F, axl, axu, 1, calls, r, s, &result, &error);
+    }
+    else
+    {
+      throw std::runtime_error("ERROR: Undefined integration strategy code.");
+    }
+    
+    return result;
   }
   
   

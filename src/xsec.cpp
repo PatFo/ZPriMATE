@@ -180,7 +180,7 @@ double pheno::PartonXSec::sigTot(double Ecm)
 
 
 //Fast method for multiple cross sections
-void pheno::PartonXSec::crossSections(double Ecm, std::vector< double >* results)
+void pheno::PartonXSec::crossSections(double Ecm, std::vector< double >* results, unsigned int int_strategy)
 {
   double xsm = sigSM(Ecm);
   double xint = sigInt(Ecm);
@@ -252,7 +252,8 @@ struct SigZp{
 //Constructor
 pheno::HadronXSec::HadronXSec(fundamental::fermionExt* f_out, pheno::zpmodel* p_model, char* pdf_grid_file, double Ecoll)
 {
-  calls = 10000; //Default value for calls per integration point
+  accuracy_goal = 1e-2;  //Default numerica integ accuracy
+  calls = 10000; //Default value for calls per monte carlo integration point
   Epp = Ecoll;
   //Allocate partonic cross sections
   dxsec = new pheno::PartonXSec(&p_model->d, f_out, p_model);
@@ -279,47 +280,54 @@ pheno::HadronXSec::~HadronXSec()
 
 
 //Set the number of calls of the cross section function per integration point
-void pheno::HadronXSec::set_integ_calls(size_t int_calls)
+void pheno::HadronXSec::set_monte_calls(size_t int_calls)
 {
   calls=int_calls;
 }
 
 
-
-
-double pheno::HadronXSec::sigSM(double Ecm)
+//Set relative accuracy for numerical integration
+void pheno::HadronXSec::set_accuracy(double accuracy)
 {
-  return pdfconvoluted<SigSM>(Ecm);
+  accuracy_goal=accuracy;
 }
 
 
 
-double pheno::HadronXSec::sigInt(double Ecm)
+
+double pheno::HadronXSec::sigSM(double Ecm, unsigned int int_strategy)
 {
-  return sigSM(Ecm) + pdfconvoluted<SigInt>(Ecm);
+  return pdfconvoluted<SigSM>(Ecm, int_strategy);
 }
 
 
 
-double pheno::HadronXSec::sigSignal(double Ecm)
+double pheno::HadronXSec::sigInt(double Ecm, unsigned int int_strategy)
 {
-  return sigSM(Ecm) + pdfconvoluted<SigZp>(Ecm);
+  return sigSM(Ecm, int_strategy) + pdfconvoluted<SigInt>(Ecm, int_strategy);
 }
 
 
 
-double pheno::HadronXSec::sigTotal(double Ecm)
+double pheno::HadronXSec::sigSignal(double Ecm, unsigned int int_strategy)
 {
-  return sigInt(Ecm) +  pdfconvoluted<SigZp>(Ecm);
+  return sigSM(Ecm, int_strategy) + pdfconvoluted<SigZp>(Ecm, int_strategy);
+}
+
+
+
+double pheno::HadronXSec::sigTotal(double Ecm, unsigned int int_strategy)
+{
+  return sigInt(Ecm, int_strategy) +  pdfconvoluted<SigZp>(Ecm, int_strategy);
 }
 
 
 //Fast method for multiple cross sections
-void pheno::HadronXSec::crossSections(double Ecm, std::vector< double >* results)
+void pheno::HadronXSec::crossSections(double Ecm, std::vector< double >* results, unsigned int int_strategy)
 {
-  double xsm = pdfconvoluted<SigSM>(Ecm);
-  double xint = pdfconvoluted<SigInt>(Ecm);
-  double xzp = pdfconvoluted<SigZp>(Ecm);
+  double xsm = pdfconvoluted<SigSM>(Ecm, int_strategy);
+  double xint = pdfconvoluted<SigInt>(Ecm, int_strategy);
+  double xzp = pdfconvoluted<SigZp>(Ecm, int_strategy);
   
   results->push_back(xsm+xint+xzp);
   results->push_back(xsm+xint);
