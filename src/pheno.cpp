@@ -61,6 +61,8 @@ nu_tau::nu_tau(double xlc, double xrc): fermionExt(false, 16, 1./2, 0, 0, xlc, x
 //Constructor: The whole model is set up HERE
 ZpModel::ZpModel(const char* configfile): bsm_parameters(0.1, 1500, 0) /*partial_widths(),*/  //Default values if no parameters are specified in config file
 {
+  std::printf("\n*** CONSTRUCTING MODEL ***\n");
+  
   //Set up list of pointers to fermions for map iteration
   flst["up"]=&u; flst["charm"]=&c; flst["top"]=&t;
   flst["down"]=&d; flst["strange"]=&s; flst["bottom"]=&b;
@@ -71,27 +73,27 @@ ZpModel::ZpModel(const char* configfile): bsm_parameters(0.1, 1500, 0) /*partial
   //Get model configuration from config file
   conf_reader reader(configfile);
   dict init = reader.get_config();
-  
-  std::cout<<"Applying configuration:\n";
+  std::printf("\nReading configuration file %s\n", configfile);
   
   //Set up MODEL PARAMETERS
   dict::iterator it= init.find("model_parameters");
   if(it == init.end())
   {
-    std::cout<<"No model parameters specified. Using default:\n";
+    std::printf("No model parameters specified. Using default:\n");
   }
   else
   {
-    std::cout<<"Found \"$"<<it->first<<"\":\n";
+    std::printf("Setting model parameters:\n");
     set_gx( (it->second)["gx"] );
     set_mzp( (it->second)["mzp"] );
     set_mixing( (it->second)["chi"] );
   }
-  std::cout<<"\ngx="<<gx_()<<"\nmzp="<<mzp_()<<"\nmixing="<<mixing_()<<"\n\n";
+  std::printf("\n\t%-10s %-10s\n\t%-10s|%-10g\n\t%-10s|%-10g\n\t%-10s|%-10g\n\n", "Parameter", "Value", "mzp", mzp_(), "gx", gx_(), "mixing", mixing_());
     
   //Applying FERMION CONFIGURATION:
   //Iterate over the whole fermion list and check for initialization values passed in config file
-  std::printf("%10s %7s %5s %5s %10s %10s %10s %10s %10s\n","Fermion", "mass", "cxl", "cxr", "qgam/e", "qzl", "qzr", "qzpl", "qzpr");
+  std::printf("Calculating vector couplings:\n\n");
+  std::printf("\t%-10s %-7s %-5s %-5s %-10s %-10s %-10s %-10s %-10s\n","Fermion", "mass", "cxl", "cxr", "qgam/e", "qzl", "qzr", "qzpl", "qzpr");
   for (fermion_list::iterator ferms=flst.begin(); ferms!=flst.end(); ++ferms)
   {
     it = init.find(ferms->first);  //Fermion label(string)
@@ -113,7 +115,7 @@ ZpModel::ZpModel(const char* configfile): bsm_parameters(0.1, 1500, 0) /*partial
       (ferms->second)->set_vecc( new fundamental::vcoeff( *(ferms->second), *this) );
       
       //Print fermion parameters after initialization
-      std::printf("%10s|%7g|%5g|%5g|%10g|%10g|%10g|%10g|%10g\n"
+      std::printf("\t%-10s|%-7g|%-5g|%-5g|%-10g|%-10g|%-10g|%-10g|%-10g\n"
                   ,ferms->first.c_str(), (ferms->second)->m(), (ferms->second)->get_xlcharge(), (ferms->second)->get_xrcharge(), ((ferms->second)->vecc()).q_gam/e_()
                   ,((ferms->second)->vecc()).q_zl,((ferms->second)->vecc()).q_zr, ((ferms->second)->vecc()).q_zpl,((ferms->second)->vecc()).q_zpr);     
     }
@@ -122,6 +124,7 @@ ZpModel::ZpModel(const char* configfile): bsm_parameters(0.1, 1500, 0) /*partial
   partial_fwidths=NULL;
   higgs_width=-1.;
   wzp=-1.;
+  std::printf("\n*** MODEL CONSTRUCTED ***\n");
 }
 
 
@@ -169,25 +172,25 @@ double ZpModel::calc_wwidth()
 //Calculate total Zp width
 void ZpModel::update_width()
 {
-    std::printf("\nCalculating Zp width:\n\n%14s %14s\n", "Decay channel", "Partial width");
+    std::printf("\nCalculating Zp width:\n\n\t%-14s %-14s\n", "Decay channel", "Partial width");
     wzp=0;
     for(fermion_list::iterator it=flst.begin(); it!=flst.end(); ++it)
     {
       double pwidth = calc_fwidth( *(it->second) );
       wzp+= pwidth;
-      std::printf("%14s|%14g\n", it->first.c_str(), pwidth);
+      std::printf("\t%-14s|%-14g\n", it->first.c_str(), pwidth);
     }
     //Higgs width
     higgs_width=calc_zhwidth();
     wzp+=higgs_width;
-    std::printf("%14s|%14g\n", "Higgs Z", higgs_width);
+    std::printf("\t%-14s|%-14g\n", "Higgs Z", higgs_width);
     
     //WW width
     ww_width=calc_wwidth();
     wzp+=ww_width;
-    std::printf("%14s|%14g\n", "WW", ww_width);
+    std::printf("\t%-14s|%-14g\n", "WW", ww_width);
 
-    std::printf("%14s:%14g\n\n","Total width",  wzp);
+    std::printf("\t%-14s:%-14g\n\n","Total width",  wzp);
 }
 
 

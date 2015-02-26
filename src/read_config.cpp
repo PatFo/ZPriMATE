@@ -92,7 +92,6 @@ conf_reader::conf_reader(const char* filename)
   //Check whether specified file is readable. Else raise error and exit.
   if (!ifs.good())
     throw std::runtime_error("ERROR: Cannot open config file. Make sure that a config file is specified on startup.");  
-  std::cout<<"Opened config file "<<filename<<std::endl;
   
   //Set up the dictionary with initial parameters
   extract_config(config, ifs);

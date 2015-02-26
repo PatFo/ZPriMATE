@@ -1,14 +1,10 @@
 #include <stdlib.h>
 #include <stdio.h>
-#include <iostream>
-#include <fstream>
 #include <math.h>
-#include <vector>
 
-#include "model.h"
+
 #include "pheno.h"
 #include "xsec.h"
-#include "read_config.h"
 #include "spectrum_analysis.h"
 
 
@@ -16,91 +12,11 @@ using namespace std;
 
 int main(int argc, char** argv){
   
-  pheno::up up;
-  
-  std::cout<<"The pheno-up parameters:"
-  <<"\n\tPDG:\t\t"<<up.get_pdg()
-  <<"\n\tIsospin:\t"<<up.get_iso3()
-  <<"\n\tMass:\t\t"<<up.get_mass()
-  <<"\n\tE.m. charge:\t"<<up.get_emcharge()
-  <<"\n\tQxl:\t\t"<<up.get_xlcharge()
-  <<"\n\tQxr:\t\t"<<up.get_xrcharge()
-  <<endl;
-  
-  
-//   up.change_mass(9.5e-2);
-//   up.update_emcharge(4./7);
-//   up.update_xlcharge(1./2);
-//   up.update_xrcharge(-1./2);
-//   
-//   std::cout<<"\n\nUpdated pheno-up parameters:\n"
-//   <<"\n\tFamily:\t\t"<<up.get_family()
-//   <<"\n\tIsospin:\t"<<up.get_iso3()
-//   <<"\n\tMass:\t\t"<<up.get_mass()
-//   <<"\n\tE.m. charge:\t"<<up.get_emcharge()
-//   <<"\n\tQxl:\t\t"<<up.get_xlcharge()
-//   <<"\n\tQxr:\t\t"<<up.get_xrcharge()
-//   <<endl;
-  
-  
-  pheno::muon mu;
-  cout<<mu.get_iso3()<<endl;
-  
-  fundamental::bsm_parameters par(0.1, 1500);
-  fundamental::vcoeff upco(up, par);
-  fundamental::vcoeff muco(mu, par);
-  
-  up.set_vecc( new fundamental::vcoeff(up, par));
-
-  
-  cout<<"\nUp-quark vector couplings:\n-------------------"
-  <<"\nqzl="<<upco.q_zl<<"\t up.qzl="<<up.vecc().q_zl
-  <<"\nqzr="<<upco.q_zr
-  <<"\nqzpl="<<upco.q_zpl
-  <<"\nqzpr="<<upco.q_zpr
-  <<endl;
-  
-  cout<<"\nMuon vector couplings:\n-------------------"
-  <<"\nqzl="<<muco.q_zl
-  <<"\nqzr="<<muco.q_zr
-  <<"\nqzpl="<<muco.q_zpl
-  <<"\nqzpr="<<muco.q_zpr
-  <<endl;
-  
-  conf_reader reader(argv[1]);
-  
-  dict parameters=reader.get_config();
-  
-  cout<<(parameters["up"])["cxl"];
-  
+  //Initialize model with model configuration file
   pheno::ZpModel m(argv[1]);
   
-  cout<<"\nsw2="<<m.sw2_()
-  <<"\ng1="<<m.g1_()
-  <<"\ng2="<<m.g2_()
-  <<"\naew="<<m.aew_()
-  <<"\ne="<<m.e_()
-  <<"\nxi="<<m.xi_()
-  <<"\nvev="<<m.vev_()
-  <<"\nfef="<<m.fef_()
-  <<"\ngz="<<m.gz_()
-  <<"\ntan chi="<<tan(m.mixing_())
-  <<"\nmzp="<<m.mzp_()
-  <<endl;
   
-  double w =m.wzp_();
-  w=2*w;
-
-
-  cout<<"nu_el parameters\nNc="<<m.ne.Nc()
-  <<"\nmass="<<m.ne.get_mass()
-  <<"\nqzpl="<<m.ne.vecc().q_zpl
-  <<"\nqzpr="<<m.ne.vecc().q_zpr
-  <<"\nyl="<<m.ne.vecc().get_hypl()
-  <<"\nyr="<<m.ne.vecc().get_hypr()
-  <<endl;
-  
-  //Construct sampling scheme
+  //Construct sampling scheme for Cross section plotting
   double s1[3]={5, 200, 200./20};
   double s2[3]={200., 3700, 3300./40};
   double s3[3]={3700, 4300, 600./50};
@@ -110,7 +26,6 @@ int main(int argc, char** argv){
   pheno::PartonXSec xsec(&m.u, &m.mu, &m);
   
   pheno::SpectrumScanner<pheno::PartonXSec> pscan(&m, &xsec, 1);
-//   pscan.add_interval(5, 200, 200./20);
   pscan.add_interval(s1);
   pscan.add_interval(s2);
   pscan.add_interval(s3);
@@ -130,9 +45,7 @@ int main(int argc, char** argv){
   scanner.add_interval(s4);
   char outfile[] = "/scratch/foldenauer/data/xscan/hadron_scan.dat";
   scanner.scan(outfile);
-  cout<<"END\n";
-
-
   
+    
   return 0;
 }
