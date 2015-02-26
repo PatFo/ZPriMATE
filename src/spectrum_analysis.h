@@ -20,7 +20,7 @@ namespace pheno {
   class SpectrumScanner {
     private:
       unsigned int strategy;
-      zpmodel* _model;
+      ZpModel* _model;
       CrossSection* _hsec;
       //Sampling Regions
       bool is_default;
@@ -32,7 +32,7 @@ namespace pheno {
       void add_interval(double* pinterval); //WARNING: Needs a static array of type double with 3 elements, e.g. double arr[3]={1.,2.,3.};
       void reset_sampling();
       void scan(char* outfile);
-      SpectrumScanner(pheno::zpmodel* pmod, CrossSection* phsec, unsigned int int_strategy=1);
+      SpectrumScanner(pheno::ZpModel* pmod, CrossSection* phsec, unsigned int int_strategy=1);
       ~SpectrumScanner();
   };
   

@@ -51,7 +51,7 @@ double couplings(double cinL1, double cinL2, double cinR1, double cinR2, double 
 
 
 //Constructor: Initialize the coupling-prefactors
-pheno::PartonXSec::PartonXSec(fundamental::fermionExt* f_in, fundamental::fermionExt* f_out, pheno::zpmodel* p_model): _model(p_model)
+pheno::PartonXSec::PartonXSec(fundamental::fermionExt* f_in, fundamental::fermionExt* f_out, pheno::ZpModel* p_model): _model(p_model)
 {
   //Store for every partial cross section the prefactor consisting of couplings, color factors and phase space constants
   numGam = f_in->Nc()*f_out->Nc()/(48*M_PI) * couplings(f_in->vecc().q_gam, 
@@ -250,7 +250,7 @@ struct SigZp{
 //CLASS IMPLEMENTATION
 //-------------------------------------------------------------
 //Constructor
-pheno::HadronXSec::HadronXSec(fundamental::fermionExt* f_out, pheno::zpmodel* p_model, char* pdf_grid_file, double Ecoll)
+pheno::HadronXSec::HadronXSec(fundamental::fermionExt* f_out, pheno::ZpModel* p_model, char* pdf_grid_file, double Ecoll)
 {
   accuracy_goal = 1e-2;  //Default numerica integ accuracy
   calls = 10000; //Default value for calls per monte carlo integration point

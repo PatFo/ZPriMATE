@@ -25,7 +25,7 @@ namespace pheno{
     private:
       int pdgin;
       //Pointer to the model in use
-      pheno::zpmodel *  _model;      
+      pheno::ZpModel *  _model;      
       //Numerical factors for partial cross sections
       double numGam;
       double numZ;
@@ -51,7 +51,7 @@ namespace pheno{
       //Strategy only needed for interface with SpectrumScanner -> NOT USED
       void crossSections (double Ecm, std::vector<double> * results, unsigned int int_strategy=1);
       //Class Constructor: Give model as reference &model
-      PartonXSec(fundamental::fermionExt* f_in, fundamental::fermionExt* f_out, pheno::zpmodel* p_model);
+      PartonXSec(fundamental::fermionExt* f_in, fundamental::fermionExt* f_out, pheno::ZpModel* p_model);
       ///Give the two fermions and the model as reference to the constructor!
   };
 
@@ -96,7 +96,7 @@ namespace pheno{
       //ALWAYS use this function if more than one of these cross sections is needed at a time
       void crossSections (double Ecm, std::vector<double> * results, unsigned int int_strategy=1);
       //Constructor and destructor to take care of memory allocations
-      HadronXSec(fundamental::fermionExt* f_out, pheno::zpmodel* p_model, char* pdf_grid_file, double Ecoll=8000.);
+      HadronXSec(fundamental::fermionExt* f_out, pheno::ZpModel* p_model, char* pdf_grid_file, double Ecoll=8000.);
       ~HadronXSec();    
   };
   

@@ -59,7 +59,7 @@ nu_tau::nu_tau(double xlc, double xrc): fermionExt(false, 16, 1./2, 0, 0, xlc, x
 
 
 //Constructor: The whole model is set up HERE
-zpmodel::zpmodel(const char* configfile): bsm_parameters(0.1, 1500, 0) /*partial_widths(),*/  //Default values if no parameters are specified in config file
+ZpModel::ZpModel(const char* configfile): bsm_parameters(0.1, 1500, 0) /*partial_widths(),*/  //Default values if no parameters are specified in config file
 {
   //Set up list of pointers to fermions for map iteration
   flst["up"]=&u; flst["charm"]=&c; flst["top"]=&t;
@@ -129,7 +129,7 @@ zpmodel::zpmodel(const char* configfile): bsm_parameters(0.1, 1500, 0) /*partial
 
 
 //Calculate partial fermionic width of Zp
-double zpmodel::calc_fwidth(fundamental::fermionExt& f)
+double ZpModel::calc_fwidth(fundamental::fermionExt& f)
 {
   double ratio = pow(f.get_mass()/mzp_(), 2);
 //   std::cout<<f.get_mass();
@@ -144,7 +144,7 @@ double zpmodel::calc_fwidth(fundamental::fermionExt& f)
 
 
 //Calculate partial width  Zp-> Z H
-double zpmodel::calc_zhwidth()
+double ZpModel::calc_zhwidth()
 {
   double mh = 125.36;
   double geff = (gz_()*sin(xi_()) + g1_()*cos(xi_())*tan(mixing_()))*(gz_()*cos(xi_()) - g1_()*sin(xi_())*tan(mixing_()));
@@ -156,7 +156,7 @@ double zpmodel::calc_zhwidth()
 
 
 //Calculate partial width  Zp-> Z H
-double zpmodel::calc_wwidth()
+double ZpModel::calc_wwidth()
 {
   double ratio = pow(mw_()/mzp_(), 2);
   double pref = (1-sw2_())*pow(g2_()*sin(xi_()), 2.0)/(192*M_PI*mzp_());
@@ -167,7 +167,7 @@ double zpmodel::calc_wwidth()
 
 
 //Calculate total Zp width
-void zpmodel::update_width()
+void ZpModel::update_width()
 {
     std::printf("\nCalculating Zp width:\n\n%14s %14s\n", "Decay channel", "Partial width");
     wzp=0;
@@ -194,7 +194,7 @@ void zpmodel::update_width()
 
 
 //Return Zp width
-double zpmodel::wzp_()
+double ZpModel::wzp_()
 {
   if(wzp==-1)  update_width(); //-1 means not yet calculated
 

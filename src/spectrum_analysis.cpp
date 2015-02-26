@@ -14,7 +14,7 @@
 
 //Constructor
 template<class CrossSection>
-pheno::SpectrumScanner<CrossSection>::SpectrumScanner(pheno::zpmodel* pmod, CrossSection* phsec, unsigned int int_strategy)
+pheno::SpectrumScanner<CrossSection>::SpectrumScanner(pheno::ZpModel* pmod, CrossSection* phsec, unsigned int int_strategy)
 {
   //Initialize
   strategy = int_strategy;

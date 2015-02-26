@@ -73,7 +73,7 @@ int main(int argc, char** argv){
   
   cout<<(parameters["up"])["cxl"];
   
-  pheno::zpmodel m(argv[1]);
+  pheno::ZpModel m(argv[1]);
   
   cout<<"\nsw2="<<m.sw2_()
   <<"\ng1="<<m.g1_()

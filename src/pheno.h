@@ -108,7 +108,7 @@ namespace pheno{
   //************************************//
   
    /// Zp model class consisiting of all parameters, couplings and fermions
-  class zpmodel: public fundamental::bsm_parameters{
+  class ZpModel: public fundamental::bsm_parameters{
     public:
       //Quarks
       down 	d;
@@ -137,7 +137,7 @@ namespace pheno{
       void update_width();
     public:
       //Constructor
-      zpmodel(const char* configfile);
+      ZpModel(const char* configfile);
       //Width of Zp
       double wzp_();
   };
