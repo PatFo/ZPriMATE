@@ -100,13 +100,21 @@ int main(int argc, char** argv){
   <<"\nyr="<<m.ne.vecc().get_hypr()
   <<endl;
   
+  //Construct sampling scheme
+  double s1[3]={5, 200, 200./20};
+  double s2[3]={200., 3700, 3300./40};
+  double s3[3]={3700, 4300, 600./50};
+  double s4[3]={4300, 6000, 1500./20};
+  
+  
   pheno::PartonXSec xsec(&m.u, &m.mu, &m);
   
   pheno::SpectrumScanner<pheno::PartonXSec> pscan(&m, &xsec, 1);
-  pscan.set_interval(5, 200, 200./20);
-  pscan.set_interval(200., 3700, 3300./40);
-  pscan.set_interval(3700, 4300, 600./50);
-  pscan.set_interval(4300, 6000, 1500./20);
+//   pscan.add_interval(5, 200, 200./20);
+  pscan.add_interval(s1);
+  pscan.add_interval(s2);
+  pscan.add_interval(s3);
+  pscan.add_interval(s4);
   char pout[] = "/scratch/foldenauer/data/xscan/parton_scan.dat";
   pscan.scan(pout);
   
@@ -116,10 +124,10 @@ int main(int argc, char** argv){
   
   pheno::HadronXSec hsec(&m.mu, &m, pdfset);
   pheno::SpectrumScanner<pheno::HadronXSec> scanner(&m, &hsec, 1);    
-  scanner.set_interval(5, 200, 200./20);
-  scanner.set_interval(200., 3700, 3300./40);
-  scanner.set_interval(3700, 4300, 600./50);
-  scanner.set_interval(4300, 6000, 1500./20);
+  scanner.add_interval(s1);
+  scanner.add_interval(s2);
+  scanner.add_interval(s3);
+  scanner.add_interval(s4);
   char outfile[] = "/scratch/foldenauer/data/xscan/hadron_scan.dat";
   scanner.scan(outfile);
   cout<<"END\n";

@@ -35,10 +35,10 @@ pheno::SpectrumScanner<CrossSection>::SpectrumScanner(pheno::zpmodel* pmod, Cros
 
 
 template<class CrossSection>
-void pheno::SpectrumScanner<CrossSection>::reset_regions()
+void pheno::SpectrumScanner<CrossSection>::reset_sampling()
 {
   //Delete all pointers in the container samplingRegions
-  for(std::vector<double*>::iterator it=samplingRegions.begin(); it!=samplingRegions.end(); ++it)
+  for(sampling_scheme::iterator it=samplingRegions.begin(); it!=samplingRegions.end(); ++it)
   {
 //     std::printf("Vector is: %g %g %g\n",(*it)[0],(*it)[1],(*it)[2]); //DEBUG
     delete[]  *it;  //Free all array memory
@@ -53,7 +53,7 @@ void pheno::SpectrumScanner<CrossSection>::reset_regions()
 template<class CrossSection>
 pheno::SpectrumScanner<CrossSection>::~SpectrumScanner()
 {
-  reset_regions();
+  reset_sampling();
 }
 
 
@@ -61,12 +61,12 @@ pheno::SpectrumScanner<CrossSection>::~SpectrumScanner()
 
 //Method which adds a new sampling range to the list
 template<class CrossSection>
-void pheno::SpectrumScanner<CrossSection>::set_interval(double low, double high, double step)
+void pheno::SpectrumScanner<CrossSection>::add_interval(double low, double high, double step)
 {
   //If is default, clear regions
   if(is_default)
   {
-    reset_regions();
+    reset_sampling();
     is_default=false;
   }
   samplingRegions.push_back(new double[3]);
@@ -74,6 +74,26 @@ void pheno::SpectrumScanner<CrossSection>::set_interval(double low, double high,
   samplingRegions.back()[1]=high;
   samplingRegions.back()[2]=step;
 }
+
+
+
+
+//Copy interval array
+template<class CrossSection>
+void pheno::SpectrumScanner<CrossSection>::add_interval(double* pinterval)
+{
+  //If is default, clear regions
+  if(is_default)
+  {
+    reset_sampling();
+    is_default=false;
+  }
+  samplingRegions.push_back(new double[3]);
+  samplingRegions.back()[0]=pinterval[0];
+  samplingRegions.back()[1]=pinterval[1];
+  samplingRegions.back()[2]=pinterval[2];
+}
+
 
 
 
@@ -109,7 +129,7 @@ void pheno::SpectrumScanner<CrossSection>::scan(char* outfile)
   outf.close();
   
   //Loop over sampling regions
-  for(std::vector<double*>::iterator it=samplingRegions.begin(); it!=samplingRegions.end(); ++it)
+  for(sampling_scheme::iterator it=samplingRegions.begin(); it!=samplingRegions.end(); ++it)
   {
     sampler(outfile, (*it)[0], (*it)[1], (*it)[2]);
   }
