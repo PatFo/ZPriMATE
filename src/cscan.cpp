@@ -17,32 +17,40 @@ int main(int argc, char** argv){
   
   
   //Construct sampling scheme for Cross section plotting
-  double s1[3]={5, 200, 200./20};
-  double s2[3]={200., 3700, 3300./40};
-  double s3[3]={3700, 4300, 600./50};
-  double s4[3]={4300, 6000, 1500./20};
+  pheno::sampling_scheme intervals;
   
   
-  pheno::PartonXSec xsec(&m.u, &m.mu, &m);
+  double stepsize=m.wz_();
+  double min = 5;
+  double max = 1.5*m.mzp_();
+  if(m.wzp_()>m.wz_()){
+    intervals.push_back(new double[3]);
+    intervals.back()[0]=min;      intervals.back()[1]=max;     intervals.back()[2]=stepsize; 
+  }else{
+    double offset = m.wzp_()*5;
+    intervals.push_back(new double[3]);
+    intervals.back()[0]=min;      intervals.back()[1]=m.mzp_()-offset;     intervals.back()[2]=stepsize; 
+    intervals.push_back(new double[3]);
+    intervals.back()[0]=m.mzp_()-offset;      intervals.back()[1]=m.mzp_()+offset;     intervals.back()[2]=m.wzp_()/5; 
+    intervals.push_back(new double[3]);
+    intervals.back()[0]=m.mzp_()+offset;      intervals.back()[1]=max;     intervals.back()[2]=stepsize; 
+  }
   
-  pheno::SpectrumScanner<pheno::PartonXSec> pscan(&m, &xsec, 1);
-  pscan.add_interval(s1);
-  pscan.add_interval(s2);
-  pscan.add_interval(s3);
-  pscan.add_interval(s4);
-  char pout[] = "/scratch/foldenauer/data/xscan/parton_scan.dat";
-  pscan.scan(pout);
   
-  
-  
+  //Setup SpectrumScanner
   char pdfset[] = "/remote/pi104a/foldenauer/local/MSTW/Grids/mstw2008nnlo.00.dat";
   
   pheno::HadronXSec hsec(&m.mu, &m, pdfset);
   pheno::SpectrumScanner<pheno::HadronXSec> scanner(&m, &hsec, 1);    
-  scanner.add_interval(s1);
-  scanner.add_interval(s2);
-  scanner.add_interval(s3);
-  scanner.add_interval(s4);
+  for(pheno::sampling_scheme::iterator it = intervals.begin(); it != intervals.end(); ++it)
+  {
+    //Set the sampling intervals
+    scanner.add_interval(*it); 
+    //Free the set interval array
+    delete[] *it;
+  }
+  
+  //Generate the Cross Section Spectrum
   char outfile[] = "/scratch/foldenauer/data/xscan/hadron_scan.dat";
   scanner.scan(outfile);
   

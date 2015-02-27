@@ -1,7 +1,6 @@
 #define _USE_MATH_DEFINES
 
 #include "pheno.h"
-#include <iostream>
 #include <cstdio>
 #include <cmath>
 
@@ -97,29 +96,29 @@ ZpModel::ZpModel(const char* configfile): bsm_parameters(0.1, 1500, 0) /*partial
   for (fermion_list::iterator ferms=flst.begin(); ferms!=flst.end(); ++ferms)
   {
     it = init.find(ferms->first);  //Fermion label(string)
-    if(it == init.end())
+    if(it == init.end()) //No start parameters found
     {
-      std::cout<<ferms->first<<": default.\n";
+      std::printf("\tUsing default:\n");
     }
     else
     {
       //Set new fermion parameters
       (ferms->second)->update_xlcharge( (it->second)["cxl"] );
       (ferms->second)->update_xrcharge( (it->second)["cxr"] );
-      if( !(it->second)["massive"] )
+      if( !(it->second)["massive"] ) //Check whether massless
       {
         (ferms->second)->change_mass(0);
-      }
-      
-      //Initialize fermion vector couplings
-      (ferms->second)->set_vecc( new fundamental::vcoeff( *(ferms->second), *this) );
-      
-      //Print fermion parameters after initialization
-      std::printf("\t%-10s|%-7g|%-5g|%-5g|%-10g|%-10g|%-10g|%-10g|%-10g\n"
-                  ,ferms->first.c_str(), (ferms->second)->m(), (ferms->second)->get_xlcharge(), (ferms->second)->get_xrcharge(), ((ferms->second)->vecc()).q_gam/e_()
-                  ,((ferms->second)->vecc()).q_zl,((ferms->second)->vecc()).q_zr, ((ferms->second)->vecc()).q_zpl,((ferms->second)->vecc()).q_zpr);     
+      }      
     }
-  }     
+    //Initialize fermion vector couplings
+    (ferms->second)->set_vecc( new fundamental::vcoeff( *(ferms->second), *this) );   
+    
+    //Print fermion parameters after initialization
+    std::printf("\t%-10s|%-7g|%-5g|%-5g|%-10g|%-10g|%-10g|%-10g|%-10g\n"
+                ,ferms->first.c_str(), (ferms->second)->m(), (ferms->second)->get_xlcharge(), (ferms->second)->get_xrcharge(), ((ferms->second)->vecc()).q_gam/e_()
+                ,((ferms->second)->vecc()).q_zl,((ferms->second)->vecc()).q_zr, ((ferms->second)->vecc()).q_zpl,((ferms->second)->vecc()).q_zpr);     
+  } 
+  
   //Initialize widths to -1 ("not yet calculated")
   partial_fwidths=NULL;
   higgs_width=-1.;
@@ -138,7 +137,7 @@ double ZpModel::calc_fwidth(fundamental::fermionExt& f)
 //   std::cout<<f.get_mass();
   if(ratio>0.5*0.5)
   {
-    std::cout<<"Following decay channel kinematically not possible: 2*mf>mzp !\nSet to zero:\n";
+    std::printf("Following decay channel kinematically not possible: 2*mf>mzp !\nSet to zero:\n");
     return 0;
   }else{
     return mzp_()* double(f.Nc()) /(24*M_PI) * sqrt(1.-4*ratio) * ( (pow(f.vecc().q_zpl, 2) + pow(f.vecc().q_zpr, 2))*(1.-ratio) + 6*f.vecc().q_zpl*f.vecc().q_zpr*ratio );
