@@ -123,7 +123,7 @@ ZpModel::ZpModel(const char* configfile): bsm_parameters(0.1, 1500, 0) /*partial
   partial_fwidths=NULL;
   higgs_width=-1.;
   wzp=-1.;
-  std::printf("\n*** MODEL CONSTRUCTED ***\n");
+  std::printf("\n*** MODEL CONSTRUCTED ***\n\n");
 }
 
 
