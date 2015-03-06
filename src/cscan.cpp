@@ -12,9 +12,13 @@ using namespace std;
 
 int main(int argc, char** argv){
   
+  //Initialize SSM
+  pheno::ZpModel ssm;
+  printf("Realtive width of Zp in SSM: %g%%\n",ssm.wzp_()/ssm.mzp_()*100);
+  
+  
   //Initialize model with model configuration file
   pheno::ZpModel m(argv[1]);
-  
   
     
   //Setup SpectrumScanner
@@ -35,7 +39,7 @@ int main(int argc, char** argv){
   }
   else
   {
-    double offset = m.wzp_()*5;
+    double offset = m.wzp_()*10;
     scanner.add_interval( min            , m.mzp_()-offset, stepsize   );
     scanner.add_interval( m.mzp_()-offset, m.mzp_()+offset, m.wzp_()/5 );
     scanner.add_interval( m.mzp_()+offset, max            , stepsize   );

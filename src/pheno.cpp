@@ -57,17 +57,27 @@ nu_tau::nu_tau(double xlc, double xrc): fermionExt(false, 16, 1./2, 0, 0, xlc, x
 
 
 
-//Constructor: The whole model is set up HERE
-ZpModel::ZpModel(const char* configfile): bsm_parameters(0.1, 1500, 0) /*partial_widths(),*/  //Default values if no parameters are specified in config file
+
+void ZpModel::setup_flst()
 {
-  std::printf("\n*** CONSTRUCTING MODEL ***\n");
-  
   //Set up list of pointers to fermions for map iteration
   flst["up"]=&u; flst["charm"]=&c; flst["top"]=&t;
   flst["down"]=&d; flst["strange"]=&s; flst["bottom"]=&b;
   
   flst["electron"]=&el; flst["muon"]=&mu; flst["tauon"]=&tau;  
   flst["nu_el"]=&ne; flst["nu_mu"]=&nm; flst["nu_tau"]=&nt;
+}
+
+
+
+
+//Constructor: Setup model with configuration file specifying couplings
+ZpModel::ZpModel(const char* configfile): bsm_parameters(0.1, 1500, 0) /*partial_widths(),*/  //Default values if no parameters are specified in config file
+{
+  std::printf("\n*** CONSTRUCTING MODEL ***\n");
+  
+  //Initialize fermion list
+  setup_flst();
 
   //Get model configuration from config file
   conf_reader reader(configfile);
@@ -92,7 +102,7 @@ ZpModel::ZpModel(const char* configfile): bsm_parameters(0.1, 1500, 0) /*partial
   //Applying FERMION CONFIGURATION:
   //Iterate over the whole fermion list and check for initialization values passed in config file
   std::printf("Calculating vector couplings:\n\n");
-  std::printf("\t%-10s %-7s %-5s %-5s %-10s %-10s %-10s %-10s %-10s\n","Fermion", "mass", "cxl", "cxr", "qgam/e", "qzl", "qzr", "qzpl", "qzpr");
+  std::printf("\t%-10s %-8s %-5s %-5s %-10s %-10s %-10s %-10s %-10s\n","Fermion", "mass", "cxl", "cxr", "qgam/e", "qzl", "qzr", "qzpl", "qzpr");
   for (fermion_list::iterator ferms=flst.begin(); ferms!=flst.end(); ++ferms)
   {
     it = init.find(ferms->first);  //Fermion label(string)
@@ -114,7 +124,7 @@ ZpModel::ZpModel(const char* configfile): bsm_parameters(0.1, 1500, 0) /*partial
     (ferms->second)->set_vecc( new fundamental::vcoeff( *(ferms->second), *this) );   
     
     //Print fermion parameters after initialization
-    std::printf("\t%-10s|%-7g|%-5g|%-5g|%-10g|%-10g|%-10g|%-10g|%-10g\n"
+    std::printf("\t%-10s|%-8g|%-5g|%-5g|%-10g|%-10g|%-10g|%-10g|%-10g\n"
                 ,ferms->first.c_str(), (ferms->second)->m(), (ferms->second)->get_xlcharge(), (ferms->second)->get_xrcharge(), ((ferms->second)->vecc()).q_gam/e_()
                 ,((ferms->second)->vecc()).q_zl,((ferms->second)->vecc()).q_zr, ((ferms->second)->vecc()).q_zpl,((ferms->second)->vecc()).q_zpr);     
   } 
@@ -124,6 +134,41 @@ ZpModel::ZpModel(const char* configfile): bsm_parameters(0.1, 1500, 0) /*partial
   higgs_width=-1.;
   wzp=-1.;
   std::printf("\n*** MODEL CONSTRUCTED ***\n\n");
+}
+
+
+
+
+
+//DEFAULT CONSTRUCTOR: Generates Sequantial Standard Model 
+// with gx=0.1 mzp=1500 and mixing=0
+///WARNING: Only use for benchmarks
+ZpModel::ZpModel(): bsm_parameters(0.1, 1500, 0)
+{
+  //Initialize fermion list
+  setup_flst();
+  
+  
+  std::printf("Sequential Standard Model couplings:\n\n");
+  std::printf("\t%-10s %-8s %-5s %-5s %-10s %-10s %-10s %-10s %-10s\n","Fermion", "mass", "cxl", "cxr", "qgam/e", "qzl", "qzr", "qzpl", "qzpr");
+  for (fermion_list::iterator ferms=flst.begin(); ferms!=flst.end(); ++ferms)
+  {
+    //Initialize fermion vector couplings with default values
+    (ferms->second)->set_vecc( new fundamental::vcoeff( *(ferms->second), *this) );   
+    
+    //Set Zp couplings to Z couplings (SSM)
+    (ferms->second)->set_qzpl((ferms->second)->vecc().q_zl);
+    (ferms->second)->set_qzpr((ferms->second)->vecc().q_zr);
+    
+    //Print fermion parameters after initialization
+    std::printf("\t%-10s|%-8g|%-5g|%-5g|%-10g|%-10g|%-10g|%-10g|%-10g\n"
+                ,ferms->first.c_str(), (ferms->second)->m(), (ferms->second)->get_xlcharge(), (ferms->second)->get_xrcharge(), ((ferms->second)->vecc()).q_gam/e_()
+                ,((ferms->second)->vecc()).q_zl,((ferms->second)->vecc()).q_zr, ((ferms->second)->vecc()).q_zpl,((ferms->second)->vecc()).q_zpr);     
+  }
+  //Initialize widths to -1 ("not yet calculated")
+  partial_fwidths=NULL;
+  higgs_width=-1.;
+  wzp=-1.;
 }
 
 

@@ -126,6 +126,7 @@ namespace pheno{
       nu_tau	nt;
     private:
       fermion_list flst;
+      void setup_flst();
       //Zp width related
       double* partial_fwidths;
       double higgs_width;
@@ -136,8 +137,9 @@ namespace pheno{
       double calc_wwidth();
       void update_width();
     public:
-      //Constructor
+      //Constructors
       ZpModel(const char* configfile);
+      ZpModel();
       //Width of Zp
       double wzp_();
   };

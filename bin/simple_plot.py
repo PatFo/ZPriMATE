@@ -6,7 +6,7 @@ from matplotlib import pyplot as plt
 # Switches to enable plotting of cross sections
 plot_tot = 1
 plot_sm  = 1
-plot_int = 0
+plot_int = 1
 plot_sig = 0
 
 

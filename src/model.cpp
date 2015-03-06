@@ -338,3 +338,16 @@ vcoeff fermionExt::vecc()
 
 
 
+//Set explcitly the effective lh Zp vector coupling
+void fermionExt::set_qzpl(double qzpl)
+{
+  pvecc->q_zpl=qzpl;
+}
+
+
+//Set explcitly the effective rh Zp vector coupling
+void fermionExt::set_qzpr(double qzpr)
+{
+  pvecc->q_zpr=qzpr;
+}
+

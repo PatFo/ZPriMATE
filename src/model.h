@@ -136,6 +136,9 @@ namespace fundamental{
       //Vector coupling handling
       void set_vecc(vcoeff* ptr);
       vcoeff vecc();
+      //Set explicitly the Zp effective couplings
+      void set_qzpl(double qzpl);      
+      void set_qzpr(double qzpr);
       //Destuctor should take care of vcoeff pointer
       ~fermionExt();
     protected:
