@@ -115,49 +115,52 @@ pheno::PartonXSec::PartonXSec(fundamental::fermionExt* f_in, fundamental::fermio
 
 
 
-
+//Elementary Cross Section Pieces
 //Calculate pure photonic cross section
 double pheno::PartonXSec::sigGam(double Ecm)
 {
-  return numGam*kinematics(Ecm, 0, 0, 0, 0, false)*Ecm*Ecm;
+  return GeV2fb*numGam*kinematics(Ecm, 0, 0, 0, 0, false)*Ecm*Ecm;
 }
 
 
 //Calculate pure Z cross section
 double pheno::PartonXSec::sigZ(double Ecm)
 {
-  return numZ*kinematics(Ecm, _model->mz_(), _model->mz_(), _model->wz_(), _model->wz_(), false)*Ecm*Ecm;
+  return GeV2fb*numZ*kinematics(Ecm, _model->mz_(), _model->mz_(), _model->wz_(), _model->wz_(), false)*Ecm*Ecm;
 }
 
 
 //Calculate pure Zp cross section
 double pheno::PartonXSec::sigZp(double Ecm)
 {
-  return numZp*kinematics(Ecm, _model->mzp_(), _model->mzp_(), _model->wzp_(), _model->wzp_(), false)*Ecm*Ecm;
+  return GeV2fb*numZp*kinematics(Ecm, _model->mzp_(), _model->mzp_(), _model->wzp_(), _model->wzp_(), false)*Ecm*Ecm;
 }
 
 
 //Calculate interference of Photon and Z 
 double pheno::PartonXSec::sigGamZ(double Ecm)
 {
-  return numGamZ*kinematics(Ecm, 0, _model->mz_(), 0, _model->wz_(), true)*Ecm*Ecm;
+  return GeV2fb*numGamZ*kinematics(Ecm, 0, _model->mz_(), 0, _model->wz_(), true)*Ecm*Ecm;
 }
 
 
 //Calculate interference of Photon and Z 
 double pheno::PartonXSec::sigGamZp(double Ecm)
 {
-  return numGamZp*kinematics(Ecm, 0, _model->mzp_(), 0, _model->wzp_(), true)*Ecm*Ecm;
+  return GeV2fb*numGamZp*kinematics(Ecm, 0, _model->mzp_(), 0, _model->wzp_(), true)*Ecm*Ecm;
 }
 
 
 //Calculate interference of Photon and Z 
 double pheno::PartonXSec::sigZZp(double Ecm)
 {
-  return numZZp*kinematics(Ecm, _model->mz_(), _model->mzp_(), _model->wz_(), _model->wzp_(), true)*Ecm*Ecm;
+  return GeV2fb*numZZp*kinematics(Ecm, _model->mz_(), _model->mzp_(), _model->wz_(), _model->wzp_(), true)*Ecm*Ecm;
 }
 
 
+
+
+//Composite Cross Sections
 //Calculate the cross section in the SM
 double pheno::PartonXSec::sigSM(double Ecm)
 {
@@ -246,6 +249,15 @@ struct SigZp{
 };
 
 
+//Total cross section
+struct SigTot{
+  double operator() (pheno::PartonXSec* pxsec, double Ecm)
+  {
+    return pxsec->sigSM(Ecm) + pxsec->sigInt(Ecm) + pxsec->sigZp(Ecm);
+  }
+};
+
+
 
 //CLASS IMPLEMENTATION
 //-------------------------------------------------------------
@@ -253,9 +265,9 @@ struct SigZp{
 pheno::HadronXSec::HadronXSec(fundamental::fermionExt* f_out, pheno::ZpModel* p_model, char* pdf_grid_file, double Ecoll)
 {
   accuracy_goal = 1e-2;  //Default numerica integ accuracy
-  calls = 10000; //Default value for calls per monte carlo integration point
+  calls = 100; //Default value for calls per monte carlo integration point
   Epp = Ecoll;
-  //Allocate partonic cross sections
+  //Allocate parpxsec->sigSM(Ecm)tonic cross sections
   dxsec = new pheno::PartonXSec(&p_model->d, f_out, p_model);
   uxsec = new pheno::PartonXSec(&p_model->u, f_out, p_model);
   sxsec = new pheno::PartonXSec(&p_model->s, f_out, p_model);
@@ -335,3 +347,16 @@ void pheno::HadronXSec::crossSections(double Ecm, std::vector< double >* results
   results->push_back(xsm);
 }
 
+
+//Calculate the total hadronic cross section in the bounds [el, eh]
+double pheno::HadronXSec::totXsec(double el, double eh, double accuracy)
+{
+  return binnedXsec<SigTot>(el, eh, accuracy);
+}
+
+
+//Calculate the zp hadronic cross section in the bounds [el, eh]
+double pheno::HadronXSec::zpXsec(double el, double eh, double accuracy)
+{
+  return binnedXsec<SigZp>(el, eh, accuracy);
+}

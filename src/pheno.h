@@ -139,7 +139,7 @@ namespace pheno{
     public:
       //Constructors
       ZpModel(const char* configfile);
-      ZpModel();
+      ZpModel(double mzp); //Constructs the SSM with Zp mass mzp
       //Width of Zp
       double wzp_();
   };

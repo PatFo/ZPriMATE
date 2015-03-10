@@ -13,17 +13,20 @@ using namespace std;
 int main(int argc, char** argv){
   
   //Initialize SSM
-  pheno::ZpModel ssm;
+//   pheno::ZpModel ssm(91.1876);
+  pheno::ZpModel ssm(1500);
   printf("Realtive width of Zp in SSM: %g%%\n",ssm.wzp_()/ssm.mzp_()*100);
+  
+  char pdfset[] = "/remote/pi104a/foldenauer/local/MSTW/Grids/mstw2008nnlo.00.dat";
+  pheno::HadronXSec ssmxsec(&ssm.mu, &ssm, pdfset);
+  printf("Total cross section: %g\n", ssmxsec.zpXsec(128 ,4500., 0.05));
+  
   
   
   //Initialize model with model configuration file
-  pheno::ZpModel m(argv[1]);
+  pheno::ZpModel m(argv[1]);    
   
-    
   //Setup SpectrumScanner
-  char pdfset[] = "/remote/pi104a/foldenauer/local/MSTW/Grids/mstw2008nnlo.00.dat";
-  
   pheno::HadronXSec hsec(&m.mu, &m, pdfset);
   pheno::SpectrumScanner<pheno::HadronXSec> scanner(&m, &hsec, 1);    
  

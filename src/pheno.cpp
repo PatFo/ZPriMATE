@@ -57,7 +57,7 @@ nu_tau::nu_tau(double xlc, double xrc): fermionExt(false, 16, 1./2, 0, 0, xlc, x
 
 
 
-
+//Initializes the internal fermion list
 void ZpModel::setup_flst()
 {
   //Set up list of pointers to fermions for map iteration
@@ -143,7 +143,7 @@ ZpModel::ZpModel(const char* configfile): bsm_parameters(0.1, 1500, 0) /*partial
 //DEFAULT CONSTRUCTOR: Generates Sequantial Standard Model 
 // with gx=0.1 mzp=1500 and mixing=0
 ///WARNING: Only use for benchmarks
-ZpModel::ZpModel(): bsm_parameters(0.1, 1500, 0)
+ZpModel::ZpModel(double mzp): bsm_parameters(0.1, mzp, 0)
 {
   //Initialize fermion list
   setup_flst();
@@ -154,8 +154,10 @@ ZpModel::ZpModel(): bsm_parameters(0.1, 1500, 0)
   for (fermion_list::iterator ferms=flst.begin(); ferms!=flst.end(); ++ferms)
   {
     //Initialize fermion vector couplings with default values
+    
     (ferms->second)->set_vecc( new fundamental::vcoeff( *(ferms->second), *this) );   
     
+//     (ferms->second)->change_mass(0); //#########################################################################3333 Only Testing
     //Set Zp couplings to Z couplings (SSM)
     (ferms->second)->set_qzpl((ferms->second)->vecc().q_zl);
     (ferms->second)->set_qzpr((ferms->second)->vecc().q_zr);
@@ -193,22 +195,33 @@ double ZpModel::calc_fwidth(fundamental::fermionExt& f)
 //Calculate partial width  Zp-> Z H
 double ZpModel::calc_zhwidth()
 {
-  double mh = 125.36;
-  double geff = (gz_()*sin(xi_()) + g1_()*cos(xi_())*tan(mixing_()))*(gz_()*cos(xi_()) - g1_()*sin(xi_())*tan(mixing_()));
-  double pref = pow(geff*vev_(),2)/(96*M_PI*pow(mzp_(),3));
-  double fac1 = 1 + pow( (mh*mh - mz_()*mz_() - mzp_()*mzp_())/(mz_()*mzp_()) ,2)/8;
-  double fac2 = sqrt( pow(mzp_()*mzp_()+mz_()*mz_() -mh*mh, 2) - pow(2*mz_()*mzp_(),2) );
-  return pref*fac1*fac2;
+  if(mh_()+mz_()>mzp_())
+  {
+    std::printf("Decay Zp-> Z H kinematically not possible: 2*mw>mzp !\nSet to zero:\n");
+    return 0;
+  }else{
+    double geff = (gz_()*sin(xi_()) + g1_()*cos(xi_())*tan(mixing_()))*(gz_()*cos(xi_()) - g1_()*sin(xi_())*tan(mixing_()));
+    double pref = pow(geff*vev_(),2)/(96*M_PI*pow(mzp_(),3));
+    double fac1 = 1 + pow( (mh_()*mh_() - mz_()*mz_() - mzp_()*mzp_())/(mz_()*mzp_()) ,2)/8;
+    double fac2 = sqrt( pow(mzp_()*mzp_()+mz_()*mz_() -mh_()*mh_(), 2) - pow(2*mz_()*mzp_(),2) );
+    return pref*fac1*fac2;
+  }
 }
 
 
-//Calculate partial width  Zp-> Z H
+//Calculate partial width  Zp-> W W
 double ZpModel::calc_wwidth()
 {
-  double ratio = pow(mw_()/mzp_(), 2);
-  double pref = (1-sw2_())*pow(g2_()*sin(xi_()), 2.0)/(192*M_PI*mzp_());
-  double matr = -48*pow(mw_(),2)-68*pow(mzp_(),2)+16*pow(mzp_(),2)/ratio+pow(mzp_()/ratio,2);
-  return pref*sqrt(1-4*ratio)*matr;
+  if(2*mw_()>mzp_())
+  {
+    std::printf("Decay Zp-> W+ W- kinematically not possible: 2*mw>mzp !\nSet to zero:\n");
+    return 0;
+  }else{
+    double ratio = pow(mw_()/mzp_(), 2);
+    double pref = (1-sw2_())*pow(g2_()*sin(xi_()), 2.0)/(192*M_PI*mzp_());
+    double matr = -48*pow(mw_(),2)-68*pow(mzp_(),2)+16*pow(mzp_(),2)/ratio+pow(mzp_()/ratio,2);
+    return pref*sqrt(1-4*ratio)*matr;
+  }
 }
 
 

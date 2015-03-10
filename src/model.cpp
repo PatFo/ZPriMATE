@@ -164,6 +164,11 @@ double bsm_parameters::as_()
   return as;
 }
 
+double bsm_parameters::mh_()
+{
+  return mh;
+}
+
 double bsm_parameters::mw_()
 {
   return mw;

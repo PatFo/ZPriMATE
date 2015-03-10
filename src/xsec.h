@@ -1,6 +1,9 @@
 #ifndef XSEC_H
 #define XSEC_H
 
+
+
+
 #include "pheno.h"
 #include <stdexcept>
 #include <vector>
@@ -14,6 +17,8 @@
 
 namespace pheno{
   
+  
+  const double GeV2fb =  0.3894e12;
   
   //*******************************************************//
   //            Class for partonic cross sections          //
@@ -84,6 +89,9 @@ namespace pheno{
       c_mstwpdf* pdf;
       //Subroutine for pdf convoluted cross sections: Specify partial cross section in functor object
       template<class PartialCrossX> double pdfconvoluted( double Ecm, unsigned int int_strategy=1);
+      //Calculate cross section bin bin between [el, eh]
+      template<class PartialCrossX>  friend  double dSigdM(double E, void * p);
+      template<class PartialCrossX> double binnedXsec(double el, double eh, double accuracy);
     public:
       void set_accuracy(double accuracy);
       void set_monte_calls(size_t int_calls);
@@ -95,6 +103,8 @@ namespace pheno{
       //Member function that fills EMPTY vector with sigSM, sigInt, sigSignal, sigTotal 
       //ALWAYS use this function if more than one of these cross sections is needed at a time
       void crossSections (double Ecm, std::vector<double> * results, unsigned int int_strategy=1);
+      double totXsec(double el, double eh, double accuracy);
+      double zpXsec(double el, double eh, double accuracy);
       //Constructor and destructor to take care of memory allocations
       HadronXSec(fundamental::fermionExt* f_out, pheno::ZpModel* p_model, char* pdf_grid_file, double Ecoll=8000.);
       ~HadronXSec();    
@@ -116,7 +126,8 @@ namespace pheno{
   
   
   
-  //Implementation of gsl monte carlo integrable function
+  //Implementation of gsl monte carlo integrable function: 
+  //Numerical Integration
   inline double num_pdf(double x, void * p)
   {
     //Get initialization parameters
@@ -128,8 +139,8 @@ namespace pheno{
     double sum = 0. ;
     for(int i=0; i<pars->arr_size; ++i)
     {
-      sum += pars->cross_sections[i] * 
-           pars->ppdf->parton(   (pars->ppx[i])->pdg_in(),  x1, pars->Ecm )/x1 * 
+      sum += pars->cross_sections[i]/(pars->Ecoll * pars->Ecoll) * 
+           pars->ppdf->parton(   (pars->ppx[i])->pdg_in(),  x1, pars->Ecm )/(x1*x1) * 
            pars->ppdf->parton(  -(pars->ppx[i])->pdg_in(),  x2, pars->Ecm )/x2;
     }
     return sum;
@@ -137,7 +148,8 @@ namespace pheno{
   
   
   
-  //Implementation of gsl monte carlo integrable function
+  //Implementation of gsl monte carlo integrable function: 
+  //Monte Carlo Integration
   inline double monte_pdf(double x[], size_t dim, void * p)
   {
     //Check that integration vector is one dimensional
@@ -182,7 +194,7 @@ namespace pheno{
       //Integration
       size_t bisection_lim =1000;
       gsl_integration_workspace * w = gsl_integration_workspace_alloc (bisection_lim);
-      gsl_integration_qags (&F, xl, xu, 0, accuracy_goal, bisection_lim, w, &result, &error); 
+      gsl_integration_qags (&F, xl, xu, 0, 3*accuracy_goal, bisection_lim, w, &result, &error); 
     }
     else if(int_strategy==2)
     {
@@ -205,6 +217,8 @@ namespace pheno{
       double axu[1] = {xu};
       gsl_monte_vegas_state *s = gsl_monte_vegas_alloc (1);
       gsl_monte_vegas_integrate (&F, axl, axu, 1, calls, r, s, &result, &error);
+      //Free integration memory
+      gsl_monte_vegas_free(s);
     }
     else
     {
@@ -215,6 +229,38 @@ namespace pheno{
   }
   
   
+  
+  
+  template<class PartialCrossX>   
+  double dSigdM(double E, void * p)
+  {
+    HadronXSec * phsec = (HadronXSec *) p;
+    return E * phsec->pdfconvoluted<PartialCrossX>(E, 1); 
+  }
+  
+  
+  
+  template<class PartialCrossX> 
+  double pheno::HadronXSec::binnedXsec(double el, double eh, double accuracy)
+  {
+    //Implement binwise integration scheme
+        //Parameter and result objects
+    double result, error;
+    
+    // QAG adaptive integration
+    //Define Integration function
+    gsl_function F;
+    F.function = &dSigdM<PartialCrossX>;
+    F.params = this;  
+    
+    //Integration
+    size_t bisection_lim =1000;
+    gsl_integration_workspace * w = gsl_integration_workspace_alloc (bisection_lim);
+    gsl_integration_qags (&F, el, eh, 0, accuracy, bisection_lim, w, &result, &error); 
+  
+    return result;
+  }
+
   
   
   
