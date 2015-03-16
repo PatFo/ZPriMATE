@@ -6,7 +6,7 @@ from matplotlib import pyplot as plt
 # Switches to enable plotting of cross sections
 plot_tot = 1
 plot_sm  = 1
-plot_int = 1
+plot_int = 0
 plot_sig = 0
 
 
@@ -65,8 +65,8 @@ if plot_sm:
     plt.semilogy(x, y4, 'b',label=ly4)
 
 plt.grid(True)
-plt.ylabel('CrossX [pb]')
-plt.xlabel('Ecm [GeV]')
+plt.ylabel('dSig/dm^2 [fb/Gev^2]')
+plt.xlabel('m_ll [GeV]')
 plt.title('Cross Section')
 plt.legend()
     

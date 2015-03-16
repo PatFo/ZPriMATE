@@ -10,18 +10,58 @@
 
 using namespace std;
 
+
+//Linear binning scheme
+struct LinBin{
+  double operator() (double low)
+  {
+    return low + 5;
+  }
+};
+
+
+
+struct LogBin{
+  ///Binning from Atlas paper: arXiv 1405.4123v
+  double offset=log(4208)-log(3934);
+  double operator() (double low)
+  {
+    return exp(log(low)+offset);
+  }
+};
+
+
+
+
+
 int main(int argc, char** argv){
   
   //Initialize SSM
-//   pheno::ZpModel ssm(91.1876);
-  pheno::ZpModel ssm(1500);
-  printf("Realtive width of Zp in SSM: %g%%\n",ssm.wzp_()/ssm.mzp_()*100);
+//   pheno::ZpModel ssm(91.1876);  
+  pheno::ZpModel ssm(1000);
+  printf("Relative width of Zp in SSM: %g%%\n",ssm.wzp_()/ssm.mzp_()*100);
   
-  char pdfset[] = "/remote/pi104a/foldenauer/local/MSTW/Grids/mstw2008nnlo.00.dat";
+  char pdfset[] = "/remote/pi104a/foldenauer/local/MSTW/Grids/mstw2008lo.00.dat";
   pheno::HadronXSec ssmxsec(&ssm.mu, &ssm, pdfset);
-  printf("Total cross section: %g\n", ssmxsec.zpXsec(128 ,4500., 0.05));
+  ssmxsec.set_monte_calls(1000);
+  printf("Total cross section: %g\n", ssmxsec.zpXsec(5, 8000, 0.01));
   
   
+  //Output Histogram
+  pheno::HistWriter<LogBin, pheno::HadronXSec> hist(&pheno::HadronXSec::totXsec, &ssmxsec);
+  hist.writeHist( 40, 1500, 0.05,"/scratch/foldenauer/data/xscan/hist.dat");
+  
+  
+  pheno::PartonXSec emu(&ssm.el, &ssm.mu, &ssm);
+  double mee =   800;
+  printf("Leptonic cross section for e+ e- -> A -> mu+ mu- @ %g GeV: %g\n", mee, emu.sigGam(mee));
+  printf("Leptonic cross section for e+ e- -> Z -> mu+ mu- @ %g GeV: %g\n", mee, emu.sigZ(mee));
+  printf("Leptonic cross section for e+ e- -> Zp -> mu+ mu- @ %g GeV: %g\n", mee, emu.sigZp(mee));
+  printf("Leptonic cross section for e+ e- -> (A,Z) -> mu+ mu- @ %g GeV: %g\n", mee, emu.sigGamZ(mee));
+  printf("Leptonic cross section for e+ e- -> (A,Zp) -> mu+ mu- @ %g GeV: %g\n", mee, emu.sigGamZp(mee));
+  printf("Leptonic cross section for e+ e- -> (Z,Zp) -> mu+ mu- @ %g GeV: %g\n", mee, emu.sigZZp(mee));
+  
+  printf("\nTotal cross section for e+ e- -> mu+ mu- @ %g GeV: %g\n", mee, emu.sigTot(mee));
   
   //Initialize model with model configuration file
   pheno::ZpModel m(argv[1]);    

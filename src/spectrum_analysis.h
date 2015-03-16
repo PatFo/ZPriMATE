@@ -4,6 +4,7 @@
 
 #include "xsec.h"
 #include <vector>
+#include <fstream>
 
 
 namespace pheno {
@@ -37,6 +38,53 @@ namespace pheno {
   };
   
   
+  
+  
+  //*******************************************************//
+  //            Class for  histrogram output               //
+  //*******************************************************//
+  
+  template<class Binning, class T>
+  class HistWriter {
+    ///Class for writing histograms 
+    ///Pass the binning scheme functor as temnplate argument 'Binning' and the class whose function gets plotted as argument 'T'
+    ///Pass the function as a pointer
+    private:
+      double (T::* pfunc)(double, double, double);
+      T * pobj;
+    public:
+      void writeHist(double ll, double ul, double acc, char* outfile, double factor=1.);
+      HistWriter(double (T::* pfunction)(double, double, double), T* pobject);      
+  };
+  
+  
+  
+  
+  template<class Binning, class T>
+  pheno::HistWriter<Binning, T>::HistWriter(double (T::* pfunction)(double, double, double), T* pobject)
+  {
+    pheno::HistWriter<Binning, T>::pfunc=pfunction;
+    pheno::HistWriter<Binning, T>::pobj=pobject;
+  }
+  
+  
+  
+  template<class Binning, class T>
+  void pheno::HistWriter<Binning, T>::writeHist(double ll, double ul, double acc, char* outfile, double factor)
+  {  
+    //Create instance of binning functor
+    Binning f;
+    std::ofstream outf(outfile);
+    //Write histogram to file in loop
+    for(double low = ll; low<ul; )
+    {
+      double high = f(low); //Calculate upper bound for bin
+      double res = ((this->pobj)->* (this->pfunc))(low, high, acc);
+      outf<<low<<"\t"<<res * factor <<"\n"; //Write the bin to file
+      low = high; //Set new lower bound
+    }
+    outf.close();
+  }
 }
 
 

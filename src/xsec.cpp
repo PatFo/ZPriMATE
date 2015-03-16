@@ -54,59 +54,59 @@ double couplings(double cinL1, double cinL2, double cinR1, double cinR2, double 
 pheno::PartonXSec::PartonXSec(fundamental::fermionExt* f_in, fundamental::fermionExt* f_out, pheno::ZpModel* p_model): _model(p_model)
 {
   //Store for every partial cross section the prefactor consisting of couplings, color factors and phase space constants
-  numGam = f_in->Nc()*f_out->Nc()/(48*M_PI) * couplings(f_in->vecc().q_gam, 
-                                                      f_in->vecc().q_gam, 
-                                                      f_in->vecc().q_gam, 
-                                                      f_in->vecc().q_gam, 
-                                                      f_out->vecc().q_gam,
-                                                      f_out->vecc().q_gam,
-                                                      f_out->vecc().q_gam,
-                                                      f_out->vecc().q_gam);
+  numGam   = f_in->Nc()*f_out->Nc()/(48*M_PI) * couplings(f_in->vecc().q_gam, 
+                                                          f_in->vecc().q_gam, 
+                                                          f_in->vecc().q_gam, 
+                                                          f_in->vecc().q_gam, 
+                                                          f_out->vecc().q_gam,
+                                                          f_out->vecc().q_gam,
+                                                          f_out->vecc().q_gam,
+                                                          f_out->vecc().q_gam);
   
-  numZ = f_in->Nc()*f_out->Nc()/(48*M_PI) * couplings(f_in->vecc().q_zl, 
-                                                    f_in->vecc().q_zl, 
-                                                    f_in->vecc().q_zr, 
-                                                    f_in->vecc().q_zr, 
-                                                    f_out->vecc().q_zl,
-                                                    f_out->vecc().q_zl,
-                                                    f_out->vecc().q_zr,
-                                                    f_out->vecc().q_zr);
+  numZ     = f_in->Nc()*f_out->Nc()/(48*M_PI) * couplings(f_in->vecc().q_zl, 
+                                                          f_in->vecc().q_zl, 
+                                                          f_in->vecc().q_zr, 
+                                                          f_in->vecc().q_zr, 
+                                                          f_out->vecc().q_zl,
+                                                          f_out->vecc().q_zl,
+                                                          f_out->vecc().q_zr,
+                                                          f_out->vecc().q_zr);
   
-  numZp = f_in->Nc()*f_out->Nc()/(48*M_PI) * couplings(f_in->vecc().q_zpl, 
-                                                    f_in->vecc().q_zpl, 
-                                                    f_in->vecc().q_zpr, 
-                                                    f_in->vecc().q_zpr, 
-                                                    f_out->vecc().q_zpl,
-                                                    f_out->vecc().q_zpl,
-                                                    f_out->vecc().q_zpr,
-                                                    f_out->vecc().q_zpr);
+  numZp    = f_in->Nc()*f_out->Nc()/(48*M_PI) * couplings(f_in->vecc().q_zpl,
+                                                          f_in->vecc().q_zpl,
+                                                          f_in->vecc().q_zpr,
+                                                          f_in->vecc().q_zpr,
+                                                          f_out->vecc().q_zpl,
+                                                          f_out->vecc().q_zpl,
+                                                          f_out->vecc().q_zpr,
+                                                          f_out->vecc().q_zpr);
   
-  numGamZ = f_in->Nc()*f_out->Nc()/(48*M_PI) * couplings(f_in->vecc().q_gam, 
-                                                        f_in->vecc().q_zl, 
-                                                        f_in->vecc().q_gam, 
-                                                        f_in->vecc().q_zr, 
-                                                        f_out->vecc().q_gam,
-                                                        f_out->vecc().q_zl,
-                                                        f_out->vecc().q_gam,
-                                                        f_out->vecc().q_zr);
+  numGamZ  = f_in->Nc()*f_out->Nc()/(48*M_PI) * couplings(f_in->vecc().q_gam, 
+                                                          f_in->vecc().q_zl, 
+                                                          f_in->vecc().q_gam, 
+                                                          f_in->vecc().q_zr, 
+                                                          f_out->vecc().q_gam,
+                                                          f_out->vecc().q_zl,
+                                                          f_out->vecc().q_gam,
+                                                          f_out->vecc().q_zr);
   
   numGamZp = f_in->Nc()*f_out->Nc()/(48*M_PI) * couplings(f_in->vecc().q_gam, 
-                                                        f_in->vecc().q_zpl, 
-                                                        f_in->vecc().q_gam, 
-                                                        f_in->vecc().q_zpr, 
-                                                        f_out->vecc().q_gam,
-                                                        f_out->vecc().q_zpl,
-                                                        f_out->vecc().q_gam,
-                                                        f_out->vecc().q_zpr);
+                                                          f_in->vecc().q_zpl, 
+                                                          f_in->vecc().q_gam, 
+                                                          f_in->vecc().q_zpr, 
+                                                          f_out->vecc().q_gam,
+                                                          f_out->vecc().q_zpl,
+                                                          f_out->vecc().q_gam,
+                                                          f_out->vecc().q_zpr);
   
-  numZZp = f_in->Nc()*f_out->Nc()/(48*M_PI) * couplings(f_in->vecc().q_zl, 
-                                                      f_in->vecc().q_zpl, 
-                                                      f_in->vecc().q_zr, 
-                                                      f_in->vecc().q_zpr, 
-                                                      f_out->vecc().q_zl,
-                                                      f_out->vecc().q_zpl,
-                                                      f_out->vecc().q_zr,
-                                                      f_out->vecc().q_zpr);
+  numZZp   = f_in->Nc()*f_out->Nc()/(48*M_PI) * couplings(f_in->vecc().q_zl, 
+                                                          f_in->vecc().q_zpl, 
+                                                          f_in->vecc().q_zr, 
+                                                          f_in->vecc().q_zpr, 
+                                                          f_out->vecc().q_zl,
+                                                          f_out->vecc().q_zpl,
+                                                          f_out->vecc().q_zr,
+                                                          f_out->vecc().q_zpr);
   pdgin = int(f_in->get_pdg());
 }
 

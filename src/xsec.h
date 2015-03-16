@@ -39,6 +39,7 @@ namespace pheno{
       double numGamZp;
       double numZZp;
       //Partial cross sections (Zp part can be called->public)
+    public: // ##############################     DEBUG  ####################3
       double sigGam(double Ecm);
       double sigZ(double Ecm);
       double sigGamZ(double Ecm);
@@ -107,7 +108,7 @@ namespace pheno{
       double zpXsec(double el, double eh, double accuracy);
       //Constructor and destructor to take care of memory allocations
       HadronXSec(fundamental::fermionExt* f_out, pheno::ZpModel* p_model, char* pdf_grid_file, double Ecoll=8000.);
-      ~HadronXSec();    
+      ~HadronXSec();  
   };
   
   
@@ -136,12 +137,12 @@ namespace pheno{
     double x1 = x;
     double x2 = pars->Ecm * pars->Ecm/(x1 * pars->Ecoll * pars->Ecoll);
     //Calculate sum of cross sections
-    double sum = 0. ;
+    double sum = 0.;
     for(int i=0; i<pars->arr_size; ++i)
     {
       sum += pars->cross_sections[i]/(pars->Ecoll * pars->Ecoll) * 
-           pars->ppdf->parton(   (pars->ppx[i])->pdg_in(),  x1, pars->Ecm )/(x1*x1) * 
-           pars->ppdf->parton(  -(pars->ppx[i])->pdg_in(),  x2, pars->Ecm )/x2;
+             pars->ppdf->parton(   (pars->ppx[i])->pdg_in(),  x1, pars->Ecm )/(x1*x1) * 
+             pars->ppdf->parton(  -(pars->ppx[i])->pdg_in(),  x2, pars->Ecm )/x2;
     }
     return sum;
   }
@@ -194,7 +195,9 @@ namespace pheno{
       //Integration
       size_t bisection_lim =1000;
       gsl_integration_workspace * w = gsl_integration_workspace_alloc (bisection_lim);
-      gsl_integration_qags (&F, xl, xu, 0, 3*accuracy_goal, bisection_lim, w, &result, &error); 
+      gsl_integration_qags (&F, xl, xu, 0, accuracy_goal, bisection_lim, w, &result, &error); 
+      //Free memory of integration workspace
+      gsl_integration_workspace_free(w);
     }
     else if(int_strategy==2)
     {
@@ -235,7 +238,7 @@ namespace pheno{
   double dSigdM(double E, void * p)
   {
     HadronXSec * phsec = (HadronXSec *) p;
-    return E * phsec->pdfconvoluted<PartialCrossX>(E, 1); 
+    return 2*E * phsec->pdfconvoluted<PartialCrossX>(E, 2); 
   }
   
   
@@ -244,7 +247,7 @@ namespace pheno{
   double pheno::HadronXSec::binnedXsec(double el, double eh, double accuracy)
   {
     //Implement binwise integration scheme
-        //Parameter and result objects
+    //Parameter and result objects
     double result, error;
     
     // QAG adaptive integration
@@ -257,7 +260,9 @@ namespace pheno{
     size_t bisection_lim =1000;
     gsl_integration_workspace * w = gsl_integration_workspace_alloc (bisection_lim);
     gsl_integration_qags (&F, el, eh, 0, accuracy, bisection_lim, w, &result, &error); 
-  
+    //Free memory of integration workspace
+    gsl_integration_workspace_free(w);
+    
     return result;
   }
 
