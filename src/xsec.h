@@ -82,6 +82,7 @@ namespace pheno{
       double accuracy_goal;
       double Epp;
       //Internal parton cross sections: no top, as pdf negligible
+  public: //####################################################################################### DEBUG ONLY ####################################
       PartonXSec* dxsec;
       PartonXSec* uxsec;
       PartonXSec* sxsec;
@@ -140,9 +141,15 @@ namespace pheno{
     double sum = 0.;
     for(int i=0; i<pars->arr_size; ++i)
     {
-      sum += pars->cross_sections[i]/(pars->Ecoll * pars->Ecoll) * 
-             pars->ppdf->parton(   (pars->ppx[i])->pdg_in(),  x1, pars->Ecm )/(x1*x1) * 
-             pars->ppdf->parton(  -(pars->ppx[i])->pdg_in(),  x2, pars->Ecm )/x2;
+      double pdg = (pars->ppx[i])->pdg_in();
+      sum +=  pars->cross_sections[i]/(pars->Ecoll * pars->Ecoll) *  //Parton level cross section
+              ( 
+              pars->ppdf->parton( -1*pdg,  x1, pars->Ecm )/(x1*x1) * //PDFs with antiquark in first proton
+              pars->ppdf->parton(    pdg,  x2, pars->Ecm )/x2
+              + 
+              pars->ppdf->parton(     pdg,  x1, pars->Ecm )/(x1*x1) * //Mirror: PDFs with antiquark in second proton   
+              pars->ppdf->parton(  -1*pdg,  x2, pars->Ecm )/x2 
+              );
     }
     return sum;
   }
@@ -238,7 +245,7 @@ namespace pheno{
   double dSigdM(double E, void * p)
   {
     HadronXSec * phsec = (HadronXSec *) p;
-    return 2*E * phsec->pdfconvoluted<PartialCrossX>(E, 2); 
+    return 2*E * phsec->pdfconvoluted<PartialCrossX>(E, 1); 
   }
   
   

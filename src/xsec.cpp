@@ -54,59 +54,61 @@ double couplings(double cinL1, double cinL2, double cinR1, double cinR2, double 
 pheno::PartonXSec::PartonXSec(fundamental::fermionExt* f_in, fundamental::fermionExt* f_out, pheno::ZpModel* p_model): _model(p_model)
 {
   //Store for every partial cross section the prefactor consisting of couplings, color factors and phase space constants
-  numGam   = f_in->Nc()*f_out->Nc()/(48*M_PI) * couplings(f_in->vecc().q_gam, 
-                                                          f_in->vecc().q_gam, 
-                                                          f_in->vecc().q_gam, 
-                                                          f_in->vecc().q_gam, 
-                                                          f_out->vecc().q_gam,
-                                                          f_out->vecc().q_gam,
-                                                          f_out->vecc().q_gam,
-                                                          f_out->vecc().q_gam);
+  double factor = f_in->Nc()*f_out->Nc()/(48*M_PI)/(f_in->Nc()*f_in->Nc()); //Take into account that either quark can come from either proton, average over color!
   
-  numZ     = f_in->Nc()*f_out->Nc()/(48*M_PI) * couplings(f_in->vecc().q_zl, 
-                                                          f_in->vecc().q_zl, 
-                                                          f_in->vecc().q_zr, 
-                                                          f_in->vecc().q_zr, 
-                                                          f_out->vecc().q_zl,
-                                                          f_out->vecc().q_zl,
-                                                          f_out->vecc().q_zr,
-                                                          f_out->vecc().q_zr);
+  numGam   = factor * couplings(f_in->vecc().q_gam, 
+                                f_in->vecc().q_gam, 
+                                f_in->vecc().q_gam, 
+                                f_in->vecc().q_gam, 
+                                f_out->vecc().q_gam,
+                                f_out->vecc().q_gam,
+                                f_out->vecc().q_gam,
+                                f_out->vecc().q_gam);
   
-  numZp    = f_in->Nc()*f_out->Nc()/(48*M_PI) * couplings(f_in->vecc().q_zpl,
-                                                          f_in->vecc().q_zpl,
-                                                          f_in->vecc().q_zpr,
-                                                          f_in->vecc().q_zpr,
-                                                          f_out->vecc().q_zpl,
-                                                          f_out->vecc().q_zpl,
-                                                          f_out->vecc().q_zpr,
-                                                          f_out->vecc().q_zpr);
+  numZ     = factor * couplings(f_in->vecc().q_zl, 
+                                f_in->vecc().q_zl, 
+                                f_in->vecc().q_zr, 
+                                f_in->vecc().q_zr, 
+                                f_out->vecc().q_zl,
+                                f_out->vecc().q_zl,
+                                f_out->vecc().q_zr,
+                                f_out->vecc().q_zr);
   
-  numGamZ  = f_in->Nc()*f_out->Nc()/(48*M_PI) * couplings(f_in->vecc().q_gam, 
-                                                          f_in->vecc().q_zl, 
-                                                          f_in->vecc().q_gam, 
-                                                          f_in->vecc().q_zr, 
-                                                          f_out->vecc().q_gam,
-                                                          f_out->vecc().q_zl,
-                                                          f_out->vecc().q_gam,
-                                                          f_out->vecc().q_zr);
+  numZp    = factor * couplings(f_in->vecc().q_zpl,
+                                f_in->vecc().q_zpl,
+                                f_in->vecc().q_zpr,
+                                f_in->vecc().q_zpr,
+                                f_out->vecc().q_zpl,
+                                f_out->vecc().q_zpl,
+                                f_out->vecc().q_zpr,
+                                f_out->vecc().q_zpr);
   
-  numGamZp = f_in->Nc()*f_out->Nc()/(48*M_PI) * couplings(f_in->vecc().q_gam, 
-                                                          f_in->vecc().q_zpl, 
-                                                          f_in->vecc().q_gam, 
-                                                          f_in->vecc().q_zpr, 
-                                                          f_out->vecc().q_gam,
-                                                          f_out->vecc().q_zpl,
-                                                          f_out->vecc().q_gam,
-                                                          f_out->vecc().q_zpr);
+  numGamZ  = factor * couplings(f_in->vecc().q_gam, 
+                                f_in->vecc().q_zl, 
+                                f_in->vecc().q_gam, 
+                                f_in->vecc().q_zr, 
+                                f_out->vecc().q_gam,
+                                f_out->vecc().q_zl,
+                                f_out->vecc().q_gam,
+                                f_out->vecc().q_zr);
   
-  numZZp   = f_in->Nc()*f_out->Nc()/(48*M_PI) * couplings(f_in->vecc().q_zl, 
-                                                          f_in->vecc().q_zpl, 
-                                                          f_in->vecc().q_zr, 
-                                                          f_in->vecc().q_zpr, 
-                                                          f_out->vecc().q_zl,
-                                                          f_out->vecc().q_zpl,
-                                                          f_out->vecc().q_zr,
-                                                          f_out->vecc().q_zpr);
+  numGamZp = factor * couplings(f_in->vecc().q_gam, 
+                                f_in->vecc().q_zpl, 
+                                f_in->vecc().q_gam, 
+                                f_in->vecc().q_zpr, 
+                                f_out->vecc().q_gam,
+                                f_out->vecc().q_zpl,
+                                f_out->vecc().q_gam,
+                                f_out->vecc().q_zpr);
+  
+  numZZp   = factor * couplings(f_in->vecc().q_zl, 
+                                f_in->vecc().q_zpl, 
+                                f_in->vecc().q_zr, 
+                                f_in->vecc().q_zpr, 
+                                f_out->vecc().q_zl,
+                                f_out->vecc().q_zpl,
+                                f_out->vecc().q_zr,
+                                f_out->vecc().q_zpr);
   pdgin = int(f_in->get_pdg());
 }
 
@@ -268,11 +270,11 @@ pheno::HadronXSec::HadronXSec(fundamental::fermionExt* f_out, pheno::ZpModel* p_
   calls = 100; //Default value for calls per monte carlo integration point
   Epp = Ecoll;
   //Allocate parpxsec->sigSM(Ecm)tonic cross sections
-  dxsec = new pheno::PartonXSec(&p_model->d, f_out, p_model);
-  uxsec = new pheno::PartonXSec(&p_model->u, f_out, p_model);
-  sxsec = new pheno::PartonXSec(&p_model->s, f_out, p_model);
-  cxsec = new pheno::PartonXSec(&p_model->c, f_out, p_model);
-  bxsec = new pheno::PartonXSec(&p_model->b, f_out, p_model);
+  dxsec = new pheno::PartonXSec(&(p_model->d), f_out, p_model);
+  uxsec = new pheno::PartonXSec(&(p_model->u), f_out, p_model);
+  sxsec = new pheno::PartonXSec(&(p_model->s), f_out, p_model);
+  cxsec = new pheno::PartonXSec(&(p_model->c), f_out, p_model);
+  bxsec = new pheno::PartonXSec(&(p_model->b), f_out, p_model);
   //Allocate pdf object
   pdf = new c_mstwpdf(pdf_grid_file);
 }
