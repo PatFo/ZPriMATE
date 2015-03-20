@@ -97,11 +97,11 @@ namespace pheno{
     public:
       void set_accuracy(double accuracy);
       void set_monte_calls(size_t int_calls);
-      //Hadronic cross sections
-      double sigSM    (double Ecm, unsigned int int_strategy=1);
-      double sigInt   (double Ecm, unsigned int int_strategy=1);
-      double sigSignal(double Ecm, unsigned int int_strategy=1);
-      double sigTotal (double Ecm, unsigned int int_strategy=1);
+      //Hadronic differential cross sections dSig/dm
+      double dsigSM    (double Ecm, unsigned int int_strategy=1);
+      double dsigInt   (double Ecm, unsigned int int_strategy=1);
+      double dsigSignal(double Ecm, unsigned int int_strategy=1);
+      double dsigTotal (double Ecm, unsigned int int_strategy=1);
       //Member function that fills EMPTY vector with sigSM, sigInt, sigSignal, sigTotal 
       //ALWAYS use this function if more than one of these cross sections is needed at a time
       void crossSections (double Ecm, std::vector<double> * results, unsigned int int_strategy=1);

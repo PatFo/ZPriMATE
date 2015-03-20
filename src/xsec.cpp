@@ -309,30 +309,30 @@ void pheno::HadronXSec::set_accuracy(double accuracy)
 
 
 
-double pheno::HadronXSec::sigSM(double Ecm, unsigned int int_strategy)
+double pheno::HadronXSec::dsigSM(double Ecm, unsigned int int_strategy)
 {
   return pdfconvoluted<SigSM>(Ecm, int_strategy);
 }
 
 
 
-double pheno::HadronXSec::sigInt(double Ecm, unsigned int int_strategy)
+double pheno::HadronXSec::dsigInt(double Ecm, unsigned int int_strategy)
 {
-  return sigSM(Ecm, int_strategy) + pdfconvoluted<SigInt>(Ecm, int_strategy);
+  return dsigSM(Ecm, int_strategy) + pdfconvoluted<SigInt>(Ecm, int_strategy);
 }
 
 
 
-double pheno::HadronXSec::sigSignal(double Ecm, unsigned int int_strategy)
+double pheno::HadronXSec::dsigSignal(double Ecm, unsigned int int_strategy)
 {
-  return sigSM(Ecm, int_strategy) + pdfconvoluted<SigZp>(Ecm, int_strategy);
+  return dsigSM(Ecm, int_strategy) + pdfconvoluted<SigZp>(Ecm, int_strategy);
 }
 
 
 
-double pheno::HadronXSec::sigTotal(double Ecm, unsigned int int_strategy)
+double pheno::HadronXSec::dsigTotal(double Ecm, unsigned int int_strategy)
 {
-  return sigInt(Ecm, int_strategy) +  pdfconvoluted<SigZp>(Ecm, int_strategy);
+  return dsigInt(Ecm, int_strategy) +  pdfconvoluted<SigZp>(Ecm, int_strategy);
 }
 
 
