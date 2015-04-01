@@ -91,9 +91,10 @@ namespace pheno{
       c_mstwpdf* pdf;
       //Subroutine for pdf convoluted cross sections: Specify partial cross section in functor object
       template<class PartialCrossX> double pdfconvoluted( double Ecm, unsigned int int_strategy=1);
-      //Calculate cross section bin bin between [el, eh]
-      template<class PartialCrossX>  friend  double dSigdM(double E, void * p);
+//       template<class PartialCrossX> double binnedXsec(double el, double eh, double accuracy);
       template<class PartialCrossX> double binnedXsec(double el, double eh, double accuracy);
+      //Full experimentally detectable cross section
+      template<class PartialCrossX> double detectedXsec(double el, double eh, double (* psmear)(double, double));
     public:
       void set_accuracy(double accuracy);
       void set_monte_calls(size_t int_calls);
@@ -105,8 +106,9 @@ namespace pheno{
       //Member function that fills EMPTY vector with sigSM, sigInt, sigSignal, sigTotal 
       //ALWAYS use this function if more than one of these cross sections is needed at a time
       void crossSections (double Ecm, std::vector<double> * results, unsigned int int_strategy=1);
-      double totXsec(double el, double eh, double accuracy);
-      double zpXsec(double el, double eh, double accuracy);
+      //Full pure hadronic cross sections
+      double totXsec(double el, double eh, double accuracy, double (* psmear)(double,double)=NULL);
+      double zpXsec(double el, double eh, double accuracy, double (* psmear)(double,double)=NULL);
       //Constructor and destructor to take care of memory allocations
       HadronXSec(fundamental::fermionExt* f_out, pheno::ZpModel* p_model, char* pdf_grid_file, double Ecoll=8000.);
       ~HadronXSec();  
@@ -239,13 +241,15 @@ namespace pheno{
   }
   
   
-  
+
   
   template<class PartialCrossX>   
   double dSigdM(double E, void * p)
   {
     HadronXSec * phsec = (HadronXSec *) p;
+    //If no smearing function was defined just integrate the pure hadron diff cross section
     return 2*E * phsec->pdfconvoluted<PartialCrossX>(E, 1); 
+
   }
   
   
@@ -261,10 +265,10 @@ namespace pheno{
     //Define Integration function
     gsl_function F;
     F.function = &dSigdM<PartialCrossX>;
-    F.params = this;  
+    F.params = this;
     
     //Integration
-    size_t bisection_lim =1000;
+    size_t bisection_lim = 1000;
     gsl_integration_workspace * w = gsl_integration_workspace_alloc (bisection_lim);
     gsl_integration_qags (&F, el, eh, 0, accuracy, bisection_lim, w, &result, &error); 
     //Free memory of integration workspace
@@ -275,6 +279,87 @@ namespace pheno{
 
   
   
+  
+  //Multi dim Monte Carlo implementation 
+  //-------------------------------------------------------------------------------------------
+  
+  //Parameter struct for integrable function
+  struct parameter_set{ int narr; PartonXSec** ppx; c_mstwpdf* ppdf; double (* psmear)(double, double); double Ecoll; };
+  
+  
+  
+  //Implementation of gsl monte carlo integrable function: 
+  //Numerical Integration
+  template<class PartialCrossX> 
+  inline double integrand(double d[], size_t dim, void * p)
+  {
+    //Get initialization parameters
+    PartialCrossX cross;
+    struct parameter_set* pars = (struct parameter_set *)p;
+    //Define Bjorken x
+    double scoll = pars->Ecoll * pars->Ecoll;
+    double dx1dy = (scoll - d[1]*d[1])/scoll;
+    double x1 = dx1dy * d[2] + d[1]*d[1]/scoll; // Variable trafo from x1 to y=a*x1 + b
+    double x2 = d[1]*d[1]/(x1 * scoll);
+    
+    //Calculate sum of cross sections
+    double sum = 0.;
+    for(int i=0; i<pars->narr; ++i)
+    {
+      double pdg = (pars->ppx[i])->pdg_in();
+      sum +=  dx1dy * 2 * d[1]/scoll *     //Prefactors 
+              cross(pars->ppx[i], d[1]) *  //Parton level cross section
+              ( 
+              pars->ppdf->parton( -1*pdg,  x1, d[1] )/(x1*x1) * //PDFs with antiquark in first proton
+              pars->ppdf->parton(    pdg,  x2, d[1] )/x2
+              + 
+              pars->ppdf->parton(    pdg,  x1, d[1] )/(x1*x1) * //Mirror: PDFs with antiquark in second proton   
+              pars->ppdf->parton( -1*pdg,  x2, d[1] )/x2 
+              ) *
+              pars->psmear(d[0], d[1]);   //Smearing function
+    }
+    return sum;
+  }
+  
+  
+  
+  
+  
+  
+  template<class PartialCrossX> 
+  double pheno::HadronXSec::detectedXsec(double el, double eh, double (* psmear)(double, double))
+  {
+    //Construct parameters
+    PartonXSec* pp[]= {dxsec, uxsec, sxsec, cxsec, bxsec};                    
+    struct parameter_set int_pars = {5, pp, pdf, psmear, Epp};      
+
+    // VEGAS Monte Carlo Integration
+    //Define a gsl_monte_function to pass to the integrator
+    gsl_monte_function F;
+    F.f = &integrand<PartialCrossX>;
+    F.dim = 3;
+    F.params = &int_pars;      
+
+    //Initialize random number gen for monte carlo
+    gsl_rng_env_setup ();
+    const gsl_rng_type *T;
+    gsl_rng *r;
+    T = gsl_rng_default;
+    r = gsl_rng_alloc (T);
+
+    //Integration
+    double result, error;
+    double xl[3] = {el, 0, 0};
+    double xu[3] = {eh, Epp, 1};
+    gsl_monte_vegas_state *s = gsl_monte_vegas_alloc(3);
+    gsl_monte_vegas_integrate (&F, xl, xu, 3, calls, r, s, &result, &error);
+    //Free integration memory
+    gsl_monte_vegas_free(s);
+    
+    return result;
+  }
+  
+
   
 }
 

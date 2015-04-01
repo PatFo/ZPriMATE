@@ -351,14 +351,16 @@ void pheno::HadronXSec::crossSections(double Ecm, std::vector< double >* results
 
 
 //Calculate the total hadronic cross section in the bounds [el, eh]
-double pheno::HadronXSec::totXsec(double el, double eh, double accuracy)
+double pheno::HadronXSec::totXsec(double el, double eh, double accuracy, double (* psmear)(double,double))
 {
-  return binnedXsec<SigTot>(el, eh, accuracy);
+  if(psmear==NULL)  return binnedXsec<SigTot>(el, eh, accuracy);
+  else return detectedXsec<SigTot>(el, eh, psmear);
 }
 
 
 //Calculate the zp hadronic cross section in the bounds [el, eh]
-double pheno::HadronXSec::zpXsec(double el, double eh, double accuracy)
+double pheno::HadronXSec::zpXsec(double el, double eh, double accuracy, double (* psmear)(double,double))
 {
-  return binnedXsec<SigZp>(el, eh, accuracy);
+  if(psmear==NULL)  return binnedXsec<SigZp>(el, eh, accuracy);
+  else return detectedXsec<SigZp>(el, eh, psmear);
 }

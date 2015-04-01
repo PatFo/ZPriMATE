@@ -32,6 +32,13 @@ struct LogBin{
 
 
 
+double gaussian(double mu, double x)
+{
+  double sigma = 0.02*mu;
+  return 1./(sqrt(2 *M_PI)*sigma) * exp(-1*pow(mu-x,2)/(2*sigma*sigma));
+}
+
+
 
 
 int main(int argc, char** argv){
@@ -45,7 +52,7 @@ int main(int argc, char** argv){
     printf("Relative width of Zp in SSM: %g%%\n",ssm.wzp_()/ssm.mzp_()*100);
     
     pheno::HadronXSec ssmxsec(&ssm.mu, &ssm, pdfset);
-    ssmxsec.set_monte_calls(1000);
+    ssmxsec.set_monte_calls(100000);
     printf("Total cross section: %g\n", ssmxsec.zpXsec(5, 8000, 0.01));
     
     double mqq = 90;
@@ -63,6 +70,9 @@ int main(int argc, char** argv){
     char histf[] = "/scratch/foldenauer/data/xscan/hist.dat";
     hist.writeHist( 40, 4500, 0.05, histf, fb2pb);
     
+    
+    printf("\nIntegral yields: %g\n", ssmxsec.zpXsec(50, 2*mzp, 0.1));
+    printf("\nSmeared integral yields: %g\n", ssmxsec.zpXsec(50, 2*mzp, 0.1, &gaussian));
     
     
     //Cross check with mzp=mz --> Should yield the SM partonic cross sections!
