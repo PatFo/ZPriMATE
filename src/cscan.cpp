@@ -1,6 +1,8 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
+#include <sys/time.h>
+#include <ctime>
 
 
 #include "pheno.h"
@@ -46,13 +48,13 @@ int main(int argc, char** argv){
     char pdfset[] = "/remote/pi104a/foldenauer/local/MSTW/Grids/mstw2008lo.68cl.21.dat";
   //Initialize SSM
 //   pheno::ZpModel ssm(91.1876);  
-  for(double mzp =1000; mzp<=3000; mzp+=500)
+  for(double mzp =1000; mzp<=1000; mzp+=500)
   {
     pheno::ZpModel ssm(mzp);
     printf("Relative width of Zp in SSM: %g%%\n",ssm.wzp_()/ssm.mzp_()*100);
     
     pheno::HadronXSec ssmxsec(&ssm.mu, &ssm, pdfset);
-    ssmxsec.set_monte_calls(100000);
+//     ssmxsec.set_monte_calls(100000);
     printf("Total cross section: %g\n", ssmxsec.zpXsec(5, 8000, 0.01));
     
     double mqq = 90;
@@ -65,15 +67,32 @@ int main(int argc, char** argv){
     printf("\nTotal cross section for d d~ -> mu+ mu- @ %g GeV: %g\n", mqq, ssmxsec.dxsec->sigTot(mqq));
     
     //Output Histogram
+    struct timeval tv;
     double fb2pb = 0.001;
-    pheno::HistWriter<LogBin, pheno::HadronXSec> hist(&pheno::HadronXSec::zpXsec, &ssmxsec);
-    char histf[] = "/scratch/foldenauer/data/xscan/hist.dat";
-    hist.writeHist( 40, 4500, 0.05, histf, fb2pb);
+    pheno::HistWriter<LogBin, pheno::HadronXSec> hist(&ssmxsec, &pheno::HadronXSec::zpXsec, NULL);
+    char histf[] = "/scratch/foldenauer/data/xscan/hist0.dat";
+    gettimeofday(&tv, NULL);  
+    double t0=tv.tv_sec+(tv.tv_usec/1000000.0);     
+    hist.writeHist( 40, 4500, 0.05, histf, fb2pb);    
     
+    pheno::HistWriter<LogBin, pheno::HadronXSec> hist2(&ssmxsec, &pheno::HadronXSec::zpXsec, &gaussian);
+    char histf2[] = "/scratch/foldenauer/data/xscan/hist_smear.dat";
+    gettimeofday(&tv, NULL);
+    double t0b=tv.tv_sec+(tv.tv_usec/1000000.0);     
+    printf("Writing histogram took: %g s\n", t0b-t0);
+    hist2.writeHist( 40, 4500, 0.05, histf2, fb2pb); 
     
+    gettimeofday(&tv, NULL);  
+    double t1=tv.tv_sec+(tv.tv_usec/1000000.0);   
+    printf("Writing histogram took: %g s\n", t1-t0b);
     printf("\nIntegral yields: %g\n", ssmxsec.zpXsec(50, 2*mzp, 0.1));
+    gettimeofday(&tv, NULL);  
+    double t2=tv.tv_sec+(tv.tv_usec/1000000.0); 
+    printf("Execution time: %g s\n", t2-t1);
     printf("\nSmeared integral yields: %g\n", ssmxsec.zpXsec(50, 2*mzp, 0.1, &gaussian));
-    
+    gettimeofday(&tv, NULL);  
+    double t3=tv.tv_sec+(tv.tv_usec/1000000.0); 
+    printf("Execution time: %g s\n", t3-t2);
     
     //Cross check with mzp=mz --> Should yield the SM partonic cross sections!
     pheno::PartonXSec emu(&ssm.el, &ssm.mu, &ssm);

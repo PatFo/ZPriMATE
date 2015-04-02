@@ -50,21 +50,23 @@ namespace pheno {
     ///Pass the binning scheme functor as temnplate argument 'Binning' and the class whose function gets plotted as argument 'T'
     ///Pass the function as a pointer
     private:
-      double (T::* pfunc)(double, double, double, double(*)(double, double));
       T * pobj;
+      double (T::* pfunc)(double, double, double, double(*)(double, double));
+      double(* psmear)(double, double);
     public:
       void writeHist(double ll, double ul, double acc, char* outfile, double factor=1.);
-      HistWriter(double (T::* pfunction)(double, double, double, double(*)(double, double)), T* pobject);      
+      HistWriter(T* pobject, double (T::* pfunction)(double, double, double, double(*)(double, double)), double(* psmearing)(double, double));      
   };
   
   
   
   
   template<class Binning, class T>
-  pheno::HistWriter<Binning, T>::HistWriter(double (T::* pfunction)(double, double, double, double(*)(double, double)), T* pobject)
+  pheno::HistWriter<Binning, T>::HistWriter(T* pobject, double (T::* pfunction)(double, double, double, double(*)(double, double)), double(* psmearing)(double, double))
   {
-    pheno::HistWriter<Binning, T>::pfunc=pfunction;
     pheno::HistWriter<Binning, T>::pobj=pobject;
+    pheno::HistWriter<Binning, T>::pfunc=pfunction;
+    pheno::HistWriter<Binning, T>::psmear=psmearing; 
   }
   
   
@@ -79,7 +81,7 @@ namespace pheno {
     for(double low = ll; low<ul; )
     {
       double high = f(low); //Calculate upper bound for bin
-      double res = ((this->pobj)->* (this->pfunc))(low, high, acc, NULL);
+      double res = ((this->pobj)->* (this->pfunc))(low, high, acc, this->psmear);
       outf<<low<<"\t"<<res * factor <<"\n"; //Write the bin to file
       low = high; //Set new lower bound
     }

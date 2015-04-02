@@ -15,6 +15,8 @@
 #include <gsl/gsl_integration.h>
 
 
+#include <iostream> //DEBUG
+
 namespace pheno{
   
   
@@ -66,7 +68,7 @@ namespace pheno{
   
   
   
-  
+
   
   //*********************************************************//
   //            Classes for hadronic cross sections          //
@@ -348,13 +350,31 @@ namespace pheno{
     r = gsl_rng_alloc (T);
 
     //Integration
-    double result, error;
+    double result, error, prev_res, diff;
     double xl[3] = {el, 0, 0};
     double xu[3] = {eh, Epp, 1};
+    
+    //Integration
     gsl_monte_vegas_state *s = gsl_monte_vegas_alloc(3);
-    gsl_monte_vegas_integrate (&F, xl, xu, 3, calls, r, s, &result, &error);
+    s->stage=0; // 0= new uniform grid
+    s->mode=GSL_VEGAS_MODE_IMPORTANCE;  //Can pick between importance or stratified sampling
+//     s->alpha=1.6;
+    gsl_monte_vegas_integrate (&F, xl, xu, 3, 1000, r, s, &result, &error);
+//     double chisqdiff =fabs (gsl_monte_vegas_chisq(s) - 1.0);
+//     std::cout<<"Integral "<<result<<" Reduced chisquare: "<<chisqdiff<<std::endl; //######################## DEBUG
+    s->stage=1; //1= keep grid from previous run
+    diff=1.0; //set to 100% to start loop
+    while(diff>0.01)
+    {
+      prev_res=result;
+      gsl_monte_vegas_integrate (&F, xl, xu, 3, calls, r, s, &result, &error);
+//       chisqdiff= fabs (gsl_monte_vegas_chisq(s) - 1.0); //Check whether chisq/dof is consistent with 1 
+      diff= fabs((prev_res-result)/result); //relative difference of last 2 iterations
+      std::cout<<"Integral "<<result<<" Relative difference: "<<diff<<std::endl; //######################## DEBUG
+    }
     //Free integration memory
     gsl_monte_vegas_free(s);
+    
     
     return result;
   }

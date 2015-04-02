@@ -267,7 +267,7 @@ struct SigTot{
 pheno::HadronXSec::HadronXSec(fundamental::fermionExt* f_out, pheno::ZpModel* p_model, char* pdf_grid_file, double Ecoll)
 {
   accuracy_goal = 1e-2;  //Default numerica integ accuracy
-  calls = 100; //Default value for calls per monte carlo integration point
+  calls = 10000; //Default value for calls per monte carlo integration point
   Epp = Ecoll;
   //Allocate parpxsec->sigSM(Ecm)tonic cross sections
   dxsec = new pheno::PartonXSec(&(p_model->d), f_out, p_model);
