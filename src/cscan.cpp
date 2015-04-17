@@ -33,10 +33,10 @@ struct LogBin{
 };
 
 
-
+//Smearing function
 double gaussian(double mu, double x)
 {
-  double sigma = 0.02*mu;
+  double sigma = 6.41632793049e-05*mu*mu + 0.0224623026794*mu + 3.75054782287;
   return 1./(sqrt(2 *M_PI)*sigma) * exp(-1*pow(mu-x,2)/(2*sigma*sigma));
 }
 
@@ -80,7 +80,7 @@ int main(int argc, char** argv){
     gettimeofday(&tv, NULL);
     double t0b=tv.tv_sec+(tv.tv_usec/1000000.0);     
     printf("Writing histogram took: %g s\n", t0b-t0);
-    hist2.writeHist( 40, 4500, 0.05, histf2, fb2pb); 
+    hist2.writeHist( 40, 4500, 5e-3, histf2, fb2pb); 
     
     gettimeofday(&tv, NULL);  
     double t1=tv.tv_sec+(tv.tv_usec/1000000.0);   

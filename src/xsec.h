@@ -13,6 +13,9 @@
 #include <gsl/gsl_monte.h>
 #include <gsl/gsl_monte_vegas.h>
 #include <gsl/gsl_integration.h>
+//Cubature integration methods
+#include <cubature.h>
+#include <cuba.h>
 
 
 #include <iostream> //DEBUG
@@ -96,7 +99,7 @@ namespace pheno{
 //       template<class PartialCrossX> double binnedXsec(double el, double eh, double accuracy);
       template<class PartialCrossX> double binnedXsec(double el, double eh, double accuracy);
       //Full experimentally detectable cross section
-      template<class PartialCrossX> double detectedXsec(double el, double eh, double (* psmear)(double, double));
+      template<class PartialCrossX> double detectedXsec(double el, double eh, double acc, int strategy, double (* psmear)(double, double));
     public:
       void set_accuracy(double accuracy);
       void set_monte_calls(size_t int_calls);
@@ -109,8 +112,8 @@ namespace pheno{
       //ALWAYS use this function if more than one of these cross sections is needed at a time
       void crossSections (double Ecm, std::vector<double> * results, unsigned int int_strategy=1);
       //Full pure hadronic cross sections
-      double totXsec(double el, double eh, double accuracy, double (* psmear)(double,double)=NULL);
-      double zpXsec(double el, double eh, double accuracy, double (* psmear)(double,double)=NULL);
+      double totXsec(double el, double eh, double accuracy, double (* psmear)(double,double)=NULL, int strategy=1);
+      double zpXsec(double el, double eh, double accuracy, double (* psmear)(double,double)=NULL, int strategy=1);
       //Constructor and destructor to take care of memory allocations
       HadronXSec(fundamental::fermionExt* f_out, pheno::ZpModel* p_model, char* pdf_grid_file, double Ecoll=8000.);
       ~HadronXSec();  
@@ -148,11 +151,11 @@ namespace pheno{
       double pdg = (pars->ppx[i])->pdg_in();
       sum +=  pars->cross_sections[i]/(pars->Ecoll * pars->Ecoll) *  //Parton level cross section
               ( 
-              pars->ppdf->parton( -1*pdg,  x1, pars->Ecm )/(x1*x1) * //PDFs with antiquark in first proton
-              pars->ppdf->parton(    pdg,  x2, pars->Ecm )/x2
+              pars->ppdf->parton( -1*pdg,  x1, pars->Ecoll )/(x1*x1) * //PDFs with antiquark in first proton
+              pars->ppdf->parton(    pdg,  x2, pars->Ecoll )/x2
               + 
-              pars->ppdf->parton(     pdg,  x1, pars->Ecm )/(x1*x1) * //Mirror: PDFs with antiquark in second proton   
-              pars->ppdf->parton(  -1*pdg,  x2, pars->Ecm )/x2 
+              pars->ppdf->parton(     pdg,  x1, pars->Ecoll )/(x1*x1) * //Mirror: PDFs with antiquark in second proton   
+              pars->ppdf->parton(  -1*pdg,  x2, pars->Ecoll )/x2 
               );
     }
     return sum;
@@ -288,6 +291,8 @@ namespace pheno{
   //Parameter struct for integrable function
   struct parameter_set{ int narr; PartonXSec** ppx; c_mstwpdf* ppdf; double (* psmear)(double, double); double Ecoll; };
   
+  struct cuba_par{ double** interval; parameter_set pars; };
+  
   
   
   //Implementation of gsl monte carlo integrable function: 
@@ -312,69 +317,141 @@ namespace pheno{
       sum +=  dx1dy * 2 * d[1]/scoll *     //Prefactors 
               cross(pars->ppx[i], d[1]) *  //Parton level cross section
               ( 
-              pars->ppdf->parton( -1*pdg,  x1, d[1] )/(x1*x1) * //PDFs with antiquark in first proton
-              pars->ppdf->parton(    pdg,  x2, d[1] )/x2
+              pars->ppdf->parton( -1*pdg,  x1, pars->Ecoll )/(x1*x1) * //PDFs with antiquark in first proton
+              pars->ppdf->parton(    pdg,  x2, pars->Ecoll )/x2
               + 
-              pars->ppdf->parton(    pdg,  x1, d[1] )/(x1*x1) * //Mirror: PDFs with antiquark in second proton   
-              pars->ppdf->parton( -1*pdg,  x2, d[1] )/x2 
+              pars->ppdf->parton(    pdg,  x1, pars->Ecoll )/(x1*x1) * //Mirror: PDFs with antiquark in second proton   
+              pars->ppdf->parton( -1*pdg,  x2, pars->Ecoll )/x2 
               ) *
-              pars->psmear(d[0], d[1]);   //Smearing function
+              pars->psmear(d[1], d[0]);   //Smearing function
     }
     return sum;
   }
   
   
+  //Cubature adaptor (Johnson)
+  template<class PartialCrossX> 
+  inline int integrand_cubature(unsigned ndim, const double *x, void *fdata, unsigned fdim, double *fval)
+  {
+    double * x_temp= (double *) x;
+//     std::cout<<"("<<x[0]<<", "<<x[1]<<", "<<x[2]<<")\n";   //#######################################################  DEBUG  ##################################
+    size_t dim = ndim;
+    struct parameter_set* pars = (struct parameter_set *)fdata;
+//     std::cout<<pars->narr<<endl;   //#######################################################  DEBUG  ##################################
+    fval[0]= integrand<PartialCrossX>(x_temp, dim, pars);    
+//     std::cout<<fval[0]<<"\n"; //#######################################################  DEBUG  ##################################
+    return 0;
+  }
+  
+  
+  
+  
+  //Cuba adaptor (Hahn)
+  template<class PartialCrossX> 
+  inline int integrand_cuba(const int *ndim, const double x[], const int *ncomp, double integral[], void *userdata)
+  {
+    double * x_temp= (double *) x;
+    size_t dim = (size_t) ndim;
+    struct cuba_par* cpars = (struct cuba_par *) userdata;
+    double** coeffs = cpars->interval;
+    double jacobi =1; //Jacobi determinant of trafo
+    //Linear trafo of coordinates
+    for(unsigned int i=0; i<3; ++i)
+    {
+      double dydx = (coeffs[1][i]-coeffs[0][i]);
+      jacobi *= dydx;
+      x_temp[i] = dydx*x_temp[i] + coeffs[0][i]; 
+    }
+//     std::cout<<"("<<x_temp[0]<<", "<<x_temp[1]<<", "<<x_temp[2]<<")\n";   //#######################################################  DEBUG  ##################################
+//     std::cout<<pars->narr<<endl;   //#######################################################  DEBUG  ##################################
+    integral[0]= integrand<PartialCrossX>(x_temp, dim, &(cpars->pars)) * jacobi;
+//     std::cout<<fval[0]<<"\n"; //#######################################################  DEBUG  ##################################
+    return 0;
+  }
   
   
   
   
   template<class PartialCrossX> 
-  double pheno::HadronXSec::detectedXsec(double el, double eh, double (* psmear)(double, double))
+  double pheno::HadronXSec::detectedXsec(double el, double eh, double acc, int strat, double (* psmear)(double, double))
   {
+    
     //Construct parameters
     PartonXSec* pp[]= {dxsec, uxsec, sxsec, cxsec, bxsec};                    
-    struct parameter_set int_pars = {5, pp, pdf, psmear, Epp};      
+    struct parameter_set int_pars = {5, pp, pdf, psmear, Epp};  
+    double epsabs(0.), epsrel(acc);
+    const int dimint(3), dimres(1), mineval(0), maxeval(100000);
 
-    // VEGAS Monte Carlo Integration
-    //Define a gsl_monte_function to pass to the integrator
-    gsl_monte_function F;
-    F.f = &integrand<PartialCrossX>;
-    F.dim = 3;
-    F.params = &int_pars;      
-
-    //Initialize random number gen for monte carlo
-    gsl_rng_env_setup ();
-    const gsl_rng_type *T;
-    gsl_rng *r;
-    T = gsl_rng_default;
-    r = gsl_rng_alloc (T);
-
-    //Integration
+    //Integration variables
     double result, error, prev_res, diff;
-    double xl[3] = {el, 0, 0};
+    double xl[3] = {el, 1, 0};
     double xu[3] = {eh, Epp, 1};
     
-    //Integration
-    gsl_monte_vegas_state *s = gsl_monte_vegas_alloc(3);
-    s->stage=0; // 0= new uniform grid
-    s->mode=GSL_VEGAS_MODE_IMPORTANCE;  //Can pick between importance or stratified sampling
-//     s->alpha=1.6;
-    gsl_monte_vegas_integrate (&F, xl, xu, 3, 1000, r, s, &result, &error);
-//     double chisqdiff =fabs (gsl_monte_vegas_chisq(s) - 1.0);
-//     std::cout<<"Integral "<<result<<" Reduced chisquare: "<<chisqdiff<<std::endl; //######################## DEBUG
-    s->stage=1; //1= keep grid from previous run
-    diff=1.0; //set to 100% to start loop
-    while(diff>0.01)
+    if(strat==1)
     {
-      prev_res=result;
-      gsl_monte_vegas_integrate (&F, xl, xu, 3, calls, r, s, &result, &error);
-//       chisqdiff= fabs (gsl_monte_vegas_chisq(s) - 1.0); //Check whether chisq/dof is consistent with 1 
-      diff= fabs((prev_res-result)/result); //relative difference of last 2 iterations
-      std::cout<<"Integral "<<result<<" Relative difference: "<<diff<<std::endl; //######################## DEBUG
+      // VEGAS Monte Carlo Integration
+      //Define a gsl_monte_function to pass to the integrator
+      gsl_monte_function F;
+      F.f = &integrand<PartialCrossX>;
+      F.dim = 3;
+      F.params = &int_pars;      
+
+      //Initialize random number gen for monte carlo
+      gsl_rng_env_setup ();
+      const gsl_rng_type *T;
+      gsl_rng *r;
+      T = gsl_rng_default;
+      r = gsl_rng_alloc (T);
+      
+      //Integration
+      gsl_monte_vegas_state *s = gsl_monte_vegas_alloc(3);
+      s->stage=0; // 0= new uniform grid
+      s->mode=GSL_VEGAS_MODE_IMPORTANCE;  //Can pick between importance or stratified sampling
+  //     s->alpha=1.6;
+      gsl_monte_vegas_integrate (&F, xl, xu, dimint, 1000, r, s, &result, &error);
+  //     double chisqdiff =fabs (gsl_monte_vegas_chisq(s) - 1.0);
+  //     std::cout<<"Integral "<<result<<" Reduced chisquare: "<<chisqdiff<<std::endl; //######################## DEBUG
+      s->stage=1; //1= keep grid from previous run
+      diff=1.0; //set to 100% to start loop
+      while(diff>epsrel)
+      {
+        prev_res=result;
+        gsl_monte_vegas_integrate (&F, xl, xu, 3, calls, r, s, &result, &error);
+  //       chisqdiff= fabs (gsl_monte_vegas_chisq(s) - 1.0); //Check whether chisq/dof is consistent with 1 
+        diff= fabs((prev_res-result)/result); //relative difference of last 2 iterations
+        std::cout<<"Integral "<<result<<" Relative difference: "<<diff<<std::endl; //######################## DEBUG
+      }
+      //Free integration memory
+      gsl_monte_vegas_free(s);
     }
-    //Free integration memory
-    gsl_monte_vegas_free(s);
-    
+    else if(strat==2)
+    {
+      hcubature(dimres, &integrand_cubature<PartialCrossX>, &int_pars, dimint, xl, xu, 0, epsabs, epsrel, ERROR_INDIVIDUAL, &result, &error);
+      std::cout<<"Integral "<<result<<" Error: "<<error<<std::endl; //######################## DEBUG
+    }
+    else if(strat==3)  //CUHRE integration
+    {
+      const int key(11);
+      int nregions, neval, fail;
+      cubareal integral[dimres], aerr[dimres], prob[dimres];
+      //Constructing parameter space
+      double* interval[2] ={xl, xu};
+      struct cuba_par cpars = {interval, int_pars};
+      Cuhre(dimint, dimres, integrand_cuba<PartialCrossX>, &cpars, 1, epsrel , epsabs, 0, mineval, maxeval, key, NULL, NULL, &nregions, &neval, &fail, integral, aerr, prob );
+      result= integral[0];
+      std::cout<<"Integral "<<result<<std::endl; //######################## DEBUG
+    }
+    else if(strat==4)  //SUAVE integration
+    {
+      int nregions, neval, fail;
+      cubareal integral[dimres], aerr[dimres], prob[dimres];
+      //Constructing parameter space
+      double* interval[2] ={xl, xu};
+      struct cuba_par cpars = {interval, int_pars};
+      Suave(dimint, dimres, integrand_cuba<PartialCrossX>, &cpars, 1, epsrel , epsabs, 0, 0, mineval, maxeval, 10, 5, 0.4,  NULL, NULL, &nregions, &neval, &fail, integral, aerr, prob);
+      result= integral[0];
+      std::cout<<"Integral "<<result<<std::endl; //######################## DEBUG
+    }
     
     return result;
   }

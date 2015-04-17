@@ -267,7 +267,7 @@ struct SigTot{
 pheno::HadronXSec::HadronXSec(fundamental::fermionExt* f_out, pheno::ZpModel* p_model, char* pdf_grid_file, double Ecoll)
 {
   accuracy_goal = 1e-2;  //Default numerica integ accuracy
-  calls = 10000; //Default value for calls per monte carlo integration point
+  calls = 3000; //Default value for calls per monte carlo integration point
   Epp = Ecoll;
   //Allocate parpxsec->sigSM(Ecm)tonic cross sections
   dxsec = new pheno::PartonXSec(&(p_model->d), f_out, p_model);
@@ -351,16 +351,16 @@ void pheno::HadronXSec::crossSections(double Ecm, std::vector< double >* results
 
 
 //Calculate the total hadronic cross section in the bounds [el, eh]
-double pheno::HadronXSec::totXsec(double el, double eh, double accuracy, double (* psmear)(double,double))
+double pheno::HadronXSec::totXsec(double el, double eh, double accuracy, double (* psmear)(double,double), int strategy)
 {
   if(psmear==NULL)  return binnedXsec<SigTot>(el, eh, accuracy);
-  else return detectedXsec<SigTot>(el, eh, psmear);
+  else return detectedXsec<SigTot>(el, eh,accuracy, strategy, psmear);
 }
 
 
 //Calculate the zp hadronic cross section in the bounds [el, eh]
-double pheno::HadronXSec::zpXsec(double el, double eh, double accuracy, double (* psmear)(double,double))
+double pheno::HadronXSec::zpXsec(double el, double eh, double accuracy, double (* psmear)(double,double), int strategy)
 {
   if(psmear==NULL)  return binnedXsec<SigZp>(el, eh, accuracy);
-  else return detectedXsec<SigZp>(el, eh, psmear);
+  else return detectedXsec<SigZp>(el, eh, accuracy, strategy, psmear);
 }
