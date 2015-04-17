@@ -24,11 +24,11 @@ struct LinBin{
 
 
 struct LogBin{
-  ///Binning from Atlas paper: arXiv 1405.4123v
-  const double offset = log(4208)-log(3934);
+  ///Binning from Atlas paper: arXiv 1405.4123
+  const static double exp_offset = 4500./4208.;
   double operator() (double low)
   {
-    return exp(log(low)+offset);
+    return exp(log(low)+log(exp_offset));
   }
 };
 
@@ -50,7 +50,7 @@ int main(int argc, char** argv){
 //   pheno::ZpModel ssm(91.1876);  
   for(double mzp =1000; mzp<=1000; mzp+=500)
   {
-    pheno::ZpModel ssm(mzp);
+    pheno::ZpModel ssm(1500);
     printf("Relative width of Zp in SSM: %g%%\n",ssm.wzp_()/ssm.mzp_()*100);
     
     pheno::HadronXSec ssmxsec(&ssm.mu, &ssm, pdfset);
@@ -68,19 +68,20 @@ int main(int argc, char** argv){
     
     //Output Histogram
     struct timeval tv;
-    double fb2pb = 0.001;
-    pheno::HistWriter<LogBin, pheno::HadronXSec> hist(&ssmxsec, &pheno::HadronXSec::zpXsec, NULL);
+//     double fb2pb = 0.001;
+    double luminosity = 20.5; // in fb^-1 (see arXiv 1405.4123 Figure 2)
+    pheno::HistWriter<LogBin, pheno::HadronXSec> hist(&ssmxsec, &pheno::HadronXSec::totXsec, NULL);
     char histf[] = "/scratch/foldenauer/data/xscan/hist0.dat";
     gettimeofday(&tv, NULL);  
     double t0=tv.tv_sec+(tv.tv_usec/1000000.0);     
-    hist.writeHist( 40, 4500, 0.05, histf, fb2pb);    
+    hist.writeHist( 80, 4500, 0.05, histf, luminosity);    
     
-    pheno::HistWriter<LogBin, pheno::HadronXSec> hist2(&ssmxsec, &pheno::HadronXSec::zpXsec, &gaussian);
+    pheno::HistWriter<LogBin, pheno::HadronXSec> hist2(&ssmxsec, &pheno::HadronXSec::totXsec, &gaussian);
     char histf2[] = "/scratch/foldenauer/data/xscan/hist_smear.dat";
     gettimeofday(&tv, NULL);
     double t0b=tv.tv_sec+(tv.tv_usec/1000000.0);     
-    printf("Writing histogram took: %g s\n", t0b-t0);
-    hist2.writeHist( 40, 4500, 5e-3, histf2, fb2pb); 
+    printf("Writing histogram took: %g s\n\n", t0b-t0);
+    hist2.writeHist( 80, 4500, 1e-3, histf2, luminosity); 
     
     gettimeofday(&tv, NULL);  
     double t1=tv.tv_sec+(tv.tv_usec/1000000.0);   
@@ -117,7 +118,7 @@ int main(int argc, char** argv){
   
   //Setup SpectrumScanner
   pheno::HadronXSec hsec(&m.mu, &m, pdfset);
-  pheno::SpectrumScanner<pheno::HadronXSec> scanner(&m, &hsec, 1);    
+  pheno::SpectrumScanner<pheno::HadronXSec> scanner(&m, &hsec);    
  
   
   

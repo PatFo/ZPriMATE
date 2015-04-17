@@ -14,10 +14,9 @@
 
 //Constructor
 template<class CrossSection>
-pheno::SpectrumScanner<CrossSection>::SpectrumScanner(pheno::ZpModel* pmod, CrossSection* phsec, unsigned int int_strategy)
+pheno::SpectrumScanner<CrossSection>::SpectrumScanner(pheno::ZpModel* pmod, CrossSection* phsec)
 {
   //Initialize
-  strategy = int_strategy;
   _model=pmod;
   _hsec=phsec;
   
@@ -106,7 +105,7 @@ void pheno::SpectrumScanner<CrossSection>::sampler(char* outfile, double low, do
   for(double E=low; E<high; E+=step)
   {
     std::vector<double> res;
-    _hsec->crossSections(E, &res, strategy);
+    _hsec->crossSections(E, &res);
     char buffer[100];
     std::sprintf(buffer, "%-7g %-15g %-15g %-15g %-15g\n", E, res[0], res[1], res[2], res[3]);
     outf<<buffer;

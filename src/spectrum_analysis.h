@@ -21,7 +21,6 @@ namespace pheno {
   template<class CrossSection>
   class SpectrumScanner {
     private:
-      unsigned int strategy;
       ZpModel* _model;
       CrossSection* _hsec;
       //Sampling Regions
@@ -34,7 +33,7 @@ namespace pheno {
       void add_interval(double* pinterval); //WARNING: Needs a static array of type double with 3 elements, e.g. double arr[3]={1.,2.,3.};
       void reset_sampling();
       void scan(char* outfile);
-      SpectrumScanner(pheno::ZpModel* pmod, CrossSection* phsec, unsigned int int_strategy=1);
+      SpectrumScanner(pheno::ZpModel* pmod, CrossSection* phsec);
       ~SpectrumScanner();
   };
   
@@ -51,7 +50,7 @@ namespace pheno {
     ///Pass the binning scheme functor as temnplate argument 'Binning' and the class whose function gets plotted as argument 'T'
     ///Pass the function as a pointer
     private:
-      const static double reldiff=1e5;
+      const static double reldiff=1e2; //Maximum rel difference between two consecutive bins before switch
       T * pobj;
       double (T::* pfunc)(double, double, double, double(*)(double, double), int);
       double(* psmear)(double, double);
@@ -71,7 +70,7 @@ namespace pheno {
     pheno::HistWriter<Binning, T>::psmear=psmearing; 
   }
   
-  
+      
   
   template<class Binning, class T>
   void pheno::HistWriter<Binning, T>::writeHist(double ll, double ul, double acc, char* outfile, double factor)
@@ -84,17 +83,26 @@ namespace pheno {
     for(double low = ll; low<ul; )
     {
       double high = f(low); //Calculate upper bound for bin
+      //Integrate with cubature
       double res = ((this->pobj)->* (this->pfunc))(low, high, acc, this->psmear, 2);
       if(prev!=0)
       {
-        double ratio1 = abs ((res-prev)/prev);
-        double ratio2 = abs((res-prev)/res);
+        double ratio1, ratio2, diff= res-prev;
+        if(diff>0)
+        {
+          ratio1 = diff/prev;
+          ratio2 = diff/res;
+        }else{
+          ratio1 = -diff/prev;
+          ratio2 = -diff/res;
+        }
         std::printf("Checking deviations %g %g\n", ratio1, ratio2);      //#############################################v DEBUG
         //Check whether there is a hughe leap in the integral --> wrong convergence
-        if( ( ratio1 > (this->reldiff)) || (ratio2 > (this->reldiff)) )
+        if( ( ratio1 > (this->reldiff)) || ( ratio2 > (this->reldiff)) )
         {
+          //Switsch to Monte Carlo integration
           std::printf("Match jumping criterion. Relative deviations are %g %g\n", ratio1, ratio2);      //#############################################v DEBUG
-          res = ((this->pobj)->* (this->pfunc))(low, high, 1e-2,  this->psmear, 1); 
+          res = ((this->pobj)->* (this->pfunc))(low, high, 3e-2,  this->psmear, 1); 
         }
       }
       outf<<low<<"\t"<<res * factor <<"\n"; //Write the bin to file

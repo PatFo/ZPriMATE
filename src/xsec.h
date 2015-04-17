@@ -15,7 +15,6 @@
 #include <gsl/gsl_integration.h>
 //Cubature integration methods
 #include <cubature.h>
-#include <cuba.h>
 
 
 #include <iostream> //DEBUG
@@ -60,7 +59,7 @@ namespace pheno{
       //Member function that fills EMPTY vector with sigSM, sigInt, sigSignal, sigTotal 
       //ALWAYS use this function if more than one of these cross sections is needed at a time
       //Strategy only needed for interface with SpectrumScanner -> NOT USED
-      void crossSections (double Ecm, std::vector<double> * results, unsigned int int_strategy=1);
+      void crossSections (double Ecm, std::vector<double> * results);
       //Class Constructor: Give model as reference &model
       PartonXSec(fundamental::fermionExt* f_in, fundamental::fermionExt* f_out, pheno::ZpModel* p_model);
       ///Give the two fermions and the model as reference to the constructor!
@@ -95,29 +94,32 @@ namespace pheno{
       PartonXSec* bxsec;
       c_mstwpdf* pdf;
       //Subroutine for pdf convoluted cross sections: Specify partial cross section in functor object
-      template<class PartialCrossX> double pdfconvoluted( double Ecm, unsigned int int_strategy=1);
-//       template<class PartialCrossX> double binnedXsec(double el, double eh, double accuracy);
-      template<class PartialCrossX> double binnedXsec(double el, double eh, double accuracy);
+      template<class PartialCrossX> double pdfconvoluted( double Ecm );
       //Full experimentally detectable cross section
+      template<class PartialCrossX> double theoXsec(double el, double eh, double acc);
       template<class PartialCrossX> double detectedXsec(double el, double eh, double acc, int strategy, double (* psmear)(double, double));
     public:
       void set_accuracy(double accuracy);
       void set_monte_calls(size_t int_calls);
       //Hadronic differential cross sections dSig/dm
-      double dsigSM    (double Ecm, unsigned int int_strategy=1);
-      double dsigInt   (double Ecm, unsigned int int_strategy=1);
-      double dsigSignal(double Ecm, unsigned int int_strategy=1);
-      double dsigTotal (double Ecm, unsigned int int_strategy=1);
+      double dsigSM    (double Ecm );
+      double dsigInt   (double Ecm );
+      double dsigSignal(double Ecm );
+      double dsigTotal (double Ecm );
       //Member function that fills EMPTY vector with sigSM, sigInt, sigSignal, sigTotal 
       //ALWAYS use this function if more than one of these cross sections is needed at a time
-      void crossSections (double Ecm, std::vector<double> * results, unsigned int int_strategy=1);
+      void crossSections (double Ecm, std::vector<double> * results);
       //Full pure hadronic cross sections
-      double totXsec(double el, double eh, double accuracy, double (* psmear)(double,double)=NULL, int strategy=1);
+      double smXsec(double el, double eh, double accuracy, double (* psmear)(double,double)=NULL, int strategy=1);
       double zpXsec(double el, double eh, double accuracy, double (* psmear)(double,double)=NULL, int strategy=1);
+      double totXsec(double el, double eh, double accuracy, double (* psmear)(double,double)=NULL, int strategy=1);
       //Constructor and destructor to take care of memory allocations
       HadronXSec(fundamental::fermionExt* f_out, pheno::ZpModel* p_model, char* pdf_grid_file, double Ecoll=8000.);
       ~HadronXSec();  
   };
+  
+  
+  
   
   
   
@@ -163,23 +165,12 @@ namespace pheno{
   
   
   
-  //Implementation of gsl monte carlo integrable function: 
-  //Monte Carlo Integration
-  inline double monte_pdf(double x[], size_t dim, void * p)
-  {
-    //Check that integration vector is one dimensional
-    if(dim!=1)
-      throw std::runtime_error("ERROR: Integration dim!=1");
-    //Use implementation for regular numerical integration
-    return num_pdf(x[0], p);
-  }
-  
-  
+
   
   
   //Function that integrates cross section 
   template<class PartialCrossX> 
-  double pheno::HadronXSec::pdfconvoluted( double Ecm, unsigned int int_strategy)
+  double pheno::HadronXSec::pdfconvoluted( double Ecm )
   {
     //Construct parameters
     PartialCrossX f;
@@ -198,100 +189,100 @@ namespace pheno{
     double xl = Ecm*Ecm/(Epp*Epp);  //lower integration limit
     double xu = 1;  //Upper integration limit
     
-    if(int_strategy==1)
-    {
-      // QAG adaptive integration
-      //Define Integration function
-      gsl_function F;
-      F.function = &num_pdf;
-      F.params = &local_pars;
-      
-      //Integration
-      size_t bisection_lim =1000;
-      gsl_integration_workspace * w = gsl_integration_workspace_alloc (bisection_lim);
-      gsl_integration_qags (&F, xl, xu, 0, accuracy_goal, bisection_lim, w, &result, &error); 
-      //Free memory of integration workspace
-      gsl_integration_workspace_free(w);
-    }
-    else if(int_strategy==2)
-    {
-      // VEGAS Monte Carlo Integration
-      //Define a gsl_monte_function to pass to the integrator
-      gsl_monte_function F;
-      F.f = &monte_pdf;
-      F.dim = 1;
-      F.params = &local_pars;      
-
-      //Initialize random number gen for monte carlo
-      gsl_rng_env_setup ();
-      const gsl_rng_type *T;
-      gsl_rng *r;
-      T = gsl_rng_default;
-      r = gsl_rng_alloc (T);
-
-      //Integration
-      double axl[1] = {xl};
-      double axu[1] = {xu};
-      gsl_monte_vegas_state *s = gsl_monte_vegas_alloc (1);
-      gsl_monte_vegas_integrate (&F, axl, axu, 1, calls, r, s, &result, &error);
-      //Free integration memory
-      gsl_monte_vegas_free(s);
-    }
-    else
-    {
-      throw std::runtime_error("ERROR: Undefined integration strategy code.");
-    }
-    
-    return result;
-  }
-  
-  
-
-  
-  template<class PartialCrossX>   
-  double dSigdM(double E, void * p)
-  {
-    HadronXSec * phsec = (HadronXSec *) p;
-    //If no smearing function was defined just integrate the pure hadron diff cross section
-    return 2*E * phsec->pdfconvoluted<PartialCrossX>(E, 1); 
-
-  }
-  
-  
-  
-  template<class PartialCrossX> 
-  double pheno::HadronXSec::binnedXsec(double el, double eh, double accuracy)
-  {
-    //Implement binwise integration scheme
-    //Parameter and result objects
-    double result, error;
-    
     // QAG adaptive integration
     //Define Integration function
     gsl_function F;
-    F.function = &dSigdM<PartialCrossX>;
-    F.params = this;
+    F.function = &num_pdf;
+    F.params = &local_pars;
     
     //Integration
-    size_t bisection_lim = 1000;
+    size_t bisection_lim =1000;
     gsl_integration_workspace * w = gsl_integration_workspace_alloc (bisection_lim);
-    gsl_integration_qags (&F, el, eh, 0, accuracy, bisection_lim, w, &result, &error); 
+    gsl_integration_qags (&F, xl, xu, 0, accuracy_goal, bisection_lim, w, &result, &error); 
     //Free memory of integration workspace
     gsl_integration_workspace_free(w);
     
     return result;
   }
+  
+  
+
 
   
-  
-  
-  //Multi dim Monte Carlo implementation 
+  //Total binned cross section integration (theoretical) 
   //-------------------------------------------------------------------------------------------
   
   //Parameter struct for integrable function
   struct parameter_set{ int narr; PartonXSec** ppx; c_mstwpdf* ppdf; double (* psmear)(double, double); double Ecoll; };
+    
+
   
-  struct cuba_par{ double** interval; parameter_set pars; };
+  
+  
+    //Cubature adaptor (Johnson)
+  template<class PartialCrossX> 
+  inline int integrand_th(unsigned ndim, const double *d, void *fdata, unsigned fdim, double *fval)
+  {
+    //Get initialization parameters
+    PartialCrossX cross;
+    struct parameter_set* pars = (struct parameter_set *)fdata;
+    
+    //Define Bjorken x
+    double scoll = pars->Ecoll * pars->Ecoll;
+    double dx1dy = (scoll - d[0]*d[0])/scoll;
+    double x1 = dx1dy * d[1] + d[0]*d[0]/scoll; // Variable trafo from x1 to y=a*x1 + b
+    double x2 = d[0]*d[0]/(x1 * scoll);
+    
+    //Calculate sum of cross sections
+    fval[0]= 0.;
+    for(int i=0; i<pars->narr; ++i)
+    {
+      double pdg = (pars->ppx[i])->pdg_in();
+      fval[0] +=  dx1dy * 2 * d[0]/scoll *     //Prefactors 
+              cross(pars->ppx[i], d[0]) *  //Parton level cross section
+              ( 
+              pars->ppdf->parton( -1*pdg,  x1, pars->Ecoll )/(x1*x1) * //PDFs with antiquark in first proton
+              pars->ppdf->parton(    pdg,  x2, pars->Ecoll )/x2
+              + 
+              pars->ppdf->parton(    pdg,  x1, pars->Ecoll )/(x1*x1) * //Mirror: PDFs with antiquark in second proton   
+              pars->ppdf->parton( -1*pdg,  x2, pars->Ecoll )/x2 );
+    }    
+    return 0;
+  }
+  
+  
+  
+  
+  
+  template<class PartialCrossX> 
+  double pheno::HadronXSec::theoXsec(double el, double eh, double acc)
+  {    
+    //Construct parameters
+    PartonXSec* pp[]= {dxsec, uxsec, sxsec, cxsec, bxsec};                    
+    struct parameter_set int_pars = {5, pp, pdf, NULL, Epp};  
+    double epsabs(0.), epsrel(acc);
+    const int dimint(2), dimres(1);
+
+    //Integration variables
+    double result, error;
+    double xl[2] = {el, 0};
+    double xu[2] = {eh, 1};    
+ 
+    //Integration
+    hcubature(dimres, &integrand_th<PartialCrossX>, &int_pars, dimint, xl, xu, 0, epsabs, epsrel, ERROR_INDIVIDUAL, &result, &error);
+    std::cout<<"Integral "<<result<<" Error: "<<error<<std::endl; //######################## DEBUG
+    
+    return result;
+  }
+  
+  
+  
+  
+  
+  //Total binned cross section integration (detectable/smeared) 
+  //-------------------------------------------------------------------------------------------
+  
+  
   
   
   
@@ -303,6 +294,7 @@ namespace pheno{
     //Get initialization parameters
     PartialCrossX cross;
     struct parameter_set* pars = (struct parameter_set *)p;
+    
     //Define Bjorken x
     double scoll = pars->Ecoll * pars->Ecoll;
     double dx1dy = (scoll - d[1]*d[1])/scoll;
@@ -346,31 +338,6 @@ namespace pheno{
   
   
   
-  //Cuba adaptor (Hahn)
-  template<class PartialCrossX> 
-  inline int integrand_cuba(const int *ndim, const double x[], const int *ncomp, double integral[], void *userdata)
-  {
-    double * x_temp= (double *) x;
-    size_t dim = (size_t) ndim;
-    struct cuba_par* cpars = (struct cuba_par *) userdata;
-    double** coeffs = cpars->interval;
-    double jacobi =1; //Jacobi determinant of trafo
-    //Linear trafo of coordinates
-    for(unsigned int i=0; i<3; ++i)
-    {
-      double dydx = (coeffs[1][i]-coeffs[0][i]);
-      jacobi *= dydx;
-      x_temp[i] = dydx*x_temp[i] + coeffs[0][i]; 
-    }
-//     std::cout<<"("<<x_temp[0]<<", "<<x_temp[1]<<", "<<x_temp[2]<<")\n";   //#######################################################  DEBUG  ##################################
-//     std::cout<<pars->narr<<endl;   //#######################################################  DEBUG  ##################################
-    integral[0]= integrand<PartialCrossX>(x_temp, dim, &(cpars->pars)) * jacobi;
-//     std::cout<<fval[0]<<"\n"; //#######################################################  DEBUG  ##################################
-    return 0;
-  }
-  
-  
-  
   
   template<class PartialCrossX> 
   double pheno::HadronXSec::detectedXsec(double el, double eh, double acc, int strat, double (* psmear)(double, double))
@@ -380,7 +347,7 @@ namespace pheno{
     PartonXSec* pp[]= {dxsec, uxsec, sxsec, cxsec, bxsec};                    
     struct parameter_set int_pars = {5, pp, pdf, psmear, Epp};  
     double epsabs(0.), epsrel(acc);
-    const int dimint(3), dimres(1), mineval(0), maxeval(100000);
+    const int dimint(3), dimres(1);
 
     //Integration variables
     double result, error, prev_res, diff;
@@ -429,29 +396,7 @@ namespace pheno{
       hcubature(dimres, &integrand_cubature<PartialCrossX>, &int_pars, dimint, xl, xu, 0, epsabs, epsrel, ERROR_INDIVIDUAL, &result, &error);
       std::cout<<"Integral "<<result<<" Error: "<<error<<std::endl; //######################## DEBUG
     }
-    else if(strat==3)  //CUHRE integration
-    {
-      const int key(11);
-      int nregions, neval, fail;
-      cubareal integral[dimres], aerr[dimres], prob[dimres];
-      //Constructing parameter space
-      double* interval[2] ={xl, xu};
-      struct cuba_par cpars = {interval, int_pars};
-      Cuhre(dimint, dimres, integrand_cuba<PartialCrossX>, &cpars, 1, epsrel , epsabs, 0, mineval, maxeval, key, NULL, NULL, &nregions, &neval, &fail, integral, aerr, prob );
-      result= integral[0];
-      std::cout<<"Integral "<<result<<std::endl; //######################## DEBUG
-    }
-    else if(strat==4)  //SUAVE integration
-    {
-      int nregions, neval, fail;
-      cubareal integral[dimres], aerr[dimres], prob[dimres];
-      //Constructing parameter space
-      double* interval[2] ={xl, xu};
-      struct cuba_par cpars = {interval, int_pars};
-      Suave(dimint, dimres, integrand_cuba<PartialCrossX>, &cpars, 1, epsrel , epsabs, 0, 0, mineval, maxeval, 10, 5, 0.4,  NULL, NULL, &nregions, &neval, &fail, integral, aerr, prob);
-      result= integral[0];
-      std::cout<<"Integral "<<result<<std::endl; //######################## DEBUG
-    }
+
     
     return result;
   }

@@ -185,7 +185,7 @@ double pheno::PartonXSec::sigTot(double Ecm)
 
 
 //Fast method for multiple cross sections
-void pheno::PartonXSec::crossSections(double Ecm, std::vector< double >* results, unsigned int int_strategy)
+void pheno::PartonXSec::crossSections(double Ecm, std::vector< double >* results)
 {
   double xsm = sigSM(Ecm);
   double xint = sigInt(Ecm);
@@ -309,39 +309,24 @@ void pheno::HadronXSec::set_accuracy(double accuracy)
 
 
 
-double pheno::HadronXSec::dsigSM(double Ecm, unsigned int int_strategy)
-{
-  return pdfconvoluted<SigSM>(Ecm, int_strategy);
-}
+double pheno::HadronXSec::dsigSM(double Ecm ){  return pdfconvoluted<SigSM>(Ecm);}
 
 
-
-double pheno::HadronXSec::dsigInt(double Ecm, unsigned int int_strategy)
-{
-  return dsigSM(Ecm, int_strategy) + pdfconvoluted<SigInt>(Ecm, int_strategy);
-}
+double pheno::HadronXSec::dsigInt(double Ecm ){ return dsigSM(Ecm) + pdfconvoluted<SigInt>(Ecm);}
 
 
-
-double pheno::HadronXSec::dsigSignal(double Ecm, unsigned int int_strategy)
-{
-  return dsigSM(Ecm, int_strategy) + pdfconvoluted<SigZp>(Ecm, int_strategy);
-}
+double pheno::HadronXSec::dsigSignal(double Ecm ){ return dsigSM(Ecm) + pdfconvoluted<SigZp>(Ecm);}
 
 
-
-double pheno::HadronXSec::dsigTotal(double Ecm, unsigned int int_strategy)
-{
-  return dsigInt(Ecm, int_strategy) +  pdfconvoluted<SigZp>(Ecm, int_strategy);
-}
+double pheno::HadronXSec::dsigTotal(double Ecm){ return dsigInt(Ecm) +  pdfconvoluted<SigZp>(Ecm);}
 
 
 //Fast method for multiple cross sections
-void pheno::HadronXSec::crossSections(double Ecm, std::vector< double >* results, unsigned int int_strategy)
+void pheno::HadronXSec::crossSections(double Ecm, std::vector< double >* results)
 {
-  double xsm = pdfconvoluted<SigSM>(Ecm, int_strategy);
-  double xint = pdfconvoluted<SigInt>(Ecm, int_strategy);
-  double xzp = pdfconvoluted<SigZp>(Ecm, int_strategy);
+  double xsm = pdfconvoluted<SigSM>(Ecm);
+  double xint = pdfconvoluted<SigInt>(Ecm);
+  double xzp = pdfconvoluted<SigZp>(Ecm);
   
   results->push_back(xsm+xint+xzp);
   results->push_back(xsm+xint);
@@ -350,17 +335,30 @@ void pheno::HadronXSec::crossSections(double Ecm, std::vector< double >* results
 }
 
 
-//Calculate the total hadronic cross section in the bounds [el, eh]
-double pheno::HadronXSec::totXsec(double el, double eh, double accuracy, double (* psmear)(double,double), int strategy)
+
+
+
+//Calculate the sm hadronic cross section in the bounds [el, eh]
+double pheno::HadronXSec::smXsec(double el, double eh, double accuracy, double (* psmear)(double,double), int strategy)
 {
-  if(psmear==NULL)  return binnedXsec<SigTot>(el, eh, accuracy);
-  else return detectedXsec<SigTot>(el, eh,accuracy, strategy, psmear);
+  if(psmear==NULL)  return theoXsec<SigSM>(el, eh, accuracy);
+  else return detectedXsec<SigSM>(el, eh,accuracy, strategy, psmear);
 }
 
 
 //Calculate the zp hadronic cross section in the bounds [el, eh]
 double pheno::HadronXSec::zpXsec(double el, double eh, double accuracy, double (* psmear)(double,double), int strategy)
 {
-  if(psmear==NULL)  return binnedXsec<SigZp>(el, eh, accuracy);
+  if(psmear==NULL)  return theoXsec<SigZp>(el, eh, accuracy);
   else return detectedXsec<SigZp>(el, eh, accuracy, strategy, psmear);
 }
+
+
+
+//Calculate the total hadronic cross section in the bounds [el, eh]
+double pheno::HadronXSec::totXsec(double el, double eh, double accuracy, double (* psmear)(double,double), int strategy)
+{
+  if(psmear==NULL)  return theoXsec<SigTot>(el, eh, accuracy);
+  else return detectedXsec<SigTot>(el, eh,accuracy, strategy, psmear);
+}
+
