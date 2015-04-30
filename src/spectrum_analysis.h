@@ -44,7 +44,7 @@ namespace pheno {
   //            Class for  histrogram output               //
   //*******************************************************//
   
-  template<class Binning, class T>
+  template< class T>
   class HistWriter {
     ///Class for writing histograms 
     ///Pass the binning scheme functor as temnplate argument 'Binning' and the class whose function gets plotted as argument 'T'
@@ -55,25 +55,26 @@ namespace pheno {
       double (T::* pfunc)(double, double, double, double(*)(double, double), int);
       double(* psmear)(double, double);
     public:
-      void writeHist(double ll, double ul, double acc, char* outfile, double factor=1.);
+      template<class Binning> void writeHist(double ll, double ul, double acc, char* outfile, double factor=1.);
       HistWriter(T* pobject, double (T::* pfunction)(double, double, double, double(*)(double, double), int), double(* psmearing)(double, double));      
   };
   
   
   
   
-  template<class Binning, class T>
-  pheno::HistWriter<Binning, T>::HistWriter(T* pobject, double (T::* pfunction)(double, double, double, double(*)(double, double), int), double(* psmearing)(double, double))
+  template< class T>
+  pheno::HistWriter<T>::HistWriter(T* pobject, double (T::* pfunction)(double, double, double, double(*)(double, double), int), double(* psmearing)(double, double))
   {
-    pheno::HistWriter<Binning, T>::pobj=pobject;
-    pheno::HistWriter<Binning, T>::pfunc=pfunction;
-    pheno::HistWriter<Binning, T>::psmear=psmearing; 
+    pheno::HistWriter<T>::pobj=pobject;
+    pheno::HistWriter<T>::pfunc=pfunction;
+    pheno::HistWriter<T>::psmear=psmearing; 
   }
   
       
   
-  template<class Binning, class T>
-  void pheno::HistWriter<Binning, T>::writeHist(double ll, double ul, double acc, char* outfile, double factor)
+  template<class T>
+  template<class Binning>
+  void pheno::HistWriter<T>::writeHist(double ll, double ul, double acc, char* outfile, double factor)
   {  
     //Create instance of binning functor
     Binning f;

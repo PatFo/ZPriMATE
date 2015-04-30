@@ -90,18 +90,18 @@ int main(int argc, char** argv){
   struct timeval tv;
 //     double fb2pb = 0.001;
   double luminosity = 20.5; // in fb^-1 (see arXiv 1405.4123 Figure 2)
-  pheno::HistWriter<LogBin, pheno::HadronXSec> hist(&ssmxsec, &pheno::HadronXSec::zpXsec, NULL);
+  pheno::HistWriter<pheno::HadronXSec> hist(&ssmxsec, &pheno::HadronXSec::zpXsec, NULL);
   char histf[] = "/scratch/foldenauer/data/xscan/hist0.dat";
   gettimeofday(&tv, NULL);  
   double t0=tv.tv_sec+(tv.tv_usec/1000000.0);     
-  hist.writeHist( 80, 4500, 0.05, histf, luminosity);    
+  hist.writeHist<LogBin>( 80, 4500, 0.05, histf, luminosity);    
   
-  pheno::HistWriter<LogBin, pheno::HadronXSec> hist2(&ssmxsec, &pheno::HadronXSec::zpXsec, &gaussian);
+  pheno::HistWriter<pheno::HadronXSec> hist2(&ssmxsec, &pheno::HadronXSec::zpXsec, &gaussian);
   char histf2[] = "/scratch/foldenauer/data/xscan/hist_smear.dat";
   gettimeofday(&tv, NULL);
   double t0b=tv.tv_sec+(tv.tv_usec/1000000.0);     
   printf("Writing histogram took: %g s\n\n", t0b-t0);
-  hist2.writeHist( 80, 4500, 1e-3, histf2, luminosity); 
+  hist2.writeHist<LogBin>( 80, 4500, 1e-3, histf2, luminosity); 
   
   gettimeofday(&tv, NULL);  
   double t1=tv.tv_sec+(tv.tv_usec/1000000.0);   
