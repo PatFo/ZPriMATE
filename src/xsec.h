@@ -374,17 +374,13 @@ namespace pheno{
       gsl_monte_vegas_state *s = gsl_monte_vegas_alloc(3);
       s->stage=0; // 0= new uniform grid
       s->mode=GSL_VEGAS_MODE_IMPORTANCE;  //Can pick between importance or stratified sampling
-  //     s->alpha=1.6;
       gsl_monte_vegas_integrate (&F, xl, xu, dimint, 1000, r, s, &result, &error);
-  //     double chisqdiff =fabs (gsl_monte_vegas_chisq(s) - 1.0);
-  //     std::cout<<"Integral "<<result<<" Reduced chisquare: "<<chisqdiff<<std::endl; //######################## DEBUG
       s->stage=1; //1= keep grid from previous run
       diff=1.0; //set to 100% to start loop
       while(diff>epsrel)
       {
         prev_res=result;
         gsl_monte_vegas_integrate (&F, xl, xu, 3, calls, r, s, &result, &error);
-  //       chisqdiff= fabs (gsl_monte_vegas_chisq(s) - 1.0); //Check whether chisq/dof is consistent with 1 
         diff= fabs((prev_res-result)/result); //relative difference of last 2 iterations
         std::cout<<"Integral "<<result<<" Relative difference: "<<diff<<std::endl; //######################## DEBUG
       }
