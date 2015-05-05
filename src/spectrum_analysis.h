@@ -13,7 +13,9 @@ namespace pheno {
   
   
   typedef std::vector<double*> sampling_scheme;
+  typedef std::vector<std::pair<double, double> > binning;
   
+    
   //*******************************************************//
   //            Class for scanning spectrum                //
   //*******************************************************//
@@ -40,6 +42,19 @@ namespace pheno {
   
   
   
+  
+  
+  //*******************************************************//
+  //            Function to get binning from file          //
+  //*******************************************************//
+  
+  
+  //Construct a histogram scheme from two column text file
+  binning get_binning(char* binfile);
+  
+  
+  
+  
   //*******************************************************//
   //            Class for  histrogram output               //
   //*******************************************************//
@@ -54,7 +69,9 @@ namespace pheno {
       T * pobj;
       double (T::* pfunc)(double, double, double, double(*)(double, double), int);
       double(* psmear)(double, double);
+      double writeHistCore(double lo, double hi, double acc, double prev);
     public:
+      void writeHist(binning *pbins, double acc, char* outfile, double factor=1.);
       template<class Binning> void writeHist(double ll, double ul, double acc, char* outfile, double factor=1.);
       HistWriter(T* pobject, double (T::* pfunction)(double, double, double, double(*)(double, double), int), double(* psmearing)(double, double));      
   };
@@ -70,7 +87,61 @@ namespace pheno {
     pheno::HistWriter<T>::psmear=psmearing; 
   }
   
+     
+     
+     
+  template<class T>
+  double pheno::HistWriter<T>::writeHistCore(double lo, double hi, double acc, double prev)
+  {
+    //Integrate with cubature
+    double res = ((this->pobj)->* (this->pfunc))(lo, hi, acc, this->psmear, 2);
+    if(prev!=0)
+    {
+      double ratio1, ratio2, diff= res-prev;
+      if(diff>0)
+      {
+        ratio1 = diff/prev;
+        ratio2 = diff/res;
+      }else{
+        ratio1 = -diff/prev;
+        ratio2 = -diff/res;
+      }
+      std::printf("Checking deviations %g %g\n", ratio1, ratio2);      //#############################################v DEBUG
+      //Check whether there is a hughe leap in the integral --> wrong convergence
+      if( ( ratio1 > (this->reldiff)) || ( ratio2 > (this->reldiff)) )
+      {
+        //Switch to Monte Carlo integration
+        std::printf("Match jumping criterion. Relative deviations are %g %g\n", ratio1, ratio2);      //#############################################v DEBUG
+        res = ((this->pobj)->* (this->pfunc))(lo, hi, 3e-2,  this->psmear, 1); 
+      }
+    }
+    return res;
+  }
+
+  
+  
+  
+  template<class T>  
+  void pheno::HistWriter<T>::writeHist(binning *pbins, double acc, char* outfile, double factor)
+  {  
+    std::ofstream outf(outfile);
+    double prev=0;
+    int length = pbins->size();
+    //Write histogram to file in loop
+    for(int i=0; i<length; ++i)
+    {
+      double low = (pbins->operator[](i)).first; //Get lower bound for bin
+      double high = (pbins->operator[](i)).second; //Get upper bound for bin
+
+      double res = this->writeHistCore(low, high, acc, prev);
       
+      outf<<low<<"\t"<<res * factor <<"\n"; //Write the bin to file
+      prev= res;  //Save the last value
+      std::printf("Previous result %g\n", prev);      //#############################################v DEBUG
+    }
+    outf.close();
+  }  
+     
   
   template<class T>
   template<class Binning>
@@ -84,28 +155,9 @@ namespace pheno {
     for(double low = ll; low<ul; )
     {
       double high = f(low); //Calculate upper bound for bin
-      //Integrate with cubature
-      double res = ((this->pobj)->* (this->pfunc))(low, high, acc, this->psmear, 2);
-      if(prev!=0)
-      {
-        double ratio1, ratio2, diff= res-prev;
-        if(diff>0)
-        {
-          ratio1 = diff/prev;
-          ratio2 = diff/res;
-        }else{
-          ratio1 = -diff/prev;
-          ratio2 = -diff/res;
-        }
-        std::printf("Checking deviations %g %g\n", ratio1, ratio2);      //#############################################v DEBUG
-        //Check whether there is a hughe leap in the integral --> wrong convergence
-        if( ( ratio1 > (this->reldiff)) || ( ratio2 > (this->reldiff)) )
-        {
-          //Switsch to Monte Carlo integration
-          std::printf("Match jumping criterion. Relative deviations are %g %g\n", ratio1, ratio2);      //#############################################v DEBUG
-          res = ((this->pobj)->* (this->pfunc))(low, high, 3e-2,  this->psmear, 1); 
-        }
-      }
+
+      double res = this->writeHistCore(low, high, acc, prev);
+      
       outf<<low<<"\t"<<res * factor <<"\n"; //Write the bin to file
       low = high; //Set new lower bound
       prev= res;  //Save the last value

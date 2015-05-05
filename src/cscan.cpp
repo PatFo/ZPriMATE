@@ -49,6 +49,7 @@ double gaussian(double mu, double x)
 
 int main(int argc, char** argv){
   
+    
     char pdfset[] = "/remote/pi104a/foldenauer/local/MSTW/Grids/mstw2008lo.68cl.21.dat";
   //Initialize SSM
 //   pheno::ZpModel ssm(91.1876);  
@@ -86,6 +87,15 @@ int main(int argc, char** argv){
   printf("Partonic cross section for d d~ -> (Z,Zp) -> mu+ mu- @ %g GeV: %g\n", mqq, ssmxsec.dxsec->sigZZp(mqq) );
   printf("\nTotal cross section for d d~ -> mu+ mu- @ %g GeV: %g\n", mqq, ssmxsec.dxsec->sigTot(mqq));
   
+  
+  //Reading bins for histograms
+  pheno::binning bins = pheno::get_binning("/remote/pi104a/foldenauer/data/xscan/dimuon_bins.dat");
+  for(pheno::binning::iterator it = bins.begin(); it != bins.end(); ++it)
+  {
+//     printf("Bin: [%g,%g]\n", it->first, it->second);
+  }
+  
+  
   //Output Histogram
   struct timeval tv;
 //     double fb2pb = 0.001;
@@ -94,14 +104,19 @@ int main(int argc, char** argv){
   char histf[] = "/scratch/foldenauer/data/xscan/hist0.dat";
   gettimeofday(&tv, NULL);  
   double t0=tv.tv_sec+(tv.tv_usec/1000000.0);     
-  hist.writeHist<LogBin>( 80, 4500, 0.05, histf, luminosity);    
+  hist.writeHist( &bins, 0.05, histf, luminosity);    
+//   hist.writeHist<LogBin>( 80, 4500, 0.05, histf, luminosity);    
   
   pheno::HistWriter<pheno::HadronXSec> hist2(&ssmxsec, &pheno::HadronXSec::zpXsec, &gaussian);
   char histf2[] = "/scratch/foldenauer/data/xscan/hist_smear.dat";
   gettimeofday(&tv, NULL);
   double t0b=tv.tv_sec+(tv.tv_usec/1000000.0);     
   printf("Writing histogram took: %g s\n\n", t0b-t0);
-  hist2.writeHist<LogBin>( 80, 4500, 1e-3, histf2, luminosity); 
+  hist2.writeHist( &bins, 1e-3, histf2, luminosity); 
+//   hist2.writeHist<LogBin>( 80, 4500, 1e-3, histf2, luminosity); 
+  
+  
+
   
   gettimeofday(&tv, NULL);  
   double t1=tv.tv_sec+(tv.tv_usec/1000000.0);   

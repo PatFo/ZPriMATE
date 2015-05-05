@@ -2,6 +2,8 @@
 #include <stdio.h>
 #include <fstream>
 #include <cstdio>
+#include <cstring>
+
 
 
 
@@ -141,3 +143,45 @@ void pheno::SpectrumScanner<CrossSection>::scan(char* outfile)
 //Explicit instantiation so that linking works --> ONLY these types can be used
 template class pheno::SpectrumScanner<pheno::PartonXSec>;
 template class pheno::SpectrumScanner<pheno::HadronXSec>;
+
+
+
+
+
+//*******************************************************//
+//            Function to get binning from file          //
+//*******************************************************//
+
+
+
+pheno::binning pheno::get_binning(char* binfile)
+{
+  pheno::binning tmp;
+  std::ifstream ifs(binfile);
+  const int MAX_CHARS(100);
+  char buf[MAX_CHARS];     
+  
+  //Ignore first line: contains only comments
+  ifs.getline(buf,MAX_CHARS);
+  
+  //Loop over data
+  while(!ifs.eof())
+  {
+    //Read line
+    ifs.getline(buf,MAX_CHARS);
+    
+    char* tokens[2];
+    const char* const DELIMITER = "\t";
+    
+    //Split line into items
+    tokens[0] = std::strtok(buf, DELIMITER);
+    tokens[1] = std::strtok(NULL, DELIMITER);
+//     std::printf("%s\t%s",tokens[0], tokens[1]);
+    
+    //Insert values into binning vector
+    tmp.push_back( std::pair<double,double>(atof(tokens[0]), atof(tokens[1])) );
+  }
+  
+  return tmp;
+}
+
