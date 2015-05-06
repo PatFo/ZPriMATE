@@ -270,7 +270,7 @@ namespace pheno{
  
     //Integration
     hcubature(dimres, &integrand_th<PartialCrossX>, &int_pars, dimint, xl, xu, 0, epsabs, epsrel, ERROR_INDIVIDUAL, &result, &error);
-    std::cout<<"Integral "<<result<<" Error: "<<error<<std::endl; //######################## DEBUG
+//     std::cout<<"Integral "<<result<<" Error: "<<error<<std::endl; //######################## DEBUG
     
     return result;
   }

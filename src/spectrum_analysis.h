@@ -130,10 +130,15 @@ namespace pheno {
     //Write histogram to file in loop
     for(int i=0; i<length; ++i)
     {
+      double accuracy = acc;
+      //Calculate first point with high accuracy to have a reliable starting point for convergence test
+      if(i==0){accuracy= 1e-6;} 
+      
       double low = (pbins->operator[](i)).first; //Get lower bound for bin
       double high = (pbins->operator[](i)).second; //Get upper bound for bin
 
-      double res = this->writeHistCore(low, high, acc, prev);
+      //Call core integration function
+      double res = this->writeHistCore(low, high, accuracy, prev);
       
       outf<<low<<"\t"<<res * factor <<"\n"; //Write the bin to file
       prev= res;  //Save the last value
