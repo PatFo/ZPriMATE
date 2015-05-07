@@ -137,10 +137,10 @@ namespace pheno {
       double low = (pbins->operator[](i)).first; //Get lower bound for bin
       double high = (pbins->operator[](i)).second; //Get upper bound for bin
 
-      //Call core integration function
+      //Call core integration function; teh cross section 'res' is given in [fb]
       double res = this->writeHistCore(low, high, accuracy, prev);
       
-      outf<<low<<"\t"<<res * factor <<"\n"; //Write the bin to file
+      outf<<low<<"\t"<<high<<"\t"<<res * factor <<"\n"; //Write the bin to file
       prev= res;  //Save the last value
       std::printf("Previous result %g\n", prev);      //#############################################v DEBUG
     }

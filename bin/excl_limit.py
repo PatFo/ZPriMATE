@@ -1,17 +1,24 @@
 #!/usr/bin/python
+import numpy as np
 import subprocess
 
 # Input parameters
 python_exec = "mypython"
 s95script = "/remote/pi104a/foldenauer/code/get_s95.py"
 analysis = "/remote/pi104a/foldenauer/data/xscan/dimuon.dat"
-outfile=  "/remote/pi104a/foldenauer/data/xscan/exclusion_limits_test.dat"
+outfile=  "/remote/pi104a/foldenauer/data/xscan/limits/limits"
+
+MAX_BINS = 20
 
 
 
 
-# Outputfile
-lim = open(outfile, 'w')
+xl   = []
+xr   = []
+nobs = []
+nexp = []
+nerr = []
+
 
 #Loop over analysis data
 with open(analysis, 'r') as openedFile:
@@ -22,26 +29,54 @@ with open(analysis, 'r') as openedFile:
     if lno>6:
       #Avoid empty lines
       if tab != []:
-        #print tab[3], tab[4], tab[5]
-        #Calculate line by line the 95% exclusion limit on the signal (observed and expected)
-        proc = subprocess.Popen(["%s %s %s %s %s" %(python_exec, s95script, tab[3], tab[4], tab[5]) ], stdout=subprocess.PIPE, shell=True)
-        (out, err) = proc.communicate()
-        print "program output:\n", out
-        o95 = 0 
-        e95 = 0
-        for row in out.split("\n"):
-          items = row.split()
-          #print items
-          if items != []:
-              if items[0]=='S95_obs:':
-                  print "observed %s" %items[1]
-                  o95 = items[1]
-              elif items[0]=='S95_exp:':
-                  print "expected %s" %items[1]
-                  e95 = items[1]
-        lim.write("%s\t%s\t%s\t%s\n"%(tab[1], tab[2], e95, o95))
+        # Assert that data has 6 columns
+        assert len(tab) == 6
+        #print tab
+        # Load data
+        xl.append(np.double(tab[1]))
+        xr.append(np.double(tab[2]))
+        nobs.append(np.double(tab[3]))
+        nexp.append(np.double(tab[4]))
+        nerr.append(np.double(tab[5]))
     lno +=1
-    print lno
+    
+#Generate lookup tables for combinations of 'nbins' neighbouring bins    
+for nadd in range(MAX_BINS):
+  nbins = 1 + nadd
+  print "Combining %s bin(s) to calculate exclusion limit ...\n"%nbins
+  lim = open(outfile+"_%s"%nbins, 'w')
   
-  
-lim.close()
+  #Loop over data and calculate exclusion limits  
+  for i in range( len(xl) - nadd  ):
+    #Construct new bin size
+    lo = xl[i]
+    hi = xr[i + nadd]
+    #Get bin entries
+    obs=0
+    exp=0
+    err=0
+    #Iterate of nbins consecutive bins and add up the values
+    for n in range(nbins):
+      obs += nobs[i+n]
+      exp += nexp[i+n]
+      err += nerr[i+n]
+    print lo, hi, obs, exp, err
+    
+    #Calculate line by line the 95% exclusion limit on the signal (observed and expected)
+    proc = subprocess.Popen(["%s %s %s %s %s" %(python_exec, s95script, obs, exp, err) ], stdout=subprocess.PIPE, shell=True)
+    (out, err) = proc.communicate()
+    #print "program output:\n", out     ################################ DEBUG STATEMENT
+    o95 = 0 
+    e95 = 0
+    for row in out.split("\n"):
+      items = row.split()
+      #print items
+      if items != []:
+          if items[0]=='S95_obs:':
+              #print "observed %s" %items[1]    ################################ DEBUG STATEMENT
+              o95 = items[1]
+          elif items[0]=='S95_exp:':
+              #print "expected %s" %items[1]    ################################ DEBUG STATEMENT
+              e95 = items[1]
+    lim.write("%s\t%s\t%s\t%s\n"%(lo, hi, e95, o95))
+  lim.close()
