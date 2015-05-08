@@ -26,7 +26,7 @@ BINDIR = bin
 
 #EXECUTABLES
 TEST_EXEC   = $(TSTDIR)/test 
-TARGET_EXEC = $(BINDIR)/cscan
+TARGET_EXEC = $(BINDIR)/core
 
 
 
@@ -86,7 +86,7 @@ $(BUILDDIR)/$(CUBA).o : $(CUBA).c  cubature.h
 
 
 clean:
-	$(RM) -r   *~  $(TARGET_EXEC) $(TEST_EXEC)   $(BUILDDIR)  $(BINDIR)/~   $(TSTDIR)/~ $(SRCDIR)/~
+	$(RM) -r   *~  $(TARGET_EXEC) $(TEST_EXEC)   $(BUILDDIR)  $(BINDIR)/*~   $(TSTDIR)/*~ $(SRCDIR)/*~
 
 #tar:
 #	tar cfv $(EXECUTABLE).tar main.cpp
