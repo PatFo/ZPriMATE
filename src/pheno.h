@@ -4,7 +4,7 @@
 #include <map>
 #include <string>
 #include "model.h"
-#include "read_config.h"
+#include "input.h"
 
 namespace pheno{
 
