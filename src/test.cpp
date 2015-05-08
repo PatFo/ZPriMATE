@@ -89,7 +89,8 @@ int main(int argc, char** argv){
   
   
   //Reading bins for histograms
-  pheno::binning bins = pheno::get_binning("/remote/pi104a/foldenauer/data/xscan/dimuon_bins.dat");
+  char binfile[] = "/remote/pi104a/foldenauer/data/xscan/dimuon_bins.dat";
+  pheno::binning bins = pheno::get_binning(binfile);
   for(pheno::binning::iterator it = bins.begin(); it != bins.end(); ++it)
   {
 //     printf("Bin: [%g,%g]\n", it->first, it->second);

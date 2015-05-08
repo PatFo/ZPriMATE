@@ -1,7 +1,8 @@
 # The variable MSTWDIR must point to the MSTW source directory
 MSTWDIR = /remote/pi104a/foldenauer/local/MSTW
 CUBADIR = /remote/pi104a/foldenauer/local/cubature-1.0.2
-#Search path
+
+#Extend Search path to include the dependencies
 VPATH = $(MSTWDIR):$(CUBADIR)
 
 MSTW = mstwpdf
@@ -14,21 +15,60 @@ DEBUG = -g
 MODE = $(RELEASE)
 CFLAGS = -Wall -c $(MODE) -I$(MSTWDIR)  -I$(CUBADIR) 
 LFLAGS = -Wall $(MODE) -lm -lgsl -lgslcblas 
+SRCEXT = cpp
+
+#Directories
 BUILDDIR = build
 SRCDIR = src
-SRCEXT = cpp
+TSTDIR = test
 BINDIR = bin
-TARGET = $(BINDIR)/cscan
 
 
+#EXECUTABLES
+TEST_EXEC   = $(TSTDIR)/test 
+TARGET_EXEC = $(BINDIR)/cscan
+
+
+
+# Calculate SOURCES, OBJECTS, TARGET and TEST
+#Define the 'main' files
+TARGET_SOURCE = $(SRCDIR)/main.cpp
+TEST_SOURCE  = $(SRCDIR)/test.cpp
+
+#Get common source files
 SOURCES = $(shell find $(SRCDIR) -type f -name *.$(SRCEXT))
-OBJECTS := $(patsubst $(SRCDIR)/%,$(BUILDDIR)/%,$(SOURCES:.$(SRCEXT)=.o))
-OBJECTS := $(OBJECTS) $(BUILDDIR)/$(MSTW).o $(BUILDDIR)/$(CUBA).o
+COMMON_SOURCES = $(filter-out $(TARGET_SOURCE) $(TEST_SOURCE), $(SOURCES))
+
+#Get Common object files
+COMMON_OBJECTS = $(patsubst $(SRCDIR)/%,$(BUILDDIR)/%,$(COMMON_SOURCES:.$(SRCEXT)=.o))
+COMMON_OBJECTS := $(COMMON_OBJECTS) $(BUILDDIR)/$(MSTW).o $(BUILDDIR)/$(CUBA).o
+
+#Get executable object files
+TARGET_OBJECT = $(patsubst $(SRCDIR)/%,$(BUILDDIR)/%,$(TARGET_SOURCE:.$(SRCEXT)=.o)) 
+TEST_OBJECT = $(patsubst $(SRCDIR)/%,$(BUILDDIR)/%,$(TEST_SOURCE:.$(SRCEXT)=.o)) 
 
 
-$(TARGET) : $(OBJECTS)
-	$(CC) $(OBJECTS) -o $@ $(LFLAGS)
 
+#MAKE RULES
+.PHONY: all cscan test
+
+all: cscan test
+
+cscan: $(TARGET_EXEC)
+
+test: $(TEST_EXEC)
+
+
+#Rule to make program executable
+$(TARGET_EXEC): $(COMMON_OBJECTS) $(TARGET_OBJECT)
+	$(CC) $^ -o $@ $(LFLAGS)
+
+#Rule to make test
+$(TEST_EXEC): $(COMMON_OBJECTS) $(TEST_OBJECT)
+	$(CC) $^ -o $@ $(LFLAGS)
+
+
+#Rule to make project object files
 $(BUILDDIR)/%.o : $(SRCDIR)/%.cpp
 	@mkdir -p $(BUILDDIR)
 	$(CC) $(CFLAGS) -o $@ $< 
@@ -46,7 +86,7 @@ $(BUILDDIR)/$(CUBA).o : $(CUBA).c  cubature.h
 
 
 clean:
-	$(RM) -r   *~  $(TARGET)  $(BINDIR)/*~   $(BUILDDIR)  $(SRCDIR)/*~ 
+	$(RM) -r   *~  $(TARGET_EXEC) $(TEST_EXEC)   $(BUILDDIR)  $(BINDIR)/~   $(TSTDIR)/~ $(SRCDIR)/~
 
 #tar:
 #	tar cfv $(EXECUTABLE).tar main.cpp
