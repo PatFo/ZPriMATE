@@ -126,7 +126,7 @@ dict conf_reader::get_config()
 
 
 
-///Fill the string map with the variable and correponding value given in start file
+///Fill the string map with the variable and correponding values given in start file
 void fill_map(strmap * pmap, std::ifstream * pistream)
 {
   while(!pistream->eof())
@@ -141,7 +141,7 @@ void fill_map(strmap * pmap, std::ifstream * pistream)
       //Check whether first item is a variable name
       if( words[0][0] =='$')
       {    
-        printf("Loading data\n");
+        printf("Loading data\n");       //###################################### DEBUG STATEMENT  
 
         std::vector<std::string> items;
         for(int i=1; i < len; ++i)
@@ -156,6 +156,8 @@ void fill_map(strmap * pmap, std::ifstream * pistream)
 
 
 
+
+///Read input file and extrac settings
 settings::settings(const char* startfile, bool verbose)
 {
   printf( "This is %s\n", startfile);       //###################################### DEBUG STATEMENT  
@@ -169,8 +171,36 @@ settings::settings(const char* startfile, bool verbose)
   fill_map(&inmap, &input);
   
   
-  //Get PDF set 
-  strmap::iterator it= inmap.find("$PDF");
+  
+  
+  ///Get MODEL file 
+  strmap::iterator it= inmap.find("$MODEL");
+  //Make sure that a file was specified
+  if(it == inmap.end()) throw std::runtime_error("ERROR: No MODEL file  specified.\n\n\t Define in input file as: \'$MODEL = /absolute/path/to/file\'\n\t OR: \'$MODEL = <Mass of Z\'_SSM>\'\n"); 
+  else
+  {
+    try
+    {
+      _mzssm = atof( ((it->second)[0]).c_str());
+      //If file path is given, no conversion possible and value is set to 0
+      if(_mzssm==0) throw 1;
+      _use_ssm = true;
+    }
+    catch(int i)
+    {
+      printf("Catching...\n");  //###################################### DEBUG STATEMENT   
+      _mzssm = -1;
+      _use_ssm = false;
+      _model = (it->second)[0];
+      
+    }
+    printf("Mass is %g\n",_mzssm);  //###################################### DEBUG STATEMENT   
+  } 
+
+  
+  
+  ///Get PDF set 
+  it= inmap.find("$PDF");
   //Make sure that a file was specified
   if(it == inmap.end()) throw std::runtime_error("ERROR: No PDF set specified.\n\n\t Define in input file as: \'$PDF = /absolute/path/to/file\'\n"); 
   else
@@ -179,7 +209,18 @@ settings::settings(const char* startfile, bool verbose)
     printf("%s\n",_pdfset.c_str());         //###################################### DEBUG STATEMENT   
   }   
   
-  //Get BINNING file 
+  
+  ///Get LIMIT directory 
+  it = inmap.find("$LIMITS");
+  //Make sure that a directory was specified
+  if(it == inmap.end()) throw std::runtime_error("ERROR: No LIMITS directory specified.\n\n\t Define in input file as: \'$LIMITS = /absolute/path/to/dir\'\n"); 
+  else
+  {
+    _limdir = (it->second)[0];
+    printf("%s\n",_limdir.c_str());         //###################################### DEBUG STATEMENT  
+  } 
+  
+  ///Get BINNING file 
   it = inmap.find("$BINS");
   //Make sure that a file was specified
   if(it == inmap.end()) throw std::runtime_error("ERROR: No BINNING specified.\n\n\t Define in input file as: \'$BINS = /absolute/path/to/file\'\n"); 
@@ -190,22 +231,148 @@ settings::settings(const char* startfile, bool verbose)
   }    
   
   
-    //Get BINNING file 
+  ///Get EFFICIENCIES file 
+  it = inmap.find("$EFFICIENCIES");
+  //Make sure that a file was specified
+  if(it == inmap.end())
+  {
+    if(verbose) printf("WARNING: No efficiency file specified.\n\n\t Define in input file as: \'$EFFICIENCIES = /absolute/path/to/file\'\n");
+    _efficiencies = "";
+  }
+  else
+  {
+    _efficiencies = (it->second)[0];
+    printf("%s\n",_efficiencies.c_str());         //###################################### DEBUG STATEMENT  
+  }  
+  
+  
+  ///Get search region; if not specified is set to -1 
   it = inmap.find("$SREGION");
   //Check whether search region was specified 
   if(it == inmap.end()) 
   {
-    if(verbose) printf("WARNING: No search region has been specified. Full data set is used.\n");
+    if(verbose) printf("WARNING: No search region has been specified.\n\n\t Define in input file as: \'$SREGION =  <low>  <high>\'\n");
     _smin = -1; 
-    _smax = -1;
-    
+    _smax = -1;    
   }
   else
   {
     _smin = atof( ((it->second)[0]).c_str());
     _smax = atof( ((it->second)[1]).c_str());
-    printf("%g\t%g\n",_smin, _smax);   
+    printf("%g\t%g\n",_smin, _smax);          //###################################### DEBUG STATEMENT     
   }   
+  
+  
+  ///Get Collider energy; if not specified defaults to 8TeV 
+  it = inmap.find("$EBEAM");
+  //Check whether beam energy was specified 
+  if(it == inmap.end()) 
+  {
+    _ebeam= 8000;  // Default value
+    if(verbose) printf("WARNING: No collider energy specified. Defaults to %g GeV.\n\n\t Define in input file as: \'$EBEAM = /absolute/path/to/file\'\n", _ebeam);
+  }
+  else
+  {
+    _ebeam = atof( ((it->second)[0]).c_str());
+    printf("%g\n",_ebeam);            //###################################### DEBUG STATEMENT  
+  }
+  
+  
+  ///Get process code 
+  it = inmap.find("$PROC");
+  //Check whether process was specified 
+  if(it == inmap.end())  throw std::runtime_error("ERROR: No process specified.\n\n\t Define in input file as: \'$PROC = <code>\'\n\n 1 = e+ e-\n 2 = mu+ mu-\n  "); 
+  else
+  {
+    _proc_id = atoi( ((it->second)[0]).c_str());
+    printf("%i\n",_proc_id);            //###################################### DEBUG STATEMENT  
+  }
+  
+//   printf((it->first).c_str());   //###################################### DEBUG STATEMENT  
 
-  printf("END of Constructor");
+  
+  printf("***************** END of SETTINGS Constructor *****************\n\n");           //###################################### DEBUG STATEMENT  
+}
+
+
+
+
+///FUNTIONS to access settings
+
+
+bool settings::use_ssm()
+///Returns false if a model file is specified
+{
+  return _use_ssm;
+}
+
+
+
+int settings::proc_id()
+///Returns the process code
+{
+  return _proc_id;
+}
+
+
+double settings::ebeam()
+///Returns the beam energy
+{
+  return _ebeam;
+}
+
+
+double settings::mzssm()
+///Returns the mass of Z'_SSM; -1 means not used
+{
+  return _mzssm;
+}
+
+
+double settings::smin()
+///Returns the lower limit of the search region
+{
+  return _smin;
+}
+
+
+double settings::smax()
+///Returns the upper limit of the search region
+{
+  return _smax;
+}
+
+
+std::string settings::binning()
+///Returns the path to the binning file
+{
+  return _binning;
+}
+
+
+std::string settings::efficiencies()
+///Returns the path to the efficiencies file
+{
+  return _efficiencies;
+}
+
+
+std::string settings::limdir()
+///Returns the path to the limits directoy
+{
+  return _limdir;
+}
+
+
+std::string settings::model()
+///Returns the path to the model file
+{
+  return _model;
+}
+
+
+std::string settings::pdfset()
+///Returns the path to the pdfset
+{
+  return _pdfset;
 }

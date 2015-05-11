@@ -5,7 +5,7 @@
 // #include <ctime>
 
 #include "input.h"
-// #include "pheno.h"
+#include "pheno.h"
 // #include "xsec.h"
 // #include "spectrum_analysis.h"
 
@@ -22,7 +22,7 @@ double gaussian(double mu, double x)
 }
 
 
-
+//Functions that have verbosity flag output more information 
 bool verbose=true;
 
 
@@ -33,10 +33,27 @@ bool verbose=true;
 
 int main(int argc, char** argv){
   
-      
+  //Extract settings for run given in start file 
   settings input(argv[1], verbose);
+  
+  //Allocate pointer to sotre model
+  pheno::ZpModel * pmodel;
+  
+  //Check whether SSM is to be used or if a model file was given
+  if(input.use_ssm())
+  {
+    pmodel = new pheno::ZpModel(input.mzssm());
+  }
+  else
+  {
+    pmodel = new pheno::ZpModel(input.model().c_str());
+  }
 
+  
   printf("Main")  ;
+  
+  //Free memory 
+  delete pmodel;
   
   return 0;
 }
