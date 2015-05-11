@@ -3,12 +3,12 @@
 
 #include <map>
 #include <string>
-
+#include <vector>
 
 typedef  std::map<std::string, double>  parmap;
 typedef std::map<std::string, parmap >  dict;
 
-typedef std::map<std::string, std::string> inmap;
+typedef std::map<std::string, std::vector<std::string> > strmap;
 
 
 
@@ -39,9 +39,13 @@ class conf_reader{
   
   class settings{
   private:
+    std::string _pdfset;
+    std::string _binning;
+    double _smin;
+    double _smax;
     
   public:
-    settings(const char* startfile);
+    settings(const char* startfile, bool verbose);
   };
 
 

@@ -54,12 +54,18 @@ for nadd in range(MAX_BINS):
     #Get bin entries
     obs=0
     exp=0
-    err=0
     #Iterate of nbins consecutive bins and add up the values
     for n in range(nbins):
       obs += nobs[i+n]
       exp += nexp[i+n]
-      err += nerr[i+n]
+    #Calculate the error as the relative error of the middle bins
+    mid = 0
+    if nadd%2 == 0:
+      mid = i + nadd/2
+    else:
+      mid = i + (nadd + 1)/2
+    rel = nerr[mid]/nexp[mid]
+    err = rel * exp
     print lo, hi, obs, exp, err
     
     #Calculate line by line the 95% exclusion limit on the signal (observed and expected)

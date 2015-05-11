@@ -23,6 +23,10 @@ double gaussian(double mu, double x)
 
 
 
+bool verbose=true;
+
+
+
 //MAIN
 //##########################
 
@@ -30,7 +34,7 @@ double gaussian(double mu, double x)
 int main(int argc, char** argv){
   
       
-  settings input(argv[1]);
+  settings input(argv[1], verbose);
 
   printf("Main")  ;
   
