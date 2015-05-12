@@ -8,9 +8,6 @@ s95script = "/remote/pi104a/foldenauer/code/get_s95.py"
 analysis = "/remote/pi104a/foldenauer/data/xscan/dimuon.dat"
 outfile=  "/remote/pi104a/foldenauer/data/xscan/limits/limits"
 
-MAX_BINS = 20
-
-
 
 
 xl   = []
@@ -41,6 +38,8 @@ with open(analysis, 'r') as openedFile:
     lno +=1
     
 #Generate lookup tables for combinations of 'nbins' neighbouring bins    
+MAX_BINS = len(xl)
+
 for nadd in range(MAX_BINS):
   nbins = 1 + nadd
   print "Combining %s bin(s) to calculate exclusion limit ...\n"%nbins

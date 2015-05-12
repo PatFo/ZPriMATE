@@ -1,12 +1,13 @@
 // #include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
+#include <stdexcept>
 // #include <sys/time.h>
 // #include <ctime>
 
 #include "input.h"
 #include "pheno.h"
-// #include "xsec.h"
+#include "xsec.h"
 // #include "spectrum_analysis.h"
 
 
@@ -36,24 +37,52 @@ int main(int argc, char** argv){
   //Extract settings for run given in start file 
   settings input(argv[1], verbose);
   
-  //Allocate pointer to sotre model
-  pheno::ZpModel * pmodel;
   
+  //Allocate pointer to store model
+  pheno::ZpModel * model;
   //Check whether SSM is to be used or if a model file was given
   if(input.use_ssm())
   {
-    pmodel = new pheno::ZpModel(input.mzssm());
+    if(verbose) printf("Constructing Sequential Standard Model...\n\n");
+    model = new pheno::ZpModel(input.mzssm());
   }
   else
   {
-    pmodel = new pheno::ZpModel(input.model().c_str());
+    if(verbose) printf("Constructing Z' Model...\n\n");
+    model = new pheno::ZpModel(input.model().c_str());
   }
+  
+  
+  //Vector containg the appropriate cross sections
+  std::vector< pheno::HadronXSec*> cs;
+  char * pdfset = (char *) input.pdfset().c_str();
+  //Construct the desired final states
+  if(input.proc_id() == 1)              cs.push_back( new pheno::HadronXSec(&(model->el),  model, pdfset) );
+  else if (input.proc_id() == 2)        cs.push_back( new pheno::HadronXSec(&(model->mu),  model, pdfset) );
+  else if (input.proc_id() == 3)        cs.push_back( new pheno::HadronXSec(&(model->tau), model, pdfset) );
+  else if (input.proc_id() == 0)        // JETS   -> maybe vector containing cross section objects for each quark?
+  {
+    cs.push_back( new pheno::HadronXSec(&(model->u), model, pdfset) );
+    cs.push_back( new pheno::HadronXSec(&(model->d), model, pdfset) );
+    cs.push_back( new pheno::HadronXSec(&(model->c), model, pdfset) );
+    cs.push_back( new pheno::HadronXSec(&(model->s), model, pdfset) );
+    cs.push_back( new pheno::HadronXSec(&(model->b), model, pdfset) );
+  }
+  else throw std::runtime_error("ERROR: Invalid process id.\nCurrently available:\n\n\t0 = jets\n\t1 = e+ e-\n\t2 = mu+ mu-\n\t3 = tau+ tau-\n");
+  
+  
+  //Construct cross section object
+//   pheno::HadronXSec xsec( finalstate.back(), model, (char *) input.pdfset().c_str() );
 
   
-  printf("Main")  ;
+  printf("Total cross section: %g\n",    cs.back()->zpXsec(5, 8000, 0.01));    //###################################### DEBUG STATEMENT  
   
   //Free memory 
-  delete pmodel;
+  for(unsigned int pos =0 ; pos < cs.size(); ++pos)
+  {
+    delete cs[pos];
+  }
+  delete model;
   
   return 0;
 }
