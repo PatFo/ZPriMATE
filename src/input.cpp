@@ -1,9 +1,12 @@
-#include "input.h"
+#include <cstring>
 #include <iostream>
-#include <stdlib.h>
 #include <fstream>
 #include <stdexcept>
-#include <cstring>
+#include <stdlib.h>
+#include <sys/stat.h>
+
+#include "input.h"
+
 
 
 const int MAX_CHARS(100);
@@ -140,9 +143,7 @@ void fill_map(strmap * pmap, std::ifstream * pistream)
     {
       //Check whether first item is a variable name
       if( words[0][0] =='$')
-      {    
-        printf("Loading data\n");       //###################################### DEBUG STATEMENT  
-
+      {
         std::vector<std::string> items;
         for(int i=1; i < len; ++i)
         {
@@ -157,10 +158,12 @@ void fill_map(strmap * pmap, std::ifstream * pistream)
 
 
 
+
+
 ///Read input file and extrac settings
-settings::settings(const char* startfile, bool verbose)
+settings::settings(const char* startfile)
 {
-  printf( "This is %s\n", startfile);       //###################################### DEBUG STATEMENT  
+  std::printf( "Reading from input file %s ...\n", startfile);       
   std::ifstream input(startfile);
   
   //Check whether specified file is readable. Else raise error and exit.
@@ -172,9 +175,18 @@ settings::settings(const char* startfile, bool verbose)
   
   
   
+  ///Get VERBOSITY mode
+  strmap::iterator it = inmap.find("$VERBOSE");
+  if(it == inmap.end()) _verb = false;
+  else
+  {
+    _verb = atoi(((it->second)[0]).c_str());
+//     std::printf("%i\n",_verb);         //###################################### DEBUG STATEMENT  
+  } 
+  
   
   ///Get MODEL file 
-  strmap::iterator it= inmap.find("$MODEL");
+  it= inmap.find("$MODEL");
   //Make sure that a file was specified
   if(it == inmap.end()) throw std::runtime_error("ERROR: No MODEL file  specified.\n\n\t Define in input file as: \'$MODEL = /absolute/path/to/file\'\n\t OR: \'$MODEL = <Mass of Z\'_SSM>\'\n"); 
   else
@@ -188,13 +200,12 @@ settings::settings(const char* startfile, bool verbose)
     }
     catch(int i)
     {
-      printf("Catching...\n");  //###################################### DEBUG STATEMENT   
+//       std::printf("Catching...\n");  //###################################### DEBUG STATEMENT   
       _mzssm = -1;
       _use_ssm = false;
       _model = (it->second)[0];
-      
     }
-    printf("Mass is %g\n",_mzssm);  //###################################### DEBUG STATEMENT   
+//     std::printf("Mass is %g\n",_mzssm);  //###################################### DEBUG STATEMENT   
   } 
 
   
@@ -206,7 +217,7 @@ settings::settings(const char* startfile, bool verbose)
   else
   {
     _pdfset = (it->second)[0];
-    printf("%s\n",_pdfset.c_str());         //###################################### DEBUG STATEMENT   
+//     std::printf("%s\n",_pdfset.c_str());         //###################################### DEBUG STATEMENT   
   }   
   
   
@@ -217,8 +228,33 @@ settings::settings(const char* startfile, bool verbose)
   else
   {
     _limdir = (it->second)[0];
-    printf("%s\n",_limdir.c_str());         //###################################### DEBUG STATEMENT  
+//     std::printf("%s\n",_limdir.c_str());         //###################################### DEBUG STATEMENT  
   } 
+  
+  
+  ///Get OUTPUT directory 
+  it = inmap.find("$ODIR");
+  //Check whether a directory was specified; otherwise defaults to HOME/CSCAN
+  if(it == inmap.end()) 
+  {
+    char * home = getenv("HOME");
+    _odir = home;
+    _odir.append("/CSCAN");    
+    if(_verb) std::printf("WARNING: No output directoy specified. Defaults to %s\n\n\t Else define on input as: \'$ODIR = /absolute/path/to/dir\'\n\n", _odir.c_str());
+  }
+  else
+  {
+    _odir = (it->second)[0];
+//     std::printf("%s\n",_odir.c_str());         //###################################### DEBUG STATEMENT  
+  } 
+  //Check whether _odir exists; if not mkdir
+  struct stat st;
+  if(stat(_odir.c_str(),&st) != 0)
+  {
+    int status;
+    status = mkdir(_odir.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH); 
+    if(status == 0 && _verb)  std::printf("Created output directory %s \n", _odir.c_str());
+  }
   
   ///Get BINNING file 
   it = inmap.find("$BINS");
@@ -227,7 +263,7 @@ settings::settings(const char* startfile, bool verbose)
   else
   {
     _binning = (it->second)[0];
-    printf("%s\n",_binning.c_str());         //###################################### DEBUG STATEMENT  
+//     std::printf("%s\n",_binning.c_str());         //###################################### DEBUG STATEMENT  
   }    
   
   
@@ -236,13 +272,13 @@ settings::settings(const char* startfile, bool verbose)
   //Make sure that a file was specified
   if(it == inmap.end())
   {
-    if(verbose) printf("WARNING: No efficiency file specified.\n\n\t Define in input file as: \'$EFFICIENCIES = /absolute/path/to/file\'\n");
+    if(_verb) std::printf("WARNING: No efficiency file specified.\n\n\t Define in input file as: \'$EFFICIENCIES = /absolute/path/to/file\'\n");
     _efficiencies = "";
   }
   else
   {
     _efficiencies = (it->second)[0];
-    printf("%s\n",_efficiencies.c_str());         //###################################### DEBUG STATEMENT  
+//     std::printf("%s\n",_efficiencies.c_str());         //###################################### DEBUG STATEMENT  
   }  
   
   
@@ -251,7 +287,7 @@ settings::settings(const char* startfile, bool verbose)
   //Check whether search region was specified 
   if(it == inmap.end()) 
   {
-    if(verbose) printf("WARNING: No search region has been specified.\n\n\t Define in input file as: \'$SREGION =  <low>  <high>\'\n");
+    if(_verb) std::printf("WARNING: No search region has been specified.\n\n\t Define in input file as: \'$SREGION =  <low>  <high>\'\n");
     _smin = -1; 
     _smax = -1;    
   }
@@ -259,7 +295,7 @@ settings::settings(const char* startfile, bool verbose)
   {
     _smin = atof( ((it->second)[0]).c_str());
     _smax = atof( ((it->second)[1]).c_str());
-    printf("%g\t%g\n",_smin, _smax);          //###################################### DEBUG STATEMENT     
+//     std::printf("%g\t%g\n",_smin, _smax);          //###################################### DEBUG STATEMENT     
   }   
   
   
@@ -269,29 +305,57 @@ settings::settings(const char* startfile, bool verbose)
   if(it == inmap.end()) 
   {
     _ebeam= 8000;  // Default value
-    if(verbose) printf("WARNING: No collider energy specified. Defaults to %g GeV.\n\n\t Define in input file as: \'$EBEAM = /absolute/path/to/file\'\n", _ebeam);
+    if(_verb) std::printf("WARNING: No collider energy specified. Defaults to %g GeV.\n\n\t Define in input file as: \'$EBEAM = /absolute/path/to/file\'\n", _ebeam);
   }
   else
   {
     _ebeam = atof( ((it->second)[0]).c_str());
-    printf("%g\n",_ebeam);            //###################################### DEBUG STATEMENT  
+//     std::printf("%g\n",_ebeam);            //###################################### DEBUG STATEMENT  
   }
   
   
   ///Get process code 
   it = inmap.find("$PROC");
   //Check whether process was specified 
-  if(it == inmap.end())  throw std::runtime_error("ERROR: No process specified.\n\n\t Define in input file as: \'$PROC = <code>\'\n\n 1 = e+ e-\n 2 = mu+ mu-\n  "); 
+  if(it == inmap.end())  throw std::runtime_error("ERROR: No process id specified.\n\n\t Define in input file as: \'$PROC = <id>\'\n"); 
   else
   {
     _proc_id = atoi( ((it->second)[0]).c_str());
-    printf("%i\n",_proc_id);            //###################################### DEBUG STATEMENT  
+//     std::printf("%i\n",_proc_id);            //###################################### DEBUG STATEMENT  
   }
   
-//   printf((it->first).c_str());   //###################################### DEBUG STATEMENT  
+  
+  
+  ///Get luminosity
+  it = inmap.find("$LUM");
+  //Check whether luminosity was specified; if not set to 1 -> get cross section in [fb]
+  if(it == inmap.end())  
+  {
+    if(_verb) std::printf("WARNING: No luminostiy specified. Obtain cross section in [fb].\n\n\t Else define on input as: \'$LUM = <luminosity in fb^-1>\'\n");
+    _luminosity =1;
+  }
+  else
+  {
+    _luminosity = atof( ((it->second)[0]).c_str());
+//     std::printf("%g\n",_luminosity);            //###################################### DEBUG STATEMENT  
+  }
 
   
-  printf("***************** END of SETTINGS Constructor *****************\n\n");           //###################################### DEBUG STATEMENT  
+  ///Get accuracy for numerical integration; defaults to 1e-3 (for cubature)
+  it = inmap.find("$ACC");
+  //Check whether luminosity was specified; if not set to 1 -> get cross section in [fb]
+  if(it == inmap.end())  
+  {
+    _acc = 1e-3;
+    if(_verb) std::printf("INFO: No accuracy for numerical integration specified. Defaults to %g.\n\n\t Else define on input as: \'$ACC = <accuracy>\'\n", _acc);
+  }
+  else
+  {
+    _acc = atof( ((it->second)[0]).c_str());
+//     std::printf("%g\n",_acc);            //###################################### DEBUG STATEMENT  
+  }
+  
+//   std::printf("***************** END of SETTINGS Constructor *****************\n\n");           //###################################### DEBUG STATEMENT  
 }
 
 
@@ -307,11 +371,24 @@ bool settings::use_ssm()
 }
 
 
+bool settings::verbose()
+///Return verbosity mode
+{
+  return _verb;
+}
+
 
 int settings::proc_id()
 ///Returns the process code
 {
   return _proc_id;
+}
+
+
+double settings::int_acc()
+///Returns accuracy for numerical integration
+{
+  return _acc;
 }
 
 
@@ -326,6 +403,13 @@ double settings::mzssm()
 ///Returns the mass of Z'_SSM; -1 means not used
 {
   return _mzssm;
+}
+
+
+double settings::luminosity()
+///Returns the luminosity in [fb^-1]
+{
+  return _luminosity;
 }
 
 
@@ -368,6 +452,13 @@ std::string settings::model()
 ///Returns the path to the model file
 {
   return _model;
+}
+
+
+std::string settings::odir()
+///Returns the output directory 
+{
+  return _odir;
 }
 
 

@@ -106,13 +106,13 @@ namespace pheno {
         ratio1 = -diff/prev;
         ratio2 = -diff/res;
       }
-      std::printf("Checking deviations %g %g\n", ratio1, ratio2);      //#############################################v DEBUG
+//       std::printf("Checking deviations %g %g\n", ratio1, ratio2);      //#############################################v DEBUG
       //Check whether there is a hughe leap in the integral --> wrong convergence
       if( ( ratio1 > (this->reldiff)) || ( ratio2 > (this->reldiff)) )
       {
         //Switch to Monte Carlo integration
         std::printf("Match jumping criterion. Relative deviations are %g %g\n", ratio1, ratio2);      //#############################################v DEBUG
-        res = ((this->pobj)->* (this->pfunc))(lo, hi, 3e-2,  this->psmear, 1); 
+        res = ((this->pobj)->* (this->pfunc))(lo, hi, 1e-2,  this->psmear, 1); 
       }
     }
     return res;
@@ -127,6 +127,8 @@ namespace pheno {
     std::ofstream outf(outfile);
     double prev=0;
     int length = pbins->size();
+    
+    std::printf("Writing data to %s ...\n", outfile); 
     //Write histogram to file in loop
     for(int i=0; i<length; ++i)
     {
@@ -142,9 +144,10 @@ namespace pheno {
       
       outf<<low<<"\t"<<high<<"\t"<<res * factor <<"\n"; //Write the bin to file
       prev= res;  //Save the last value
-      std::printf("Previous result %g\n", prev);      //#############################################v DEBUG
+//       std::printf("Previous result %g\n", prev);      //#############################################v DEBUG
     }
     outf.close();
+    std::printf("Finished writing %s\n", outfile);      //#############################################v DEBUG
   }  
      
   

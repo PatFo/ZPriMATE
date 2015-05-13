@@ -101,3 +101,4 @@ for pair in limdict:
 if best_exclusion[2] > 1:
   ratio = best_exclusion[5]/best_exclusion[4]
   print "\nModel excluded with R-value %s\n"%ratio
+  print "Exlcusion data: ", best_exclusion 

@@ -40,8 +40,11 @@ class conf_reader{
   class settings{
   private:
     bool _use_ssm;
-    int _proc_id;    
+    bool _verb;
+    int _proc_id; 
+    double _acc;
     double _ebeam;
+    double _luminosity;
     double _mzssm;
     double _smax;
     double _smin;
@@ -49,11 +52,15 @@ class conf_reader{
     std::string _efficiencies;
     std::string _limdir;
     std::string _model;
+    std::string _odir;
     std::string _pdfset;
   public:
     bool use_ssm();
+    bool verbose();
     int proc_id();    
+    double int_acc();
     double ebeam();
+    double luminosity();
     double mzssm();
     double smax();
     double smin();
@@ -61,9 +68,10 @@ class conf_reader{
     std::string efficiencies();
     std::string limdir();
     std::string model();
+    std::string odir();
     std::string pdfset();
     //Constructor
-    settings(const char* startfile, bool verbose);
+    settings(const char* startfile);
   };
 
 

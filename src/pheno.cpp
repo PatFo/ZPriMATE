@@ -167,6 +167,7 @@ ZpModel::ZpModel(double mzp): bsm_parameters(0.1, mzp, 0)
                 ,ferms->first.c_str(), (ferms->second)->m(), (ferms->second)->get_xlcharge(), (ferms->second)->get_xrcharge(), ((ferms->second)->vecc()).q_gam/e_()
                 ,((ferms->second)->vecc()).q_zl,((ferms->second)->vecc()).q_zr, ((ferms->second)->vecc()).q_zpl,((ferms->second)->vecc()).q_zpr);     
   }
+  std::printf("\n");
   //Initialize widths to -1 ("not yet calculated")
   partial_fwidths=NULL;
   higgs_width=-1.;
@@ -184,7 +185,7 @@ double ZpModel::calc_fwidth(fundamental::fermionExt& f)
 //   std::cout<<f.get_mass();
   if(ratio>0.5*0.5)
   {
-    std::printf("Following decay channel kinematically not possible: 2*mf>mzp !\nSet to zero:\n");
+    std::printf("INFO: Following decay channel kinematically not possible: 2*mf>mzp !\nSet to zero:\n");
     return 0;
   }else{
     return mzp_()* double(f.Nc()) /(24*M_PI) * sqrt(1.-4*ratio) * ( (pow(f.vecc().q_zpl, 2) + pow(f.vecc().q_zpr, 2))*(1.-ratio) + 6*f.vecc().q_zpl*f.vecc().q_zpr*ratio );
@@ -197,7 +198,7 @@ double ZpModel::calc_zhwidth()
 {
   if(mh_()+mz_()>mzp_())
   {
-    std::printf("Decay Zp-> Z H kinematically not possible: 2*mw>mzp !\nSet to zero:\n");
+    std::printf("INFO: Zp -> Z H kinematically not possible: mz + mh > mzp !\nSet to zero:\n");
     return 0;
   }else{
     double geff = (gz_()*sin(xi_()) + g1_()*cos(xi_())*tan(mixing_()))*(gz_()*cos(xi_()) - g1_()*sin(xi_())*tan(mixing_()));
@@ -214,7 +215,7 @@ double ZpModel::calc_wwidth()
 {
   if(2*mw_()>mzp_())
   {
-    std::printf("Decay Zp-> W+ W- kinematically not possible: 2*mw>mzp !\nSet to zero:\n");
+    std::printf("INFO: Zp -> W+ W- kinematically not possible: 2*mw > mzp !\nSet to zero:\n");
     return 0;
   }else{
     double ratio = pow(mw_()/mzp_(), 2);
@@ -229,7 +230,7 @@ double ZpModel::calc_wwidth()
 //Calculate total Zp width
 void ZpModel::update_width()
 {
-    std::printf("\nCalculating Zp width:\n\n\t%-14s %-14s\n", "Decay channel", "Partial width");
+    std::printf("\nCalculating Zp width:\n\n\t%-14s %-14s\n", "Decay channel", "Width [GeV]");
     wzp=0;
     for(fermion_list::iterator it=flst.begin(); it!=flst.end(); ++it)
     {
