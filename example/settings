@@ -9,7 +9,7 @@ $VERBOSE = 1
 
 
 //SPECIFY MODEL FILE OR SET MASS OF Z_SSM
-$MODEL = test/example.conf
+$MODEL = example/example.conf
 //$MODEL = 2000
 
 
