@@ -1,6 +1,6 @@
 # The variable MSTWDIR must point to the MSTW source directory
-MSTWDIR = /remote/pi104a/foldenauer/local/MSTW
-CUBADIR = /remote/pi104a/foldenauer/local/cubature-1.0.2
+MSTWDIR = mstw
+CUBADIR = cubature
 
 #Extend Search path to include the dependencies
 VPATH = $(MSTWDIR):$(CUBADIR)

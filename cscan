@@ -6,7 +6,8 @@ import tempfile
 import numpy as np
 
 
-CSCANSYS = "/scratch/foldenauer/code/cscan"
+CSCANSYS = os.path.dirname(os.path.realpath(__file__))
+print CSCANSYS
 COREX = "./bin/core"
 PLTX = "./bin/simple_hist.py"
 LIMX = "./bin/calc_limit"
