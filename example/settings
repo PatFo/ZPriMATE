@@ -1,0 +1,24 @@
+//Minimal example settings file
+//---------------------
+
+//PROGRAM PARAMETERS
+$VERBOSE = 1
+//$ACC = 1e-3
+//$ODIR = outdir
+//$PDF = mstw/grid/mstw2008lo.00.dat
+
+
+//SPECIFY MODEL FILE OR SET MASS OF Z_SSM
+$MODEL = test/example.conf
+//$MODEL = 2000
+
+
+//ANALYSIS PARAMETERS
+$PROC = 1
+$EBEAM = 8000
+$LUM = 20.5  
+$BINS =  analyses/arXiv-1405.4123/bins.dat
+$EFFICIENCIES = analyses/arXiv-1405.4123/efficiencies.dat
+$LIMITS = analyses/arXiv-1405.4123/limits
+//Search region
+//$SREGION = 128 4500 
