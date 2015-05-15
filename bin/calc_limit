@@ -53,8 +53,8 @@ for f in limfiles:
   words = f.split('_')
   i = np.int(words[1])
   limdict.append([i, f])
-
-
+ 
+  
 #Allocate empty list to store best exclusion
 #[xl, xr, rat=nprad/exp95, exp95, obs95, npred, nbins]
 best_exclusion = [0] * 7

@@ -24,13 +24,13 @@ xmi=min(OX)
 
 
 fig=plt.figure()
-plt.semilogy(OX, OY, 'r',label='Muon events',drawstyle='steps')
+plt.semilogy(OX, OY, 'r',label='Signal',drawstyle='steps')
 #plt.minorticks_on()
 plt.grid(True)
 plt.ylim((ymi,yma*1.2))
 plt.xlim((xmi,xma))
 plt.ylabel('Cross Section')
-plt.xlabel('Ecm[GeV]')
+plt.xlabel('M_inv [GeV]')
 plt.title('Events')
 plt.legend()
 

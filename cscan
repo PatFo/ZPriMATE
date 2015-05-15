@@ -4,6 +4,7 @@ import sys
 import subprocess
 import tempfile
 import numpy as np
+from scipy.interpolate import InterpolatedUnivariateSpline
 
 
 CSCANSYS = os.path.dirname(os.path.realpath(__file__))
@@ -34,6 +35,7 @@ xr   = []
 nev  = []
 odir = ""
 limdir = ""
+eff = ""
 
 #Check for plot file and generate plots
 #File containg plotting parameters
@@ -46,9 +48,12 @@ if os.path.isfile(inp):
       #Get output directory
       if fno ==0 :
         odir = events.split()[0]
-      #Get output directory
+      #Get limits directory
       elif fno == 1 :
         limdir = events.split()[0]
+      #Get efficiencies
+      elif fno == 2 :
+        eff = events.split()[0]
       #Operate on event files
       else:
         events = events.split()[0]
@@ -61,7 +66,7 @@ if os.path.isfile(inp):
             data  = line.split()
             assert len(data)==3
             #First read of data
-            if fno == 2:
+            if fno == 3:
               xl.append( np.double(data[0]))
               xr.append( np.double(data[1]))
               nev.append( np.double(data[2]))
@@ -80,13 +85,36 @@ log = open(odir+"/cscan.log", 'w')
 log.write("%s"%core_out)
 log.close
 
+
+
+#FIT EFFICIENCIES  
+#Allocate empty data arrays
+x_eff = []
+y_eff = []
+with open(eff, 'r') as openedFile :
+    lno=0
+    for line in openedFile:
+        tab = line.split()
+        #First 6 lines contain no data 
+        if lno>6:
+            x_eff.append( np.double(tab[0]) * 1000)
+            y_eff.append(np.double(tab[4]))
+        lno +=1          
+#Interpolate efficiencies (Spline fit)
+eff_fit = InterpolatedUnivariateSpline(x_eff , y_eff , k=1)
+
+  
+
             
-#Combine events            
+#Combine events and multiply with efficiencies            
 comfile = odir + "/combined.dat"
 combined = open(comfile, 'w')            
 for i in range(len(xl)):
-  combined.write("%s\t%s\t%s\n"%(xl[i], xr[i], nev[i]))
+  midpoint = xl[i] + (xr[i]-xl[i])/2
+  combined.write("%s\t%s\t%s\n"%(xl[i], xr[i], nev[i]*eff_fit(midpoint)))
 combined.close()  
+print "Plotting %s"%comfile
+plot = subprocess.Popen(["%s %s" %(PLTX, comfile)], stdout=None, shell=True)
   
   
 #Calculate best exclusion limit

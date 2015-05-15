@@ -82,6 +82,7 @@ int main(int argc, char** argv){
   std::ofstream of(ofname.c_str());
   of<<input.odir()<<std::endl; //Specify the output directory
   of<<input.limdir()<<std::endl; //Specify the limits directory
+  of<<input.efficiencies()<<std::endl; //Specify the limits directory
   
   //Calculating and writing the cross section
   int count=1;
