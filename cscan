@@ -7,7 +7,7 @@ import numpy as np
 
 
 CSCANSYS = os.path.dirname(os.path.realpath(__file__))
-print CSCANSYS
+#print CSCANSYS
 COREX = "./bin/core"
 PLTX = "./bin/simple_hist.py"
 LIMX = "./bin/calc_limit"
@@ -22,7 +22,7 @@ if fullfile[0] !='/':
 
 #Cross section calculation
 os.chdir(CSCANSYS)
-print "Calculating cross section ...\n"
+print "\nCalculating cross section ...\n"
 core = subprocess.Popen(["%s %s" %(COREX, fullfile) ], stdout=subprocess.PIPE, shell=True)
 core.wait() # Wait till finished
 (core_out, core_err) = core.communicate() #Catch output and error if send to PIPE

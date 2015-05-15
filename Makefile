@@ -12,9 +12,9 @@ CUBA = hcubature
 CC = g++
 RELEASE = -O2
 DEBUG = -g
-MODE = $(DEBUG)
+MODE = $(RELEASE)
 CFLAGS = -Wall -c $(MODE) -I$(MSTWDIR)  -I$(CUBADIR) 
-LFLAGS = -Wall $(MODE) -lm -lgsl -lgslcblas 
+LFLAGS = -Wall $(MODE) -lm -lgsl -lgslcblas -lboost_system -lboost_filesystem
 SRCEXT = cpp
 
 #Directories

@@ -6,9 +6,13 @@ import numpy as np
 import subprocess
 
 # Input parameters
-python_exec = "mypython"
 s95script = "/remote/pi104a/foldenauer/code/get_s95.py"
 
+
+
+def print_table(label, value):
+  print "%-15s | %-5s"%(label, value)
+  
 
 """ 
 Pass the directory where the lookup tables lie as 1st argument. Directory may *ONLY* contain lookup tables
@@ -95,10 +99,20 @@ for pair in limdict:
     #Increment the file line number
     i +=1
     
-#print best_exclusion    ################################ DEBUG STATEMENT
+
+    
+#Print result table    
+print "\nSUMMARY TABLE:\n%s"%('-'*25)
+print_table("No. of bins", best_exclusion[6])
+print_table("Best bin", [best_exclusion[0], best_exclusion[1]])
+print_table("Observed S95", best_exclusion[4])
+print_table("Model signal", best_exclusion[5])
+print_table("R-Value", best_exclusion[2])
+
 
 #If model is excluded in one bin
 if best_exclusion[2] > 1:
   ratio = best_exclusion[5]/best_exclusion[4]
-  print "\nModel excluded with R-value %s\n"%ratio
-  print "Exlcusion data: ", best_exclusion 
+  print "\nRESULT: Model excluded with R-value %s!\n"%ratio  
+else:
+  print "\nRESULT: Model NOT excluded!\n"

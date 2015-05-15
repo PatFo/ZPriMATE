@@ -5,7 +5,6 @@
 #include <stdio.h>
 #include <sstream>
 #include <sys/stat.h>
-#include <unistd.h>
 // #include <ctime>
 
 //CSCAN headers
@@ -34,11 +33,6 @@ double gaussian(double mu, double x)
 
 
 int main(int argc, char** argv){
-  
-  
-   char buf[1024];
-   readlink("/proc/self/exe", buf, sizeof(buf)-1);
-   printf("%s\n",buf);
    
   
   //Extract settings for run given in start file 
