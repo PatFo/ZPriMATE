@@ -1,0 +1,122 @@
+#!/usr/bin/python
+from matplotlib import pyplot as plt
+import numpy as np
+import os
+import subprocess
+import time
+
+
+
+#Function that writes input file for cscan
+def write_startfile(filepath, outdir, acc, mass):
+  f=open(filepath, 'w')
+
+  params="""$VERBOSE = 1
+  $ACC = %(acc)s
+  $ODIR = %(outdir)s
+  $MODEL = %(mass)s
+  $PROC = 2
+  $EBEAM = 8000
+  $LUM = 20.5  
+  $BINS =  analyses/arXiv_1405_4123/bins.dat
+  $EFFICIENCIES = analyses/arXiv_1405_4123/efficiencies.dat
+  $LIMITS = analyses/arXiv_1405_4123/mu_lims"""
+
+  dictionary = { 'acc' : acc, 'outdir':outdir, 'mass' : mass}          
+  f.write(params % dictionary)
+  f.close()
+
+  
+  
+  
+  
+  
+  
+#Time the total execution
+start = time.time()
+  
+#Cscan executable and package direcotry  
+CSCANX = "./cscan"
+CSCANSYS =  os.path.dirname(os.path.dirname(os.path.realpath(__file__)))  
+
+
+#Create Result directoy in user's home 
+wdir = os.path.expanduser("~") +"/SSM_EXCLUSION"
+if not os.path.isdir(wdir):
+  os.mkdir(wdir)
+  
+cdir = wdir + "/CSCAN"  
+if not os.path.isdir(cdir):
+  os.mkdir(cdir)
+
+
+  
+#Empty results containers  
+lmass = []
+lexp =  []
+lobs =  []
+ltot =  []
+  
+  
+os.chdir(CSCANSYS)
+startfile = cdir + "/settings"
+excl = open(wdir + "/exclusion.dat" , 'w')
+excl.write("%-12s\t%-10s\t%-10s\t%-15s\n"%("M_inv [Gev]", "S95_exp", "S95_obs", "Cross Sec [fb]"))
+
+#Loop over Z' masses
+mzp =  100
+while mzp<=3500 :
+  #Write settings
+  write_startfile(startfile, cdir, 1e-3, mzp)
+  cscan = subprocess.Popen(["%s %s" %(CSCANX, startfile) ], stdout=subprocess.PIPE, shell=True)
+  cscan.wait() # Wait till finished
+  (out, err) = cscan.communicate() #Catch output and error if send to PIPE
+  print out     
+  
+  #Get exclusion limits for current model
+  robs = 0
+  rexp = 0 
+  f= open(cdir + "/results", 'r')
+  lno = 0
+  for line in f:
+    tab = line.split('|')
+    if lno== 6:
+      rexp = np.double(tab[1])
+    if lno== 7:
+      robs = np.double(tab[1])
+    lno += 1
+  
+  #Get total cross section for current model
+  f = open(cdir + "/totx", 'r')
+  line = f.readline()
+  tab = line.split()
+  totx = np.double(tab[0])
+  
+  #Append results to lists and file
+  lmass.append(mzp)
+  lexp.append(totx/rexp)
+  lobs.append(totx/robs)
+  ltot.append(totx)
+  excl.write("%-12s\t%-10s\t%-10s\t%-15s\n"%(mzp, totx/rexp, totx/robs, totx))
+  #Increment Z' mass
+  mzp += 50
+  
+  
+
+#Exclusion plot
+fig=plt.figure(1)
+plt.title('Exclusion limits on cross section')
+plt.semilogy(lmass, lexp, 'b', linestyle='--',label="Expected 95 CL limit")
+plt.semilogy(lmass, lobs, 'r', linestyle='-',label="Observed 95 CL limit")
+plt.semilogy(lmass, ltot, 'k', linestyle='-',label=r"$Z'_{SSM}$ cross section")
+plt.xlabel(r"$M_{Z'_{SSM}}$ [GeV]")
+plt.ylabel(r'$\sigma$ [fb]')
+plt.legend()
+plt.savefig(wdir + "/exclusion.pdf") 
+
+#Print execution time
+end = time.time()
+diff =   (end- start)
+seconds = diff%60
+minutes = float(diff - seconds)/60
+print "FINISHED!\nExectution took %i m %f sec\n"%(int(minutes), seconds)  
