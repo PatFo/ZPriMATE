@@ -82,10 +82,11 @@ int main(int argc, char** argv){
   std::ofstream of(ofname.c_str());
   of<<input.odir()<<std::endl; //Specify the output directory
   of<<input.limdir()<<std::endl; //Specify the limits directory
-  of<<input.efficiencies()<<std::endl; //Specify the limits directory
+  of<<input.efficiencies()<<std::endl; //Specify the effficiency file
   
   //Calculating and writing the cross section
   int count=1;
+  double totx =0 ;
   pheno::binning bins = pheno::get_binning((char *)input.binning().c_str());
   for(std::vector< pheno::HadronXSec*>::iterator it = cs.begin(); it!=cs.end(); ++it)
   {
@@ -104,9 +105,18 @@ int main(int argc, char** argv){
     pheno::HistWriter<pheno::HadronXSec> hist( *it, &pheno::HadronXSec::zpXsec, &gaussian);
     hist.writeHist(&bins, input.int_acc(), (char *)filename.c_str(), input.luminosity());
     
+    //Calculate total production cross section for process
+    totx += (*it)->zpXsec(5, input.ebeam(), 1e-4);
     ++count;
   }
   of.close();
+  
+  //Write total cross section
+  string crossfile(input.odir());
+  crossfile.append("/totx");
+  std::ofstream cross(crossfile.c_str());
+  cross<<totx<<" fb";
+  cross.close();
   
   
   //Free memory 

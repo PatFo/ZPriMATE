@@ -10,8 +10,8 @@ s95script = "/remote/pi104a/foldenauer/code/get_s95.py"
 
 
 
-def print_table(label, value):
-  print "%-15s | %-5s"%(label, value)
+def table_entry(label, value):
+  return "%-15s | %-5s"%(label, value)
   
 
 """ 
@@ -102,17 +102,24 @@ for pair in limdict:
 
     
 #Print result table    
-print "\nSUMMARY TABLE:\n%s"%('-'*25)
-print_table("No. of bins", best_exclusion[6])
-print_table("Best bin", [best_exclusion[0], best_exclusion[1]])
-print_table("Observed S95", best_exclusion[4])
-print_table("Model signal", best_exclusion[5])
-print_table("R-Value", best_exclusion[2])
+ratio = best_exclusion[5]/best_exclusion[4]
+table  = "SUMMARY TABLE:\n%s"%('-'*25)
+table += "\n" + table_entry("No. of bins", best_exclusion[6])
+table += "\n" + table_entry("Best bin", [best_exclusion[0], best_exclusion[1]])
+table += "\n" + table_entry("Observed S95", best_exclusion[4])
+table += "\n" + table_entry("Model signal", best_exclusion[5])
+table += "\n" + table_entry("Exp R-Value", best_exclusion[2])
+table += "\n" + table_entry("Obs R-Value", ratio)
+
+print "\n" + table
+resultf = os.path.dirname(modeldata) + "/results"
+result = open(resultf, 'w')
+result.write(table)
+result.close()
 
 
 #If model is excluded in one bin
 if best_exclusion[2] > 1:
-  ratio = best_exclusion[5]/best_exclusion[4]
   print "\nRESULT: Model excluded with R-value %s!\n"%ratio  
 else:
   print "\nRESULT: Model NOT excluded!\n"
