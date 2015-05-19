@@ -18,10 +18,11 @@ LFLAGS = -Wall $(MODE) -lm -lgsl -lgslcblas -lboost_system -lboost_filesystem
 SRCEXT = cpp
 
 #Directories
+BINDIR = bin
 BUILDDIR = build
+EXDIR = example
 SRCDIR = src
 TSTDIR = test
-BINDIR = bin
 
 
 #EXECUTABLES
@@ -86,7 +87,7 @@ $(BUILDDIR)/$(CUBA).o : $(CUBA).c  cubature.h
 
 
 clean:
-	$(RM) -r   *~  $(TARGET_EXEC) $(TEST_EXEC)   $(BUILDDIR)  $(BINDIR)/*~   $(TSTDIR)/*~ $(SRCDIR)/*~
+	$(RM) -r   *~  $(TARGET_EXEC) $(TEST_EXEC)   $(BUILDDIR)  $(BINDIR)/*~  $(TSTDIR)/*~ $(SRCDIR)/*~ $(EXDIR)/*~
 
 #tar:
 #	tar cfv $(EXECUTABLE).tar main.cpp

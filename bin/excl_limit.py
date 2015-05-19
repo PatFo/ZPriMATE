@@ -1,12 +1,23 @@
 #!/usr/bin/python
 import numpy as np
+import os
 import subprocess
 
+
+#Specify the data file and the output directory as input paramters 
+datafile  = sys.argv[1]
+outputdir = sys.argv[2]
+
+#Check whether output directory exists; if not create
+if not os.path.isdir(outputdir):
+  os.mkdir(outputdir)
+  print "Created output directory %s"%outputdir
+  
+
 # Input parameters
-python_exec = "mypython"
+python_exec = "python"
 s95script = "/remote/pi104a/foldenauer/code/get_s95.py"
-analysis = "/remote/pi104a/foldenauer/data/xscan/dimuon.dat"
-outfile=  "/remote/pi104a/foldenauer/data/xscan/limits/limits"
+outfile = outputdir + "/limits"
 
 
 
@@ -18,7 +29,7 @@ nerr = []
 
 
 #Loop over analysis data
-with open(analysis, 'r') as openedFile:
+with open(datafile, 'r') as openedFile:
   lno=0
   for line in openedFile:
     tab = line.split()
