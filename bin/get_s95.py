@@ -98,7 +98,7 @@ def qMu(n, nuTil_b):
     # Otherwise, return the normal likelihood    
     result = -2.*(n*log(lam_hat/lam_hat_hat) - (lam_hat-lam_hat_hat) + reduced_logp(nuTil_b, nu_b_mu_hat) - reduced_logp(nuTil_b, nu_b_hat))
   
-  return result
+  return round(result, 10)
 
 def calc_CLs(n_obs, nuTil_b_obs, b0_in, db_in, s0_in, nPseudo):
   """ Calcuates the CLs value given the measurement and signal/background estimates by running nPseudo experiments """

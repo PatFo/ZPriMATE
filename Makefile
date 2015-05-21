@@ -1,20 +1,22 @@
 # The variable MSTWDIR must point to the MSTW source directory
 MSTWDIR = mstw
-CUBADIR = cubature
+CUBADIR = /scratch/foldenauer/local/Cuba-4.2
+CUBATUREDIR = cubature
 
 #Extend Search path to include the dependencies
-VPATH = $(MSTWDIR):$(CUBADIR)
+VPATH = $(MSTWDIR):$(CUBADIR):$(CUBATUREDIR)
 
 MSTW = mstwpdf
-CUBA = hcubature
+CUBA = cuba
+CUBATURE = hcubature
 
 # Macros
 CC = g++
 RELEASE = -O2
 DEBUG = -g
 MODE = $(RELEASE)
-CFLAGS = -Wall -c $(MODE) -I$(MSTWDIR)  -I$(CUBADIR) 
-LFLAGS = -Wall $(MODE) -lm -lgsl -lgslcblas -lboost_system -lboost_filesystem
+CFLAGS = -Wall -c $(MODE) -I$(MSTWDIR)  -I$(CUBATUREDIR) 
+LFLAGS = -Wall $(MODE) $(CUBADIR)/libcuba.a -lm -lgsl -lgslcblas -lboost_system -lboost_filesystem
 SRCEXT = cpp
 
 #Directories
@@ -42,7 +44,7 @@ COMMON_SOURCES = $(filter-out $(TARGET_SOURCE) $(TEST_SOURCE), $(SOURCES))
 
 #Get Common object files
 COMMON_OBJECTS = $(patsubst $(SRCDIR)/%,$(BUILDDIR)/%,$(COMMON_SOURCES:.$(SRCEXT)=.o))
-COMMON_OBJECTS := $(COMMON_OBJECTS) $(BUILDDIR)/$(MSTW).o $(BUILDDIR)/$(CUBA).o
+COMMON_OBJECTS := $(COMMON_OBJECTS) $(BUILDDIR)/$(MSTW).o $(BUILDDIR)/$(CUBATURE).o
 
 #Get executable object files
 TARGET_OBJECT = $(patsubst $(SRCDIR)/%,$(BUILDDIR)/%,$(TARGET_SOURCE:.$(SRCEXT)=.o)) 
@@ -81,7 +83,7 @@ $(BUILDDIR)/$(MSTW).o : $(MSTW).cc $(MSTW).h
 	
 	
 # Build the CUBATUTRE object file in the local build directory
-$(BUILDDIR)/$(CUBA).o : $(CUBA).c  cubature.h
+$(BUILDDIR)/$(CUBATURE).o : $(CUBATURE).c  cubature.h
 	@mkdir -p $(BUILDDIR)
 	$(CC) $(CFLAGS) -o $@  $<
 

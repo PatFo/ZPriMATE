@@ -18,11 +18,22 @@ using namespace std;
 
 
 
+
+
+//SMEARING FUNCTIONS FOR DIFFERENT PARTICLE TYPES
+//-------------------------------------------------------------
+
+//Gaussian distribution
+double gaussian(double mu, double x, double sigma) 
+{  
+  return 1./(sqrt(2 *M_PI)*sigma) * exp(-1*pow(mu-x,2)/(2*sigma*sigma)); 
+}
+
 //Smearing function
-double gaussian(double mu, double x)
+double mu_smear(double mu, double x)
 {
   double sigma = 6.41632793049e-05*mu*mu + 0.0224623026794*mu + 3.75054782287;
-  return 1./(sqrt(2 *M_PI)*sigma) * exp(-1*pow(mu-x,2)/(2*sigma*sigma));
+  return gaussian(mu, x, sigma);
 }
 
 
@@ -56,13 +67,27 @@ int main(int argc, char** argv){
   
   //Vector containg the appropriate cross sections
   std::vector< pheno::HadronXSec*> cs;
+  double (* fptr)(double, double);
   char * pdfset = (char *) input.pdfset().c_str();
   //Construct the desired final states
-  if(input.proc_id() == 1)              cs.push_back( new pheno::HadronXSec(&(model->el),  model, pdfset, input.ebeam()) );
-  else if (input.proc_id() == 2)        cs.push_back( new pheno::HadronXSec(&(model->mu),  model, pdfset, input.ebeam()) );
-  else if (input.proc_id() == 3)        cs.push_back( new pheno::HadronXSec(&(model->tau), model, pdfset, input.ebeam()) );
+  if(input.proc_id() == 1) 
+  {
+    fptr = &mu_smear;
+    cs.push_back( new pheno::HadronXSec(&(model->el),  model, pdfset, input.ebeam()) );
+  }
+  else if (input.proc_id() == 2)
+  {
+    fptr = &mu_smear;
+    cs.push_back( new pheno::HadronXSec(&(model->mu),  model, pdfset, input.ebeam()) );
+  }
+  else if (input.proc_id() == 3)
+  {
+    fptr = &mu_smear;
+    cs.push_back( new pheno::HadronXSec(&(model->tau), model, pdfset, input.ebeam()) );
+  }
   else if (input.proc_id() == 0)        // JETS   ->  vector containing cross section objects for each quark
   {
+    fptr = &mu_smear;
     cs.push_back( new pheno::HadronXSec(&(model->u), model, pdfset, input.ebeam()) );
     cs.push_back( new pheno::HadronXSec(&(model->d), model, pdfset, input.ebeam()) );
     cs.push_back( new pheno::HadronXSec(&(model->c), model, pdfset, input.ebeam()) );
@@ -102,7 +127,7 @@ int main(int argc, char** argv){
     of<<filename<<std::endl;
     
     //Write signal data
-    pheno::HistWriter<pheno::HadronXSec> hist( *it, &pheno::HadronXSec::zpXsec, &gaussian);
+    pheno::HistWriter<pheno::HadronXSec> hist( *it, &pheno::HadronXSec::zpXsec, fptr);
     hist.writeHist(&bins, input.int_acc(), (char *)filename.c_str(), input.luminosity());
     
     //Calculate total production cross section for process

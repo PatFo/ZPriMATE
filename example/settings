@@ -14,11 +14,11 @@ $MODEL = example/example.conf
 
 
 //ANALYSIS PARAMETERS
-$PROC = 1
+$PROC = 2
 $EBEAM = 8000
 $LUM = 20.5  
-$BINS =  analyses/arXiv-1405.4123/bins.dat
-$EFFICIENCIES = analyses/arXiv-1405.4123/efficiencies.dat
-$LIMITS = analyses/arXiv-1405.4123/limits
+$BINS =  analyses/arXiv_1405_4123/bins.dat
+$EFFICIENCIES = analyses/arXiv_1405_4123/efficiencies.dat
+$LIMITS = analyses/arXiv_1405_4123/mu_lims
 //Search region
 //$SREGION = 128 4500 

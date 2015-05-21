@@ -15,8 +15,8 @@ if not os.path.isdir(outputdir):
   
 
 # Input parameters
-python_exec = "python"
-s95script = "/remote/pi104a/foldenauer/code/get_s95.py"
+python_exec = "mypython"
+s95script = os.path.dirname(__file__) + "/get_s95.py"
 outfile = outputdir + "/limits"
 
 

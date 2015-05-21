@@ -15,6 +15,7 @@
 #include <gsl/gsl_integration.h>
 //Cubature integration methods
 #include <cubature.h>
+#include <cuba.h>
 
 
 #include <iostream> //DEBUG
@@ -214,6 +215,10 @@ namespace pheno{
   
   //Parameter struct for integrable function
   struct parameter_set{ int narr; PartonXSec** ppx; c_mstwpdf* ppdf; double (* psmear)(double, double); double Ecoll; };
+  
+  
+  //Parameter struct for integrable function
+  struct parameter_set_hahn{ parameter_set * pars; double*  low; double*  high;};
     
 
   
@@ -331,6 +336,25 @@ namespace pheno{
     struct parameter_set* pars = (struct parameter_set *)fdata;
 //     std::cout<<pars->narr<<endl;   //#######################################################  DEBUG  ##################################
     fval[0]= integrand<PartialCrossX>(x_temp, dim, pars);    
+//     std::cout<<fval[0]<<"\n"; //#######################################################  DEBUG  ##################################
+    return 0;
+  }
+  
+  
+  
+  
+  //Cuba adaptor (Hahn)
+  template<class PartialCrossX> 
+  inline int integrand_cuba(const int* ndim, const double *x, const int* fdim, double *fval, void *fdata)
+  {
+    struct parameter_set_hahn* pars = (struct parameter_set_hahn *)fdata;
+    size_t dim = *ndim;
+    double diff1 = pars->high[0] - pars->low[0];
+    double diff2 = pars->high[1] - pars->low[1];
+    double diff3 = pars->high[2] - pars->low[2];
+    double point[3]={diff1*x[0] + pars->low[0], diff2*x[1] + pars->low[1], diff3*x[2] + pars->low[2]};
+    //Return integral
+    fval[0] = integrand<PartialCrossX>( point, dim, pars->pars ) * diff1 * diff2 * diff3 ;
 //     std::cout<<fval[0]<<"\n"; //#######################################################  DEBUG  ##################################
     return 0;
   }
