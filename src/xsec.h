@@ -347,14 +347,14 @@ namespace pheno{
   template<class PartialCrossX> 
   inline int integrand_cuba(const int* ndim, const double *x, const int* fdim, double *fval, void *fdata)
   {
-    struct parameter_set_hahn* pars = (struct parameter_set_hahn *)fdata;
+    struct parameter_set_hahn* cpars = (struct parameter_set_hahn *)fdata;
     size_t dim = *ndim;
-    double diff1 = pars->high[0] - pars->low[0];
-    double diff2 = pars->high[1] - pars->low[1];
-    double diff3 = pars->high[2] - pars->low[2];
-    double point[3]={diff1*x[0] + pars->low[0], diff2*x[1] + pars->low[1], diff3*x[2] + pars->low[2]};
+    double diff1 = cpars->high[0] - cpars->low[0];
+    double diff2 = cpars->high[1] - cpars->low[1];
+    double diff3 = cpars->high[2] - cpars->low[2];
+    double point[3]={diff1*x[0] + cpars->low[0], diff2*x[1] + cpars->low[1], diff3*x[2] + cpars->low[2]};
     //Return integral
-    fval[0] = integrand<PartialCrossX>( point, dim, pars->pars ) * diff1 * diff2 * diff3 ;
+    fval[0] = integrand<PartialCrossX>( point, dim, cpars->pars ) * diff1 * diff2 * diff3 ;
 //     std::cout<<fval[0]<<"\n"; //#######################################################  DEBUG  ##################################
     return 0;
   }
@@ -377,6 +377,11 @@ namespace pheno{
     double result, error, prev_res, diff;
     double xl[3] = {el, 1, 0};
     double xu[3] = {eh, Epp, 1};
+    
+    //CUBA parameters
+    struct parameter_set_hahn int_pars_hahn = {&int_pars, xl, xu}; 
+    int nregions, neval, fail;
+    double integral[dimres], err[dimres], prob[dimres];
     
     if(strat==1)
     {
@@ -414,6 +419,22 @@ namespace pheno{
     else if(strat==2)
     {
       hcubature(dimres, &integrand_cubature<PartialCrossX>, &int_pars, dimint, xl, xu, 0, epsabs, epsrel, ERROR_INDIVIDUAL, &result, &error);
+      std::cout<<"Integral "<<result<<" Error: "<<error<<std::endl; //######################## DEBUG
+    }
+    else if(strat==3)
+    {
+//       std::cout<<"Before integration"<<std::endl; //######################## DEBUG
+      Cuhre(dimint, dimres, &integrand_cuba<PartialCrossX>, &int_pars_hahn, 1, epsrel, epsabs, 0|4 , 0, 50000, 11, "", NULL, &nregions, &neval, &fail, integral, err, prob);
+//       std::cout<<"After integration"<<std::endl; //######################## DEBUG
+      result = integral[0];
+      error = err[0];
+      std::cout<<"Integral "<<result<<" Error: "<<error<<std::endl; //######################## DEBUG
+    }
+    else if(strat==4)
+    {
+      Suave(dimint, dimres, &integrand_cuba<PartialCrossX>, &int_pars_hahn, 1, epsrel, epsabs, 0 | 4, 0,   0, 50000, 1000, 2, 25, "", NULL,  &nregions, &neval, &fail, integral, err, prob);
+      result = integral[0];
+      error = err[0];
       std::cout<<"Integral "<<result<<" Error: "<<error<<std::endl; //######################## DEBUG
     }
 

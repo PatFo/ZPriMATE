@@ -29,10 +29,20 @@ double gaussian(double mu, double x, double sigma)
   return 1./(sqrt(2 *M_PI)*sigma) * exp(-1*pow(mu-x,2)/(2*sigma*sigma)); 
 }
 
-//Smearing function
+//Smearing function for muons
 double mu_smear(double mu, double x)
 {
   double sigma = 6.41632793049e-05*mu*mu + 0.0224623026794*mu + 3.75054782287;
+  return gaussian(mu, x, sigma);
+}
+
+
+//Smearing function for electrons
+double el_smear(double mu, double x)
+{
+  double a = 0.651869775669; double b = 0.155008630639;  double c = 0.00545431923191; 
+  double sigma = mu * sqrt( pow(a/mu, 2) + pow(b/sqrt(mu), 2) + c*c );
+//   double sig_lin = 0.00561922585506*mu + 1.62532781953;
   return gaussian(mu, x, sigma);
 }
 
@@ -72,7 +82,7 @@ int main(int argc, char** argv){
   //Construct the desired final states
   if(input.proc_id() == 1) 
   {
-    fptr = &mu_smear;
+    fptr = &el_smear;
     cs.push_back( new pheno::HadronXSec(&(model->el),  model, pdfset, input.ebeam()) );
   }
   else if (input.proc_id() == 2)

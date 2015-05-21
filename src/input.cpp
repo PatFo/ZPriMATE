@@ -339,7 +339,7 @@ settings::settings(const char* startfile)
   //Check whether luminosity was specified; if not set to 1 -> get cross section in [fb]
   if(it == inmap.end())  
   {
-    _acc = 1e-3;
+    _acc = 1e-2;
     if(_verb) std::printf("INFO: No accuracy for numerical integration specified. Defaults to %g.\n\n\t Else define on input as: \'$ACC = <accuracy>\'\n\n", _acc);
   }
   else  _acc = atof( ((it->second)[0]).c_str());
