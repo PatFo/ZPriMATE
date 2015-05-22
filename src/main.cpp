@@ -1,10 +1,12 @@
 // #include <stdlib.h>
+// #include <ctime>
 #include <fstream>
 #include <math.h>
 #include <stdexcept>
 #include <stdio.h>
 #include <sstream>
 #include <sys/stat.h>
+#include <sys/time.h>
 // #include <ctime>
 
 //CSCAN headers
@@ -54,14 +56,21 @@ double el_smear(double mu, double x)
 
 
 int main(int argc, char** argv){
+  
+  
+  //Allocate pointer to store model
+  pheno::ZpModel * model;
+  struct timeval tv;
+
+  //Start timing
+  gettimeofday(&tv, NULL);  
+  double t0=tv.tv_sec+(tv.tv_usec/1000000.0);     
    
   
   //Extract settings for run given in start file 
   settings input(argv[1]);
   
   
-  //Allocate pointer to store model
-  pheno::ZpModel * model;
   //Check whether SSM is to be used or if a model file was given
   if(input.use_ssm())
   {
@@ -152,6 +161,14 @@ int main(int argc, char** argv){
   std::ofstream cross(crossfile.c_str());
   cross<<totx<<" fb";
   cross.close();
+  
+  
+  
+  //Print total execution time
+  gettimeofday(&tv, NULL);
+  double t1=tv.tv_sec+(tv.tv_usec/1000000.0);     
+  printf("Signal calculation took %g s\n\n", t1-t0);
+  
   
   
   //Free memory 

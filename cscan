@@ -24,7 +24,8 @@ if fullfile[0] !='/':
 #Cross section calculation
 os.chdir(CSCANSYS)
 print "\nCalculating cross section ...\n"
-core = subprocess.Popen(["%s %s" %(COREX, fullfile) ], stdout=None, shell=True)
+core = subprocess.Popen(["%s %s" %(COREX, fullfile) ], stdout=subprocess.PIPE, shell=True)
+#core = subprocess.Popen(["%s %s" %(COREX, fullfile) ], stdout=None, shell=True)
 core.wait() # Wait till finished
 (core_out, core_err) = core.communicate() #Catch output and error if send to PIPE
 
@@ -92,14 +93,10 @@ log.close
 x_eff = []
 y_eff = []
 with open(eff, 'r') as openedFile :
-    lno=0
     for line in openedFile:
         tab = line.split()
-        #First 6 lines contain no data 
-        if lno>6:
-            x_eff.append( np.double(tab[0]) * 1000)
-            y_eff.append(np.double(tab[4]))
-        lno +=1          
+        x_eff.append( np.double(tab[0]) )
+        y_eff.append(np.double(tab[1]))
 #Interpolate efficiencies (Spline fit)
 eff_fit = InterpolatedUnivariateSpline(x_eff , y_eff , k=1)
 

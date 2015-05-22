@@ -147,7 +147,7 @@ namespace pheno {
 //       std::printf("Previous result %g\n", prev);      //#############################################v DEBUG
     }
     outf.close();
-    std::printf("Finished writing %s\n", outfile);      //#############################################v DEBUG
+    std::printf("Finished writing to %s\n", outfile);      //#############################################v DEBUG
   }  
      
   
