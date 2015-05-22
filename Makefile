@@ -15,7 +15,7 @@ CC = g++
 RELEASE = -O2
 DEBUG = -g
 MODE = $(RELEASE)
-CFLAGS = -Wall -c $(MODE) -I$(MSTWDIR)  -I$(CUBATUREDIR) 
+CFLAGS = -Wall -c $(MODE) -I$(MSTWDIR)  -I$(CUBATUREDIR) -I$(CUBADIR) 
 LFLAGS = -Wall $(MODE) $(CUBADIR)/libcuba.a -lm -lgsl -lgslcblas -lboost_system -lboost_filesystem
 SRCEXT = cpp
 
@@ -64,7 +64,7 @@ test: $(TEST_EXEC)
 
 #Rule to make program executable
 $(TARGET_EXEC): $(COMMON_OBJECTS) $(TARGET_OBJECT)
-	@if [! -f $(CUBADIR)\libcuba.a ] ; \
+	@if [ ! -f $(CUBADIR)\libcuba.a ] ; \
 	then \
 		cd $(CUBADIR) && ./configure; \
 		make ; \
