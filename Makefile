@@ -64,10 +64,10 @@ test: $(TEST_EXEC)
 
 #Rule to make program executable
 $(TARGET_EXEC): $(COMMON_OBJECTS) $(TARGET_OBJECT)
-	if [ ! -f $(CUBADIR)\libcuba.a ] ; \
+	@if [! -f $(CUBADIR)\libcuba.a ] ; \
 	then \
 		cd $(CUBADIR) && ./configure; \
-		make -C $(CUBADIR); \
+		make ; \
 	fi;
 	$(CC) $^ -o $@ $(LFLAGS)
 
