@@ -1,6 +1,6 @@
 # The variable MSTWDIR must point to the MSTW source directory
 MSTWDIR = mstw
-CUBADIR = /scratch/foldenauer/local/Cuba-4.2
+CUBADIR = Cuba-4.2
 CUBATUREDIR = cubature
 
 #Extend Search path to include the dependencies
@@ -64,6 +64,11 @@ test: $(TEST_EXEC)
 
 #Rule to make program executable
 $(TARGET_EXEC): $(COMMON_OBJECTS) $(TARGET_OBJECT)
+	if [ ! -f $(CUBADIR)\libcuba.a ] ; \
+	then \
+		cd $(CUBADIR) && ./configure; \
+		make -C $(CUBADIR); \
+	fi;
 	$(CC) $^ -o $@ $(LFLAGS)
 
 #Rule to make test
