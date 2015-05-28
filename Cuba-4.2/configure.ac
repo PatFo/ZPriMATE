@@ -85,38 +85,38 @@ AC_COMPILE_IFELSE([AC_LANG_SOURCE(,[[
    AC_DEFINE_UNQUOTED([NCOMP], [$MAXCOMP], [Maximum number of dimensions])]
 )
 
-AC_MSG_CHECKING([for MathLink])
-cat > conftest.tm << _EOF_
-:Begin:
-:Function: inc
-:Pattern: Inc[i_Integer]
-:Arguments: {i}
-:ArgumentTypes: {Integer}
-:ReturnType: Integer
-:End:
-
-#include "mathlink.h"
-
-static int inc(const int i) { return i + 1; }
-
-int main(int argc, char **argv) {
-  return MLMain(argc, argv);
-}
-_EOF_
-FCC="$srcdir/tools/fcc"
-rm -f conftest$EXEEXT
-MCSTDCPP=
-for MCSTDCPP in "" -stdlib=libstdc++ ; do
-  REALCC="$CC" CC="$FCC" CXX="$FCC $MCSTDCPP" PATH="$PATH:$srcdir/tools" \
-    mcc $MCFLAGS $CFLAGS -o conftest$EXEEXT conftest.tm > /dev/null 2>&1
-  AS_IF([test -x conftest$EXEEXT], [break])
-done
-AS_IF([test -x conftest$EXEEXT],
-  [AC_MSG_RESULT([yes])
-   MATH_DEFAULT=math],
-  [AC_MSG_RESULT([no])])
-AC_SUBST([MCSTDCPP])
-AC_SUBST([MATH_DEFAULT])
+##AC_MSG_CHECKING([for MathLink])
+#cat > conftest.tm << _EOF_
+#:Begin:
+#:Function: inc
+#:Pattern: Inc[i_Integer]
+#:Arguments: {i}
+#:ArgumentTypes: {Integer}
+#:ReturnType: Integer
+#:End:
+#
+##include "mathlink.h"
+#
+#static int inc(const int i) { return i + 1; }
+#
+#int main(int argc, char **argv) {
+#  return MLMain(argc, argv);
+#}
+#_EOF_
+#FCC="$srcdir/tools/fcc"
+#rm -f conftest$EXEEXT
+#MCSTDCPP=
+#for MCSTDCPP in "" -stdlib=libstdc++ ; do
+#  REALCC="$CC" CC="$FCC" CXX="$FCC $MCSTDCPP" PATH="$PATH:$srcdir/tools" \
+#    mcc $MCFLAGS $CFLAGS -o conftest$EXEEXT conftest.tm > /dev/null 2>&1
+#  AS_IF([test -x conftest$EXEEXT], [break])
+#done
+#AS_IF([test -x conftest$EXEEXT],
+#  [AC_MSG_RESULT([yes])
+#   MATH_DEFAULT=math],
+#  [AC_MSG_RESULT([no])])
+#AC_SUBST([MCSTDCPP])
+#AC_SUBST([MATH_DEFAULT])
 
 AC_CHECK_PROGS([HAVE_QMAKE], [qmake])
 AS_IF([test -n "$HAVE_QMAKE"],

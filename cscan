@@ -9,7 +9,7 @@ from scipy.interpolate import InterpolatedUnivariateSpline
 
 CSCANSYS = os.path.dirname(os.path.realpath(__file__))
 #print CSCANSYS
-COREX = "./bin/core"
+COREX = "./src/core"
 PLTX = "./bin/simple_hist.py"
 LIMX = "./bin/calc_limit"
 
