@@ -16,4 +16,21 @@ AC_CONFIG_FILES([
 ])
 AC_CONFIG_SUBDIRS([Cuba-4.2])
 
+
+
+#Check for GSL 
+#If the library is found then the tests will define the macros HAVE_LIBGSL, HAVE_LIBGSLCBLAS, HAVE_LIBM 
+#and add the options -lgsl -lgslcblas -lm to the variable LIBS.
+AC_CHECK_LIB([m],[cos])
+AC_CHECK_LIB([gslcblas],[cblas_dgemm])
+AC_CHECK_LIB([gsl],[gsl_blas_dgemm])
+
+#Check for boost
+AX_BOOST_BASE([1.33.1])
+AX_BOOST_FILESYSTEM
+AX_BOOST_SYSTEM
+
+
+
+
 AC_OUTPUT

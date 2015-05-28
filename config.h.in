@@ -1,5 +1,23 @@
 /* config.h.in.  Generated from configure.ac by autoheader.  */
 
+/* define if the Boost library is available */
+#undef HAVE_BOOST
+
+/* define if the Boost::Filesystem library is available */
+#undef HAVE_BOOST_FILESYSTEM
+
+/* define if the Boost::System library is available */
+#undef HAVE_BOOST_SYSTEM
+
+/* Define to 1 if you have the `gsl' library (-lgsl). */
+#undef HAVE_LIBGSL
+
+/* Define to 1 if you have the `gslcblas' library (-lgslcblas). */
+#undef HAVE_LIBGSLCBLAS
+
+/* Define to 1 if you have the `m' library (-lm). */
+#undef HAVE_LIBM
+
 /* Name of package */
 #undef PACKAGE
 

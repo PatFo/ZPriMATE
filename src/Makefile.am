@@ -6,7 +6,8 @@ CUBATURE = hcubature
 
 
 AM_CPPFLAGS = -I$(top_srcdir)/$(MSTWDIR) -I$(top_srcdir)/$(CUBADIR)  -I$(CUBATUREDIR)
-AM_LDFLAGS =  -lm -lgsl -lgslcblas -lboost_system -lboost_filesystem
+AM_LDFLAGS =  @BOOST_FILESYSTEM_LIB@
+AM_LDFLAGS +=  @BOOST_SYSTEM_LIB@
 
 noinst_PROGRAMS = core
 core_SOURCES = main.cpp \
