@@ -1,7 +1,5 @@
 CUBADIR = Cuba-4.2
-CUBA = cuba
 MSTWDIR = mstw
-MSTW = mstwpdf
 BUILDDIR = build
 CUBATUREDIR = cubature
 CUBATURE = hcubature
@@ -17,16 +15,7 @@ core_SOURCES = main.cpp \
 	pheno.cpp  pheno.h \
 	spectrum_analysis.cpp  spectrum_analysis.h \
 	xsec.cpp  xsec.h \
-	$(top_srcdir)/$(MSTWDIR)/$(MSTW).cc $(top_srcdir)/$(MSTWDIR)/$(MSTW).h \
-	$(top_srcdir)/$(CUBADIR)/$(CUBA).h
+	$(top_srcdir)/$(MSTWDIR)/mstwpdf.cc $(top_srcdir)/$(MSTWDIR)/mstwpdf.h \
+	$(top_srcdir)/$(CUBADIR)/cuba.h
 core_LDADD = $(CUBATUREDIR)/libcubature.a  $(top_srcdir)/$(CUBADIR)/libcuba.a
 SUBDIRS = $(CUBATUREDIR)
-
-
-# # Build the CUBATURE object file in the local build directory
-# $(CUBATURE).o : $(CUBATURE).c  $(CUBATUREDIR).h
-# 	$(CC) $(CFLAGS) -o $@  $<	
-	
-# Build the MSTWPDF object file in the local build directory
-#$(MSTW).o : $(top_srcdir)/$(MSTWDIR)/$(MSTW).cc  $(top_srcdir)/$(MSTWDIR)/$(MSTW).h
-#	$(CC) $(CFLAGS) -o $@  $<

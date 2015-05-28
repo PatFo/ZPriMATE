@@ -63,7 +63,7 @@ CONFIG_CLEAN_VPATH_FILES =
 PROGRAMS = $(noinst_PROGRAMS)
 am_core_OBJECTS = main.$(OBJEXT) input.$(OBJEXT) model.$(OBJEXT) \
 	pheno.$(OBJEXT) spectrum_analysis.$(OBJEXT) xsec.$(OBJEXT) \
-	$(MSTW).$(OBJEXT)
+	mstwpdf.$(OBJEXT)
 core_OBJECTS = $(am_core_OBJECTS)
 core_DEPENDENCIES = $(CUBATUREDIR)/libcubature.a \
 	$(top_srcdir)/$(CUBADIR)/libcuba.a
@@ -218,9 +218,7 @@ top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 CUBADIR = Cuba-4.2
-CUBA = cuba
 MSTWDIR = mstw
-MSTW = mstwpdf
 BUILDDIR = build
 CUBATUREDIR = cubature
 CUBATURE = hcubature
@@ -232,8 +230,8 @@ core_SOURCES = main.cpp \
 	pheno.cpp  pheno.h \
 	spectrum_analysis.cpp  spectrum_analysis.h \
 	xsec.cpp  xsec.h \
-	$(top_srcdir)/$(MSTWDIR)/$(MSTW).cc $(top_srcdir)/$(MSTWDIR)/$(MSTW).h \
-	$(top_srcdir)/$(CUBADIR)/$(CUBA).h
+	$(top_srcdir)/$(MSTWDIR)/mstwpdf.cc $(top_srcdir)/$(MSTWDIR)/mstwpdf.h \
+	$(top_srcdir)/$(CUBADIR)/cuba.h
 
 core_LDADD = $(CUBATUREDIR)/libcubature.a  $(top_srcdir)/$(CUBADIR)/libcuba.a
 SUBDIRS = $(CUBATUREDIR)
@@ -284,10 +282,10 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/$(MSTW).Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/input.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/main.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/model.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mstwpdf.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/pheno.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/spectrum_analysis.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/xsec.Po@am__quote@
@@ -306,19 +304,19 @@ distclean-compile:
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(CXXCOMPILE) -c -o $@ `$(CYGPATH_W) '$<'`
 
-$(MSTW).o: $(top_srcdir)/$(MSTWDIR)/$(MSTW).cc
-@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT $(MSTW).o -MD -MP -MF $(DEPDIR)/$(MSTW).Tpo -c -o $(MSTW).o `test -f '$(top_srcdir)/$(MSTWDIR)/$(MSTW).cc' || echo '$(srcdir)/'`$(top_srcdir)/$(MSTWDIR)/$(MSTW).cc
-@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/$(MSTW).Tpo $(DEPDIR)/$(MSTW).Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='$(top_srcdir)/$(MSTWDIR)/$(MSTW).cc' object='$(MSTW).o' libtool=no @AMDEPBACKSLASH@
+mstwpdf.o: $(top_srcdir)/$(MSTWDIR)/mstwpdf.cc
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT mstwpdf.o -MD -MP -MF $(DEPDIR)/mstwpdf.Tpo -c -o mstwpdf.o `test -f '$(top_srcdir)/$(MSTWDIR)/mstwpdf.cc' || echo '$(srcdir)/'`$(top_srcdir)/$(MSTWDIR)/mstwpdf.cc
+@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/mstwpdf.Tpo $(DEPDIR)/mstwpdf.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='$(top_srcdir)/$(MSTWDIR)/mstwpdf.cc' object='mstwpdf.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o $(MSTW).o `test -f '$(top_srcdir)/$(MSTWDIR)/$(MSTW).cc' || echo '$(srcdir)/'`$(top_srcdir)/$(MSTWDIR)/$(MSTW).cc
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o mstwpdf.o `test -f '$(top_srcdir)/$(MSTWDIR)/mstwpdf.cc' || echo '$(srcdir)/'`$(top_srcdir)/$(MSTWDIR)/mstwpdf.cc
 
-$(MSTW).obj: $(top_srcdir)/$(MSTWDIR)/$(MSTW).cc
-@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT $(MSTW).obj -MD -MP -MF $(DEPDIR)/$(MSTW).Tpo -c -o $(MSTW).obj `if test -f '$(top_srcdir)/$(MSTWDIR)/$(MSTW).cc'; then $(CYGPATH_W) '$(top_srcdir)/$(MSTWDIR)/$(MSTW).cc'; else $(CYGPATH_W) '$(srcdir)/$(top_srcdir)/$(MSTWDIR)/$(MSTW).cc'; fi`
-@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/$(MSTW).Tpo $(DEPDIR)/$(MSTW).Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='$(top_srcdir)/$(MSTWDIR)/$(MSTW).cc' object='$(MSTW).obj' libtool=no @AMDEPBACKSLASH@
+mstwpdf.obj: $(top_srcdir)/$(MSTWDIR)/mstwpdf.cc
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT mstwpdf.obj -MD -MP -MF $(DEPDIR)/mstwpdf.Tpo -c -o mstwpdf.obj `if test -f '$(top_srcdir)/$(MSTWDIR)/mstwpdf.cc'; then $(CYGPATH_W) '$(top_srcdir)/$(MSTWDIR)/mstwpdf.cc'; else $(CYGPATH_W) '$(srcdir)/$(top_srcdir)/$(MSTWDIR)/mstwpdf.cc'; fi`
+@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/mstwpdf.Tpo $(DEPDIR)/mstwpdf.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='$(top_srcdir)/$(MSTWDIR)/mstwpdf.cc' object='mstwpdf.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o $(MSTW).obj `if test -f '$(top_srcdir)/$(MSTWDIR)/$(MSTW).cc'; then $(CYGPATH_W) '$(top_srcdir)/$(MSTWDIR)/$(MSTW).cc'; else $(CYGPATH_W) '$(srcdir)/$(top_srcdir)/$(MSTWDIR)/$(MSTW).cc'; fi`
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o mstwpdf.obj `if test -f '$(top_srcdir)/$(MSTWDIR)/mstwpdf.cc'; then $(CYGPATH_W) '$(top_srcdir)/$(MSTWDIR)/mstwpdf.cc'; else $(CYGPATH_W) '$(srcdir)/$(top_srcdir)/$(MSTWDIR)/mstwpdf.cc'; fi`
 
 .cpp.o:
 @am__fastdepCXX_TRUE@	$(CXXCOMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<
@@ -645,14 +643,6 @@ uninstall-am:
 	mostlyclean-compile mostlyclean-generic pdf pdf-am ps ps-am \
 	tags tags-recursive uninstall uninstall-am
 
-
-# # Build the CUBATURE object file in the local build directory
-# $(CUBATURE).o : $(CUBATURE).c  $(CUBATUREDIR).h
-# 	$(CC) $(CFLAGS) -o $@  $<	
-
-# Build the MSTWPDF object file in the local build directory
-#$(MSTW).o : $(top_srcdir)/$(MSTWDIR)/$(MSTW).cc  $(top_srcdir)/$(MSTWDIR)/$(MSTW).h
-#	$(CC) $(CFLAGS) -o $@  $<
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.
