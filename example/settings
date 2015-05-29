@@ -17,7 +17,7 @@ $MODEL = 2000
 $PROC = 1
 $EBEAM = 8000
 $LUM = 20.3  
-$BINS =  analyses/arXiv_1405_4123/bins.dat
+$BINS =  /scratch/foldenauer/code/cscan/analyses/arXiv_1405_4123/bins.dat
 $EFFICIENCIES = analyses/arXiv_1405_4123/eff_el.dat
 $LIMITS = analyses/arXiv_1405_4123/el_lims
 //Search region

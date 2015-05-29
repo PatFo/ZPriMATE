@@ -25,10 +25,10 @@ AC_CHECK_LIB([m],[cos])
 AC_CHECK_LIB([gslcblas],[cblas_dgemm])
 AC_CHECK_LIB([gsl],[gsl_blas_dgemm])
 
-#Check for boost
-AX_BOOST_BASE([1.33.1])
-AX_BOOST_FILESYSTEM
-AX_BOOST_SYSTEM
+##Check for boost
+#AX_BOOST_BASE([1.33.1])
+#AX_BOOST_FILESYSTEM
+#AX_BOOST_SYSTEM
 
 #Check for Python
 PY_PROG_PYTHON([2.7.3], ,AC_MSG_ERROR(You need Python >= 2.7.3 to run Cscan. Use --with-python and refer to a valid python binary.) )

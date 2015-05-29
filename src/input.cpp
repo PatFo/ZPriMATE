@@ -5,7 +5,6 @@
 #include <stdlib.h>
 #include <sys/stat.h>
 #include <unistd.h>
-#include <boost/filesystem.hpp>
 
 #include "input.h"
 
@@ -15,6 +14,7 @@ const int MAX_CHARS(100);
 const int MAX_ITEMS(30);
 const char* const DELIMITERS1 = " $=";
 const char* const DELIMITERS2 = " =";
+const char* const SEPARATOR = "/";
 
 
 
@@ -160,26 +160,40 @@ void fill_map(strmap * pmap, std::ifstream * pistream)
 
 
 ///Get the absolute path to the package root directory
-std::string progr_path()
+std::string package_root_path()
 {
-  //Get full executable path
+  //Get full path of running C++ executable
   char buf[1024];
   readlink("/proc/self/exe", buf, sizeof(buf)-1);
-  //Construct program path
-  boost::filesystem::path p(buf);
+  //Split the path at the separator '/'
+  const char* words[MAX_ITEMS];
+  int len = split_line(words, buf, SEPARATOR );
+  //Strip of the last 2 items of path (exec_dir/exec_name) to get package base path
   std::string path;
-  path.append( (p.parent_path()).parent_path().c_str() );
+  for(int i=0; i<len-2; ++i)
+  {
+    path.append("/");
+    path.append( words[i]);
+  }
   return path;
 }
 
 
 
-///Returns absloute path; 'path' must either be absolute or relative to 'base'
+///Returns absloute path; 'path' MUST either be absolute or relative to 'base'
 std::string abs_path(std::string path, std::string base)
 {
-  boost::filesystem::path p(path);
-  boost::filesystem::path b(base);
-  return (std::string) absolute(p, b).c_str();
+  std::string sep(SEPARATOR);
+  //If path doesn't begin with '/' prepend base
+  if (path[0]!=sep[0])
+  {
+    base.append("/");
+    base.append(path);
+    return base;
+  //Else return path
+  }else{
+    return path;
+  }
 }
 
 
@@ -202,7 +216,7 @@ settings::settings(const char* startfile)
   //Extract settings strings
   fill_map(&inmap, &input);
   //Get base path to program dir
-  std::string basepath = progr_path();    
+  std::string basepath = package_root_path();    
   
   
   ///Get VERBOSITY mode
