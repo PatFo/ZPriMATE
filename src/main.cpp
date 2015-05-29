@@ -92,6 +92,7 @@ int main(int argc, char** argv){
   if(input.proc_id() == 1) 
   {
     fptr = &el_smear;
+//     fptr = NULL;
     cs.push_back( new pheno::HadronXSec(&(model->el),  model, pdfset, input.ebeam()) );
   }
   else if (input.proc_id() == 2)

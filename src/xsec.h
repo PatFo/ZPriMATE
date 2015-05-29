@@ -13,12 +13,14 @@
 #include <gsl/gsl_monte.h>
 #include <gsl/gsl_monte_vegas.h>
 #include <gsl/gsl_integration.h>
-//Cubature integration methods
-#include <cubature.h>
+//Cuba integration methods
 #include <cuba.h>
 
 
 #include <iostream> //DEBUG
+
+
+#define EPSABS 0.0
 
 namespace pheno{
   
@@ -223,14 +225,19 @@ namespace pheno{
 
   
   
-  
-    //Cubature adaptor (Johnson)
+  //Integrand for theoretical hadron cross section (without smearing)
   template<class PartialCrossX> 
-  inline int integrand_th(unsigned ndim, const double *d, void *fdata, unsigned fdim, double *fval)
+  inline int integrand_theo(const int* ndim, const double *x, const int* fdim, double *fval, void *fdata)
   {
     //Get initialization parameters
     PartialCrossX cross;
-    struct parameter_set* pars = (struct parameter_set *)fdata;
+    struct parameter_set_hahn* hpars = (struct parameter_set_hahn *)fdata;
+    struct parameter_set* pars(hpars->pars);
+    
+    double diff1 = hpars->high[0] - hpars->low[0];
+    double diff2 = hpars->high[1] - hpars->low[1];
+    double d[2]={diff1*x[0] + hpars->low[0], diff2*x[1] + hpars->low[1]};
+    
     
     //Define Bjorken x
     double scoll = pars->Ecoll * pars->Ecoll;
@@ -251,10 +258,10 @@ namespace pheno{
               + 
               pars->ppdf->parton(    pdg,  x1, pars->Ecoll )/(x1*x1) * //Mirror: PDFs with antiquark in second proton   
               pars->ppdf->parton( -1*pdg,  x2, pars->Ecoll )/x2 );
-    }    
+    }
+    fval[0] *= diff1*diff2;
     return 0;
   }
-  
   
   
   
@@ -265,19 +272,24 @@ namespace pheno{
     //Construct parameters
     PartonXSec* pp[]= {dxsec, uxsec, sxsec, cxsec, bxsec};                    
     struct parameter_set int_pars = {5, pp, pdf, NULL, Epp};  
-    double epsabs(0.), epsrel(acc);
-    const int dimint(2), dimres(1);
 
-    //Integration variables
-    double result, error;
+    //Integration boundaries
     double xl[2] = {el, 0};
     double xu[2] = {eh, 1};    
- 
-    //Integration
-    hcubature(dimres, &integrand_th<PartialCrossX>, &int_pars, dimint, xl, xu, 0, epsabs, epsrel, ERROR_INDIVIDUAL, &result, &error);
-//     std::cout<<"Integral "<<result<<" Error: "<<error<<std::endl; //######################## DEBUG
     
-    return result;
+    //CUBA parameters
+    struct parameter_set_hahn int_pars_hahn = {&int_pars, xl, xu}; 
+    int nregions, neval, fail;
+    const int dimint(2), dimres(1);
+    double integral[dimres], err[dimres], prob[dimres];
+ 
+    
+  //       std::cout<<"Before integration"<<std::endl; //######################## DEBUG
+    Cuhre(dimint, dimres, &integrand_theo<PartialCrossX>, &int_pars_hahn, 1, acc, EPSABS, 0|4 , 0, 50000, 11, "", NULL, &nregions, &neval, &fail, integral, err, prob);
+//       std::cout<<"After integration"<<std::endl; //######################## DEBUG
+    std::cout<<"Integral "<<integral[0]<<" Error: "<<err[0]<<std::endl; //######################## DEBUG
+
+    return integral[0];
   }
   
   
@@ -324,22 +336,7 @@ namespace pheno{
     }
     return sum;
   }
-  
-  
-  //Cubature adaptor (Johnson)
-  template<class PartialCrossX> 
-  inline int integrand_cubature(unsigned ndim, const double *x, void *fdata, unsigned fdim, double *fval)
-  {
-    double * x_temp= (double *) x;
-//     std::cout<<"("<<x[0]<<", "<<x[1]<<", "<<x[2]<<")\n";   //#######################################################  DEBUG  ##################################
-    size_t dim = ndim;
-    struct parameter_set* pars = (struct parameter_set *)fdata;
-//     std::cout<<pars->narr<<endl;   //#######################################################  DEBUG  ##################################
-    fval[0]= integrand<PartialCrossX>(x_temp, dim, pars);    
-//     std::cout<<fval[0]<<"\n"; //#######################################################  DEBUG  ##################################
-    return 0;
-  }
-  
+   
   
   
   
@@ -353,9 +350,35 @@ namespace pheno{
     double diff2 = cpars->high[1] - cpars->low[1];
     double diff3 = cpars->high[2] - cpars->low[2];
     double point[3]={diff1*x[0] + cpars->low[0], diff2*x[1] + cpars->low[1], diff3*x[2] + cpars->low[2]};
-    //Return integral
-    fval[0] = integrand<PartialCrossX>( point, dim, cpars->pars ) * diff1 * diff2 * diff3 ;
-//     std::cout<<fval[0]<<"\n"; //#######################################################  DEBUG  ##################################
+    
+    //Get initialization parameters
+    PartialCrossX cross;
+    struct parameter_set* pars (cpars->pars);
+    
+    //Define Bjorken x
+    double scoll = pars->Ecoll * pars->Ecoll;
+    double dx1dy = (scoll - point[1]*point[1])/scoll;
+    double x1 = dx1dy * point[2] + point[1]*point[1]/scoll; // Variable trafo from x1 to y=a*x1 + b
+    double x2 = point[1]*point[1]/(x1 * scoll);
+    
+    //Calculate sum of cross sections
+    double sum = 0.;
+    for(int i=0; i<pars->narr; ++i)
+    {
+      double pdg = (pars->ppx[i])->pdg_in();
+      sum +=  dx1dy * 2 * point[1]/scoll *     //Prefactors 
+              cross(pars->ppx[i], point[1]) *  //Parton level cross section
+              ( 
+              pars->ppdf->parton( -1*pdg,  x1, pars->Ecoll )/(x1*x1) * //PDFs with antiquark in first proton
+              pars->ppdf->parton(    pdg,  x2, pars->Ecoll )/x2
+              + 
+              pars->ppdf->parton(    pdg,  x1, pars->Ecoll )/(x1*x1) * //Mirror: PDFs with antiquark in second proton   
+              pars->ppdf->parton( -1*pdg,  x2, pars->Ecoll )/x2 
+              ) *
+              pars->psmear(point[1], point[0]);   //Smearing function
+    }
+    fval[0] = sum * diff1 * diff2 * diff3 ;
+
     return 0;
   }
   
@@ -370,7 +393,6 @@ namespace pheno{
     //Construct parameters
     PartonXSec* pp[]= {dxsec, uxsec, sxsec, cxsec, bxsec};                    
     struct parameter_set int_pars = {5, pp, pdf, psmear, Epp};  
-    double epsabs(0.), epsrel(acc);
     const int dimint(3), dimres(1);
 
     //Integration variables
@@ -406,7 +428,7 @@ namespace pheno{
       gsl_monte_vegas_integrate (&F, xl, xu, dimint, 1000, r, s, &result, &error);
       s->stage=1; //1= keep grid from previous run
       diff=1.0; //set to 100% to start loop
-      while(diff>epsrel)
+      while(diff>acc)
       {
         prev_res=result;
         gsl_monte_vegas_integrate (&F, xl, xu, 3, calls, r, s, &result, &error);
@@ -416,15 +438,10 @@ namespace pheno{
       //Free integration memory
       gsl_monte_vegas_free(s);
     }
-    else if(strat==2)
-    {
-      hcubature(dimres, &integrand_cubature<PartialCrossX>, &int_pars, dimint, xl, xu, 0, epsabs, epsrel, ERROR_INDIVIDUAL, &result, &error);
-      std::cout<<"Integral "<<result<<" Error: "<<error<<std::endl; //######################## DEBUG
-    }
     else if(strat==3)
     {
 //       std::cout<<"Before integration"<<std::endl; //######################## DEBUG
-      Cuhre(dimint, dimres, &integrand_cuba<PartialCrossX>, &int_pars_hahn, 1, epsrel, epsabs, 0|4 , 0, 50000, 11, "", NULL, &nregions, &neval, &fail, integral, err, prob);
+      Cuhre(dimint, dimres, &integrand_cuba<PartialCrossX>, &int_pars_hahn, 1, acc, EPSABS, 0|4 , 0, 50000, 11, "", NULL, &nregions, &neval, &fail, integral, err, prob);
 //       std::cout<<"After integration"<<std::endl; //######################## DEBUG
       result = integral[0];
       error = err[0];
@@ -432,7 +449,7 @@ namespace pheno{
     }
     else if(strat==4)
     {
-      Suave(dimint, dimres, &integrand_cuba<PartialCrossX>, &int_pars_hahn, 1, epsrel, epsabs, 0 | 4, 0,   0, 50000, 1000, 2, 25, "", NULL,  &nregions, &neval, &fail, integral, err, prob);
+      Suave(dimint, dimres, &integrand_cuba<PartialCrossX>, &int_pars_hahn, 1, acc, EPSABS, 0 | 4, 0,   0, 50000, 1000, 2, 25, "", NULL,  &nregions, &neval, &fail, integral, err, prob);
       result = integral[0];
       error = err[0];
       std::cout<<"Integral "<<result<<" Error: "<<error<<std::endl; //######################## DEBUG

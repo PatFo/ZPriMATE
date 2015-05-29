@@ -201,7 +201,6 @@ PYTHON_EXEC_PREFIX = @PYTHON_EXEC_PREFIX@
 PYTHON_PLATFORM = @PYTHON_PLATFORM@
 PYTHON_PREFIX = @PYTHON_PREFIX@
 PYTHON_VERSION = @PYTHON_VERSION@
-RANLIB = @RANLIB@
 SET_MAKE = @SET_MAKE@
 SHELL = @SHELL@
 STRIP = @STRIP@
@@ -257,7 +256,7 @@ top_srcdir = @top_srcdir@
 
 #Include the autoconf macros in the m4 directory
 ACLOCAL_AMFLAGS = -I m4
-SUBDIRS = src src/cubature  
+SUBDIRS = src  
 dist_doc_DATA = README.md
 
 #Specify path to Cuba

@@ -1,7 +1,7 @@
 #Include the autoconf macros in the m4 directory
 ACLOCAL_AMFLAGS = -I m4
 
-SUBDIRS = src src/cubature  
+SUBDIRS = src  
 dist_doc_DATA = README.md
 
 #Specify path to Cuba
