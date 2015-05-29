@@ -268,6 +268,7 @@ dist_doc_DATA = README.md
 
 #Specify path to Cuba
 CUBADIR = Cuba-4.2
+binary = cscan
 all: config.h
 	$(MAKE) $(AM_MAKEFLAGS) all-recursive
 
@@ -730,7 +731,7 @@ install-dvi: install-dvi-recursive
 
 install-dvi-am:
 
-install-exec-am:
+install-exec-am: install-exec-local
 
 install-html: install-html-recursive
 
@@ -770,7 +771,7 @@ ps: ps-recursive
 
 ps-am:
 
-uninstall-am: uninstall-dist_docDATA
+uninstall-am: uninstall-dist_docDATA uninstall-local
 
 .MAKE: $(RECURSIVE_CLEAN_TARGETS) $(RECURSIVE_TARGETS) all \
 	ctags-recursive install-am install-strip tags-recursive
@@ -784,19 +785,29 @@ uninstall-am: uninstall-dist_docDATA
 	distuninstallcheck dvi dvi-am html html-am info info-am \
 	install install-am install-data install-data-am \
 	install-dist_docDATA install-dvi install-dvi-am install-exec \
-	install-exec-am install-html install-html-am install-info \
-	install-info-am install-man install-pdf install-pdf-am \
-	install-ps install-ps-am install-strip installcheck \
-	installcheck-am installdirs installdirs-am maintainer-clean \
-	maintainer-clean-generic mostlyclean mostlyclean-generic pdf \
-	pdf-am ps ps-am tags tags-recursive uninstall uninstall-am \
-	uninstall-dist_docDATA
+	install-exec-am install-exec-local install-html \
+	install-html-am install-info install-info-am install-man \
+	install-pdf install-pdf-am install-ps install-ps-am \
+	install-strip installcheck installcheck-am installdirs \
+	installdirs-am maintainer-clean maintainer-clean-generic \
+	mostlyclean mostlyclean-generic pdf pdf-am ps ps-am tags \
+	tags-recursive uninstall uninstall-am uninstall-dist_docDATA \
+	uninstall-local
 
 
 all: all-local
 
+#From the Cuba package build only the libcub.a; rest is not necessary
 all-local:
 	cd $(CUBADIR) && $(MAKE) $(AM_MAKEFLAGS) libcuba.a
+
+# Create a symbolic link to the executable in the srcdir
+install-exec-local:
+	ln -s $(abs_top_srcdir)/$(binary) $(bindir)
+
+#Remove the installed symbolic link
+uninstall-local:
+	rm $(bindir)/$(binary)
 
 clean-local:
 	-rm -f src/*.o
