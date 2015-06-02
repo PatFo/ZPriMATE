@@ -15,6 +15,34 @@ AC_CONFIG_SUBDIRS([Cuba-4.2])
 
 
 
+#
+# Platform specific setup
+#
+#############################
+AC_CANONICAL_HOST
+# Check for which host we are on and setup a few things
+# specifically based on the host
+case $host_os in
+  darwin* )
+        # Do something specific for mac
+        AC_MSG_RESULT([[Oh-oh, we are on mac: ][$host_os]]) 
+        CXXFLAGS="$CXXFLAGS -stdlib=libstdc++"
+        ;;
+  linux*)
+        # Do something specific for linux
+         AC_MSG_RESULT([[We are on linux: ][$host_os]]) 
+        ;;
+   *BSD*)
+        # Do something specific for BSD
+        ;;
+    *)
+        #Default Case
+        AC_MSG_ERROR([Your platform is not currently supported])
+        ;;
+esac
+
+
+
 #Check for GSL 
 #If the library is found then the tests will define the macros HAVE_LIBGSL, HAVE_LIBGSLCBLAS, HAVE_LIBM 
 #and add the options -lgsl -lgslcblas -lm to the variable LIBS.
