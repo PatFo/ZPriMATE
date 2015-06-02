@@ -138,7 +138,7 @@ namespace pheno{
   
   
 
-  //Parameter struct for integrable function
+  //Parameter struct for differential cross section function
   struct parameters{ PartonXSec** ppx; int arr_size; c_mstwpdf* ppdf; double Ecm; double Ecoll; double* cross_sections; };
   
   
@@ -186,7 +186,7 @@ namespace pheno{
     double diff1 = xu - xl;
     double x1 = diff1*x[0] + xl;
     double x2 = xl/x1;
-//     std::cout<<"x1: "<<x1<<" x2: "<<x2<<std::endl; //######################## DEBUG
+    
     //Calculate sum of cross sections
     double sum = 0.;
     for(int i=0; i<pars->arr_size; ++i)
@@ -228,8 +228,10 @@ namespace pheno{
     double result, error;
     double xl = Ecm*Ecm/(Epp*Epp);  //lower integration limit
     double xu = 1;  //Upper integration limit
-    
+
+//If GSL is present use QAG method    
 #if HAVE_LIBGSLCBLAS    
+
     // QAG adaptive integration
     //Define Integration function
     gsl_function F;
@@ -243,17 +245,18 @@ namespace pheno{
     //Free memory of integration workspace
     gsl_integration_workspace_free(w);
 
+//If GSL not present do fake Cuba 2d integration
 #else    
     
     //CUBA parameters
     int nregions, neval, fail;
     const int dimint(2), dimres(1);
     double integral[dimres], err[dimres], prob[dimres];
-//     Vegas(dimint, dimint, &num_cuba, &local_pars, 1, 1e-1, EPSABS, 1|4, 0, 0, 5000, 1000, 500, 1000, 0, NULL, 0,  &neval, &fail, integral, err, prob);
     Cuhre(dimint, dimres, &num_cuba, &local_pars, 1, 0.02, EPSABS, 0|4 , 0, 10000, 9, "", NULL, &nregions, &neval, &fail, integral, err, prob);
+//     Vegas(dimint, dimint, &num_cuba, &local_pars, 1, 1e-1, EPSABS, 1|4, 0, 0, 5000, 1000, 500, 1000, 0, NULL, 0,  &neval, &fail, integral, err, prob);
 //     Suave(dimint, dimres, &num_cuba, &local_pars, 1, accuracy_goal, EPSABS, 0 | 4, 0,   0, 50000, 1000, 2, 3, "", NULL,  &nregions, &neval, &fail, integral, err, prob);
-    result = integral[0];
 //     std::cout<<"Evaluations: "<<neval<<std::endl<<"Exit status: "<<fail<<std::endl; //######################## DEBUG
+    result = integral[0];
     
 #endif    
     
@@ -268,12 +271,9 @@ namespace pheno{
   //-------------------------------------------------------------------------------------------
   
   //Parameter struct for integrable function
-  struct parameter_set{ int narr; PartonXSec** ppx; c_mstwpdf* ppdf; double (* psmear)(double, double); double Ecoll; };
+  struct parameter_set{ int narr; PartonXSec** ppx; c_mstwpdf* ppdf; double (* psmear)(double, double); double Ecoll; double*  low; double*  high;};
   
   
-  //Parameter struct for integrable function
-  struct parameter_set_hahn{ parameter_set * pars; double*  low; double*  high;};
-    
 
   
   
@@ -283,12 +283,11 @@ namespace pheno{
   {
     //Get initialization parameters
     PartialCrossX cross;
-    struct parameter_set_hahn* hpars = (struct parameter_set_hahn *)fdata;
-    struct parameter_set* pars(hpars->pars);
+    struct parameter_set* pars = (struct parameter_set*) fdata;
     
-    double diff1 = hpars->high[0] - hpars->low[0];
-    double diff2 = hpars->high[1] - hpars->low[1];
-    double d[2]={diff1*x[0] + hpars->low[0], diff2*x[1] + hpars->low[1]};
+    double diff1 = pars->high[0] - pars->low[0];
+    double diff2 = pars->high[1] - pars->low[1];
+    double d[2]={diff1*x[0] + pars->low[0], diff2*x[1] + pars->low[1]};
     
     
     //Define Bjorken x
@@ -323,22 +322,17 @@ namespace pheno{
   {    
     //Construct parameters
     PartonXSec* pp[]= {dxsec, uxsec, sxsec, cxsec, bxsec};                    
-    struct parameter_set int_pars = {5, pp, pdf, NULL, Epp};  
-
     //Integration boundaries
     double xl[2] = {el, 0};
     double xu[2] = {eh, 1};    
     
     //CUBA parameters
-    struct parameter_set_hahn int_pars_hahn = {&int_pars, xl, xu}; 
+    struct parameter_set int_pars = {5, pp, pdf, NULL, Epp, xl, xu};  
     int nregions, neval, fail;
     const int dimint(2), dimres(1);
     double integral[dimres], err[dimres], prob[dimres];
  
-    
-  //       std::cout<<"Before integration"<<std::endl; //######################## DEBUG
-    Cuhre(dimint, dimres, &integrand_theo<PartialCrossX>, &int_pars_hahn, 1, acc, EPSABS, 0|4 , 0, 50000, 11, "", NULL, &nregions, &neval, &fail, integral, err, prob);
-//       std::cout<<"After integration"<<std::endl; //######################## DEBUG
+    Cuhre(dimint, dimres, &integrand_theo<PartialCrossX>, &int_pars, 1, acc, EPSABS, 0|4 , 0, 50000, 11, "", NULL, &nregions, &neval, &fail, integral, err, prob);
     std::cout<<"Integral "<<integral[0]<<" Error: "<<err[0]<<std::endl; //######################## DEBUG
 
     return integral[0];
@@ -358,16 +352,14 @@ namespace pheno{
   template<class PartialCrossX> 
   inline int integrand_cuba(const int* ndim, const double *x, const int* fdim, double *fval, void *fdata)
   {
-    struct parameter_set_hahn* cpars = (struct parameter_set_hahn *)fdata;
-    size_t dim = *ndim;
-    double diff1 = cpars->high[0] - cpars->low[0];
-    double diff2 = cpars->high[1] - cpars->low[1];
-    double diff3 = cpars->high[2] - cpars->low[2];
-    double point[3]={diff1*x[0] + cpars->low[0], diff2*x[1] + cpars->low[1], diff3*x[2] + cpars->low[2]};
-    
-    //Get initialization parameters
     PartialCrossX cross;
-    struct parameter_set* pars (cpars->pars);
+    struct parameter_set* pars = (struct parameter_set*)fdata;
+    size_t dim = *ndim;
+    double diff1 = pars->high[0] - pars->low[0];
+    double diff2 = pars->high[1] - pars->low[1];
+    double diff3 = pars->high[2] - pars->low[2];
+    double point[3]={diff1*x[0] + pars->low[0], diff2*x[1] + pars->low[1], diff3*x[2] + pars->low[2]};
+
     
     //Define Bjorken x
     double scoll = pars->Ecoll * pars->Ecoll;
@@ -403,41 +395,31 @@ namespace pheno{
   template<class PartialCrossX> 
   double pheno::HadronXSec::detectedXsec(double el, double eh, double acc, int strat, double (* psmear)(double, double))
   {
-    
-    //Construct parameters
-    PartonXSec* pp[]= {dxsec, uxsec, sxsec, cxsec, bxsec};                    
-    struct parameter_set int_pars = {5, pp, pdf, psmear, Epp};  
-    const int dimint(3), dimres(1);
-
-    //Integration variables
-    double result, error, prev_res, diff;
+    //Integration boundaries
     double xl[3] = {el, 1, 0};
     double xu[3] = {eh, Epp, 1};
     
     //CUBA parameters
-    struct parameter_set_hahn int_pars_hahn = {&int_pars, xl, xu}; 
+    PartonXSec* pp[]= {dxsec, uxsec, sxsec, cxsec, bxsec};                    
+    struct parameter_set int_pars = {5, pp, pdf, psmear, Epp, xl, xu};  
+    //Construct parameters
     int nregions, neval, fail;
+    const int dimint(3), dimres(1);
     double integral[dimres], err[dimres], prob[dimres];
     
 
     if(strat==1)
     {
-//       std::cout<<"Before integration"<<std::endl; //######################## DEBUG
-      Cuhre(dimint, dimres, &integrand_cuba<PartialCrossX>, &int_pars_hahn, 1, acc, EPSABS, 0|4 , 0, 50000, 11, "", NULL, &nregions, &neval, &fail, integral, err, prob);
-//       std::cout<<"After integration"<<std::endl; //######################## DEBUG
-      result = integral[0];
-      error = err[0];
-      std::cout<<"Integral "<<result<<" Error: "<<error<<std::endl; //######################## DEBUG
+      Cuhre(dimint, dimres, &integrand_cuba<PartialCrossX>, &int_pars, 1, acc, EPSABS, 0|4 , 0, 50000, 11, "", NULL, &nregions, &neval, &fail, integral, err, prob);
+      std::cout<<"Integral "<<integral[0]<<" Error: "<<err[0]<<std::endl; //######################## DEBUG
     }
     else if(strat==2)
     {
-      Suave(dimint, dimres, &integrand_cuba<PartialCrossX>, &int_pars_hahn, 1, acc, EPSABS, 0 | 4, 0,   0, 50000, 1000, 2, 25, "", NULL,  &nregions, &neval, &fail, integral, err, prob);
-      result = integral[0];
-      error = err[0];
-      std::cout<<"Integral "<<result<<" Error: "<<error<<std::endl; //######################## DEBUG
+      Suave(dimint, dimres, &integrand_cuba<PartialCrossX>, &int_pars, 1, acc, EPSABS, 0 | 4, 0,   0, 50000, 1000, 2, 25, "", NULL,  &nregions, &neval, &fail, integral, err, prob);
+      std::cout<<"Integral "<<integral[0]<<" Error: "<<err[0]<<std::endl; //######################## DEBUG
     }
     
-    return result;
+    return integral[0];
   }
   
 
