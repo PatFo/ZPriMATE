@@ -172,6 +172,36 @@ int main(int argc, char** argv){
   
   
   
+  //Construct sampling scheme for Cross section plotting
+//   double stepsize=model->wz_();
+  double stepsize=10;
+  double min = 5;
+  double max = 1.5*model->mzp_();
+  
+  pheno::SpectrumScanner<pheno::HadronXSec> scanner(model, cs[0]);    
+  if(model->wzp_()>model->wz_())
+  {
+    scanner.add_interval(min, max, stepsize);
+  }
+  else
+  {
+    double offset = model->wzp_()*10;
+    scanner.add_interval( min            , model->mzp_()-offset, stepsize   );
+    scanner.add_interval( model->mzp_()-offset, model->mzp_()+offset, model->wzp_()/5 );
+    scanner.add_interval( model->mzp_()+offset, max            , stepsize   );
+  }
+  //Generate the Cross Section Spectrum
+  string scan(input.odir());
+  scan.append("/hadron_scan.dat");
+  scanner.scan((char *) scan.c_str());
+  
+  
+  //Print scanning time
+  gettimeofday(&tv, NULL);
+  double t2=tv.tv_sec+(tv.tv_usec/1000000.0);     
+  printf("Cross section scan took %g s\n\n", t2-t1);
+  
+  
   //Free memory 
   for(unsigned int pos =0 ; pos < cs.size(); ++pos)
   {

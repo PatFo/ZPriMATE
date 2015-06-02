@@ -3,21 +3,24 @@
 
 
 
-
-#include "pheno.h"
+#include <config.h>
 #include <stdexcept>
 #include <vector>
+#include <iostream> //#########################DEBUG
 //PDF package
 #include <mstwpdf.h>
-//Numerical integration
-#include <gsl/gsl_monte.h>
-#include <gsl/gsl_monte_vegas.h>
-#include <gsl/gsl_integration.h>
+
+//If GSL is present use QAG integration
+#if HAVE_LIBGSLCBLAS
+  //Numerical integration
+  #include <gsl/gsl_integration.h>
+#endif
+
 //Cuba integration methods
 #include <cuba.h>
 
+#include "pheno.h"
 
-#include <iostream> //DEBUG
 
 
 #define EPSABS 0.0
@@ -169,6 +172,40 @@ namespace pheno{
   
   
 
+  //Cuba integrand
+  inline int num_cuba(const int* ndim, const double *x, const int* fdim, double *fval, void *fdata)
+  {
+    //Get initialization parameters
+    struct parameters * pars = (struct parameters *)fdata;
+    
+    //Integration boundaries
+    double xl = pars->Ecm*pars->Ecm/(pars->Ecoll*pars->Ecoll);  //lower integration limit
+    double xu = 1;  //Upper integration limit    
+    
+    //Define Bjorken x
+    double diff1 = xu - xl;
+    double x1 = diff1*x[0] + xl;
+    double x2 = xl/x1;
+//     std::cout<<"x1: "<<x1<<" x2: "<<x2<<std::endl; //######################## DEBUG
+    //Calculate sum of cross sections
+    double sum = 0.;
+    for(int i=0; i<pars->arr_size; ++i)
+    {
+      double pdg = (pars->ppx[i])->pdg_in();
+      sum +=  pars->cross_sections[i]/(pars->Ecoll * pars->Ecoll) *  //Parton level cross section
+              ( 
+              pars->ppdf->parton( -1*pdg,  x1, pars->Ecoll )/(x1*x1) * //PDFs with antiquark in first proton
+              pars->ppdf->parton(    pdg,  x2, pars->Ecoll )/x2
+              + 
+              pars->ppdf->parton(     pdg,  x1, pars->Ecoll )/(x1*x1) * //Mirror: PDFs with antiquark in second proton   
+              pars->ppdf->parton(  -1*pdg,  x2, pars->Ecoll )/x2 
+              );
+    }
+    fval[0] = sum * diff1;
+    
+    return 0;
+  }
+  
   
   
   //Function that integrates cross section 
@@ -192,6 +229,7 @@ namespace pheno{
     double xl = Ecm*Ecm/(Epp*Epp);  //lower integration limit
     double xu = 1;  //Upper integration limit
     
+#if HAVE_LIBGSLCBLAS    
     // QAG adaptive integration
     //Define Integration function
     gsl_function F;
@@ -204,6 +242,20 @@ namespace pheno{
     gsl_integration_qags (&F, xl, xu, 0, accuracy_goal, bisection_lim, w, &result, &error); 
     //Free memory of integration workspace
     gsl_integration_workspace_free(w);
+
+#else    
+    
+    //CUBA parameters
+    int nregions, neval, fail;
+    const int dimint(2), dimres(1);
+    double integral[dimres], err[dimres], prob[dimres];
+//     Vegas(dimint, dimint, &num_cuba, &local_pars, 1, 1e-1, EPSABS, 1|4, 0, 0, 5000, 1000, 500, 1000, 0, NULL, 0,  &neval, &fail, integral, err, prob);
+    Cuhre(dimint, dimres, &num_cuba, &local_pars, 1, 0.02, EPSABS, 0|4 , 0, 10000, 9, "", NULL, &nregions, &neval, &fail, integral, err, prob);
+//     Suave(dimint, dimres, &num_cuba, &local_pars, 1, accuracy_goal, EPSABS, 0 | 4, 0,   0, 50000, 1000, 2, 3, "", NULL,  &nregions, &neval, &fail, integral, err, prob);
+    result = integral[0];
+//     std::cout<<"Evaluations: "<<neval<<std::endl<<"Exit status: "<<fail<<std::endl; //######################## DEBUG
+    
+#endif    
     
     return result;
   }
@@ -302,44 +354,6 @@ namespace pheno{
   
   
   
-  
-  //Implementation of gsl monte carlo integrable function: 
-  //Numerical Integration
-  template<class PartialCrossX> 
-  inline double integrand(double d[], size_t dim, void * p)
-  {
-    //Get initialization parameters
-    PartialCrossX cross;
-    struct parameter_set* pars = (struct parameter_set *)p;
-    
-    //Define Bjorken x
-    double scoll = pars->Ecoll * pars->Ecoll;
-    double dx1dy = (scoll - d[1]*d[1])/scoll;
-    double x1 = dx1dy * d[2] + d[1]*d[1]/scoll; // Variable trafo from x1 to y=a*x1 + b
-    double x2 = d[1]*d[1]/(x1 * scoll);
-    
-    //Calculate sum of cross sections
-    double sum = 0.;
-    for(int i=0; i<pars->narr; ++i)
-    {
-      double pdg = (pars->ppx[i])->pdg_in();
-      sum +=  dx1dy * 2 * d[1]/scoll *     //Prefactors 
-              cross(pars->ppx[i], d[1]) *  //Parton level cross section
-              ( 
-              pars->ppdf->parton( -1*pdg,  x1, pars->Ecoll )/(x1*x1) * //PDFs with antiquark in first proton
-              pars->ppdf->parton(    pdg,  x2, pars->Ecoll )/x2
-              + 
-              pars->ppdf->parton(    pdg,  x1, pars->Ecoll )/(x1*x1) * //Mirror: PDFs with antiquark in second proton   
-              pars->ppdf->parton( -1*pdg,  x2, pars->Ecoll )/x2 
-              ) *
-              pars->psmear(d[1], d[0]);   //Smearing function
-    }
-    return sum;
-  }
-   
-  
-  
-  
   //Cuba adaptor (Hahn)
   template<class PartialCrossX> 
   inline int integrand_cuba(const int* ndim, const double *x, const int* fdim, double *fval, void *fdata)
@@ -405,40 +419,8 @@ namespace pheno{
     int nregions, neval, fail;
     double integral[dimres], err[dimres], prob[dimres];
     
-    if(strat==1)
-    {
-      // VEGAS Monte Carlo Integration
-      //Define a gsl_monte_function to pass to the integrator
-      gsl_monte_function F;
-      F.f = &integrand<PartialCrossX>;
-      F.dim = 3;
-      F.params = &int_pars;      
 
-      //Initialize random number gen for monte carlo
-      gsl_rng_env_setup ();
-      const gsl_rng_type *T;
-      gsl_rng *r;
-      T = gsl_rng_default;
-      r = gsl_rng_alloc (T);
-      
-      //Integration
-      gsl_monte_vegas_state *s = gsl_monte_vegas_alloc(3);
-      s->stage=0; // 0= new uniform grid
-      s->mode=GSL_VEGAS_MODE_IMPORTANCE;  //Can pick between importance or stratified sampling
-      gsl_monte_vegas_integrate (&F, xl, xu, dimint, 1000, r, s, &result, &error);
-      s->stage=1; //1= keep grid from previous run
-      diff=1.0; //set to 100% to start loop
-      while(diff>acc)
-      {
-        prev_res=result;
-        gsl_monte_vegas_integrate (&F, xl, xu, 3, calls, r, s, &result, &error);
-        diff= fabs((prev_res-result)/result); //relative difference of last 2 iterations
-        std::cout<<"Integral "<<result<<" Relative difference: "<<diff<<std::endl; //######################## DEBUG
-      }
-      //Free integration memory
-      gsl_monte_vegas_free(s);
-    }
-    else if(strat==3)
+    if(strat==1)
     {
 //       std::cout<<"Before integration"<<std::endl; //######################## DEBUG
       Cuhre(dimint, dimres, &integrand_cuba<PartialCrossX>, &int_pars_hahn, 1, acc, EPSABS, 0|4 , 0, 50000, 11, "", NULL, &nregions, &neval, &fail, integral, err, prob);
@@ -447,14 +429,13 @@ namespace pheno{
       error = err[0];
       std::cout<<"Integral "<<result<<" Error: "<<error<<std::endl; //######################## DEBUG
     }
-    else if(strat==4)
+    else if(strat==2)
     {
       Suave(dimint, dimres, &integrand_cuba<PartialCrossX>, &int_pars_hahn, 1, acc, EPSABS, 0 | 4, 0,   0, 50000, 1000, 2, 25, "", NULL,  &nregions, &neval, &fail, integral, err, prob);
       result = integral[0];
       error = err[0];
       std::cout<<"Integral "<<result<<" Error: "<<error<<std::endl; //######################## DEBUG
     }
-
     
     return result;
   }

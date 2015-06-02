@@ -94,7 +94,7 @@ namespace pheno {
   double pheno::HistWriter<T>::writeHistCore(double lo, double hi, double acc, double prev)
   {
     //Integrate with Suave
-    double res = ((this->pobj)->* (this->pfunc))(lo, hi, acc, this->psmear, 4);
+    double res = ((this->pobj)->* (this->pfunc))(lo, hi, acc, this->psmear, 2);
     if(prev!=0)
     {
       double ratio1, ratio2, diff= res-prev;
@@ -112,7 +112,7 @@ namespace pheno {
       {
         //Switch to Monte Carlo integration
         std::printf("Match jumping criterion. Relative deviations are %g %g\n", ratio1, ratio2);      //#############################################v DEBUG
-        res = ((this->pobj)->* (this->pfunc))(lo, hi, 1e-2,  this->psmear, 1); 
+        res = ((this->pobj)->* (this->pfunc))(lo, hi, 1e-2,  this->psmear, 2); 
       }
     }
     return res;
