@@ -6,6 +6,9 @@
 #include <stdlib.h>
 #include <sys/stat.h>
 #include <unistd.h>
+#if MAC_SYS
+        #include <mach-o/dyld.h>
+#endif
 
 #include "input.h"
 
@@ -166,7 +169,8 @@ std::string package_root_path()
   char buf[1024];
 #if MAC_SYS
   char buf_tmp[1024];
-  _NSGetExecutablePath(buf_tmp, sizeof(buf)-1);
+  uint32_t size = sizeof(buf_tmp);
+  _NSGetExecutablePath(buf_tmp, &size);
   realpath(buf_tmp, buf);
 #else
   //Get full path of running C++ executable under LINUX
@@ -287,6 +291,7 @@ settings::settings(const char* startfile)
   {
     int status = mkdir(_odir.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH); 
     if(status == 0 && _verb)  std::printf("Created output directory %s \n", _odir.c_str());
+    else if (status==-1) std::printf("ERROR: Could not create directoy %s \n", _odir.c_str());
   }
   
   
