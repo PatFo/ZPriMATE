@@ -3,8 +3,38 @@
 AC_INIT([cscan], [0.1], [foldenauer@thphys.uni-heidelberg.de])
 AM_INIT_AUTOMAKE([-Wall -Werror foreign])
 
-AC_PROG_CXX
-AC_PROG_CC
+#Checking for the compiler
+AC_PROG_CC(clang  gcc)
+AC_PROG_CXX(clang++  g++)
+AC_PROG_CPP
+
+dnl If CXX is Clang, check that it can find and parse C++ standard library
+dnl headers.
+if test "$CXX" = "clang++" ; then
+  AC_MSG_CHECKING([whether clang works])
+  AC_LANG_PUSH([C++])
+  dnl Note that space between 'include' and '(' is required.  There's a broken
+  dnl regex in aclocal that otherwise will think that we call m4's include
+  dnl builtin.
+  AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[#include <limits>
+#if __has_include (<cxxabi.h>)
+#include <cxxabi.h>
+#endif
+#if __has_include (<unwind.h>)
+#include <unwind.h>
+#endif
+]])],
+[
+  AC_MSG_RESULT([yes])
+],
+[
+  AC_MSG_RESULT([no])
+  AC_MSG_ERROR([Selected compiler could not find or parse C++ standard library headers.  Rerun with CC=c-compiler CXX=c++-compiler ./configure ...])
+])
+  AC_LANG_POP([C++])
+fi
+
+
 
 AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_FILES([
@@ -19,9 +49,9 @@ AC_CONFIG_SUBDIRS([Cuba-4.2])
 # Platform specific setup
 #
 #############################
-AC_CANONICAL_HOST
 # Check for which host we are on and setup a few things
 # specifically based on the host
+AC_CANONICAL_HOST
 case $host_os in
   darwin* )
         # Do something specific for mac
