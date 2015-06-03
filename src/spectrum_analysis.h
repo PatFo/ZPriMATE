@@ -108,7 +108,7 @@ namespace pheno {
       }
 //       std::printf("Checking deviations %g %g\n", ratio1, ratio2);      //#############################################v DEBUG
       //Check whether there is a hughe leap in the integral --> wrong convergence
-      if( ( ratio1 > (this->reldiff)) || ( ratio2 > (this->reldiff)) || ( -1*ratio1 > (this->reldiff)) || ( -1*ratio2 > (this->reldiff)) )
+      if( ( ratio1 > reldiff) || ( ratio2 > reldiff) || ( -1*ratio1 > reldiff) || ( -1*ratio2 > reldiff) )
       {
         //Switch to Monte Carlo integration
         std::printf("Match jumping criterion. Relative deviations are %g %g\n", ratio1, ratio2);      //#############################################v DEBUG
