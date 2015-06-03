@@ -1,3 +1,4 @@
+#include <config.h>
 #include <cstring>
 #include <iostream>
 #include <fstream>
@@ -162,9 +163,15 @@ void fill_map(strmap * pmap, std::ifstream * pistream)
 ///Get the absolute path to the package root directory
 std::string package_root_path()
 {
-  //Get full path of running C++ executable
   char buf[1024];
+#if MAC_SYS
+  char buf_tmp[1024];
+  _NSGetExecutablePath(buf_tmp, sizeof(buf)-1);
+  realpath(buf_tmp, buf);
+#else
+  //Get full path of running C++ executable under LINUX
   readlink("/proc/self/exe", buf, sizeof(buf)-1);
+#endif  
   //Split the path at the separator '/'
   const char* words[MAX_ITEMS];
   int len = split_line(words, buf, SEPARATOR );

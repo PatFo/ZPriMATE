@@ -9,6 +9,9 @@
 /* Define to 1 if you have the `m' library (-lm). */
 #undef HAVE_LIBM
 
+/* Variable state is 1 if platform is Mac Osx */
+#undef MAC_SYS
+
 /* Name of package */
 #undef PACKAGE
 

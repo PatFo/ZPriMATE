@@ -57,10 +57,12 @@ case $host_os in
         # Do something specific for mac
         AC_MSG_RESULT([[Oh-oh, we are on mac: ][$host_os]]) 
         CXXFLAGS="$CXXFLAGS -stdlib=libstdc++"
+        AC_DEFINE([MAC_SYS], [1], [Variable state is 1 if platform is Mac Osx])
         ;;
   linux*)
         # Do something specific for linux
-         AC_MSG_RESULT([[We are on linux: ][$host_os]]) 
+        AC_MSG_RESULT([[We are on linux: ][$host_os]]) 
+        AC_DEFINE([MAC_SYS], [0], [Variable state is 1 if platform is Mac Osx])
         ;;
    *BSD*)
         # Do something specific for BSD

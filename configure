@@ -3905,11 +3905,17 @@ case $host_os in
         { $as_echo "$as_me:${as_lineno-$LINENO}: result: Oh-oh, we are on mac: $host_os" >&5
 $as_echo "Oh-oh, we are on mac: $host_os" >&6; }
         CXXFLAGS="$CXXFLAGS -stdlib=libstdc++"
+
+$as_echo "#define MAC_SYS 1" >>confdefs.h
+
         ;;
   linux*)
         # Do something specific for linux
-         { $as_echo "$as_me:${as_lineno-$LINENO}: result: We are on linux: $host_os" >&5
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: We are on linux: $host_os" >&5
 $as_echo "We are on linux: $host_os" >&6; }
+
+$as_echo "#define MAC_SYS 0" >>confdefs.h
+
         ;;
    *BSD*)
         # Do something specific for BSD
