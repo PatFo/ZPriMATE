@@ -147,14 +147,6 @@ template class pheno::SpectrumScanner<pheno::HadronXSec>;
 
 
 
-//*******************************************************//
-//            Class for scanning spectrum                //
-//*******************************************************//
-
-
-template class pheno::HistWriter<pheno::PartonXSec>;
-template class pheno::HistWriter<pheno::HadronXSec>;
-
 
 //*******************************************************//
 //            Function to get binning from file          //

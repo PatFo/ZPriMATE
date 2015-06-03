@@ -1,5 +1,6 @@
 #include <config.h>
 #include <cstring>
+#include <errno.h>
 #include <iostream>
 #include <fstream>
 #include <stdexcept>
@@ -272,7 +273,15 @@ settings::settings(const char* startfile)
   ///Get LIMIT directory 
   it = inmap.find("$LIMITS");
   if(it == inmap.end()) throw std::runtime_error("ERROR: No LIMITS directory specified.\n\n\t Define in input file as: \'$LIMITS = /absolute/path/to/dir\'\n"); 
-  else  _limdir = abs_path((it->second)[0], basepath);    
+  else  _limdir = abs_path((it->second)[0], basepath);
+  //Check whether _limdir exists
+  struct stat st;
+  if(stat(_limdir.c_str(),&st) != 0)
+  {
+    std::string error_msg("Limits directory doesn't exist: ");
+    error_msg.append(limdir());
+    throw std::runtime_error(error_msg.c_str()); 
+  }
   
   
   ///Get OUTPUT directory 
@@ -286,12 +295,16 @@ settings::settings(const char* startfile)
   }
   else  _odir = abs_path((it->second)[0], basepath);   
   //Check whether _odir exists; if not mkdir
-  struct stat st;
+//   struct stat st;
   if(stat(_odir.c_str(),&st) != 0)
   {
     int status = mkdir(_odir.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH); 
     if(status == 0 && _verb)  std::printf("Created output directory %s \n", _odir.c_str());
-    else if (status==-1) std::printf("ERROR: Could not create directoy %s \n", _odir.c_str());
+    else if (status==-1)
+    {
+      std::printf("ERROR: Could not create directoy %s \n", _odir.c_str());
+      throw std::runtime_error("ERROR: Output directory not created\n");
+    }
   }
   
   
@@ -299,7 +312,24 @@ settings::settings(const char* startfile)
   it = inmap.find("$BINS");
   //Make sure that a file was specified
   if(it == inmap.end()) throw std::runtime_error("ERROR: No BINNING specified.\n\n\t Define in input file as: \'$BINS = /absolute/path/to/file\'\n\n"); 
-  else  _binning = abs_path((it->second)[0], basepath);   
+  else  _binning = abs_path((it->second)[0], basepath); 
+  //Check whether the binning file exists and is readable
+  int bin_stat = access(_binning.c_str(), R_OK);
+  if (bin_stat < 0) {
+    if (errno == ENOENT) {
+      std::string error_msg("Binning file doesn't exist: ");
+      error_msg.append(_binning);
+      throw std::runtime_error(error_msg.c_str()); 
+    } else if (errno == EACCES) {
+      std::string error_msg("Binning file is not readable: ");
+      error_msg.append(_binning);
+      throw std::runtime_error(error_msg.c_str());
+    } else {
+      std::string error_msg("Cannot access binning file: ");
+      error_msg.append(_binning);
+      throw std::runtime_error(error_msg.c_str());
+    }
+  }
   
   
   ///Get EFFICIENCIES file 
