@@ -12,8 +12,8 @@
 //CSCAN headers
 #include "input.h"
 #include "pheno.h"
-#include "xsec.h"
 #include "spectrum_analysis.h"
+#include "xsec.h"
 
 
 using namespace std;

@@ -289,13 +289,13 @@ settings::settings(const char* startfile)
   //Check whether a directory was specified; otherwise defaults to $HOME/CSCAN
   if(it == inmap.end()) 
   {
-    _odir = getenv("HOME");
-    _odir.append("/CSCAN");    
+//     _odir = getenv("HOME");
+    _odir = basepath;
+    _odir.append("/results");    
     if(_verb) std::printf("INFO: No output directoy specified. Defaults to %s\n\n\t Else define on input as: \'$ODIR = /absolute/path/to/dir\'\n\n", _odir.c_str());
   }
   else  _odir = abs_path((it->second)[0], basepath);   
   //Check whether _odir exists; if not mkdir
-//   struct stat st;
   if(stat(_odir.c_str(),&st) != 0)
   {
     int status = mkdir(_odir.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH); 
@@ -341,22 +341,7 @@ settings::settings(const char* startfile)
     _efficiencies = "";
   }
   else  _efficiencies = abs_path((it->second)[0], basepath);     
-  
-  
-  ///Get search region; if not specified is set to -1 
-  it = inmap.find("$SREGION");
-  //Check whether search region was specified 
-  if(it == inmap.end()) 
-  {
-//     if(_verb) std::printf("INFO: No search region has been specified.\n\n\t Define in input file as: \'$SREGION =  <low>  <high>\'\n\n");
-    _smin = -1; 
-    _smax = -1;    
-  }
-  else
-  {
-    _smin = atof( ((it->second)[0]).c_str());
-    _smax = atof( ((it->second)[1]).c_str());
-  }   
+     
   
   
   ///Get Collider energy; if not specified defaults to 8TeV 
@@ -454,20 +439,6 @@ double settings::luminosity()
 ///Returns the luminosity in [fb^-1]
 {
   return _luminosity;
-}
-
-
-double settings::smin()
-///Returns the lower limit of the search region
-{
-  return _smin;
-}
-
-
-double settings::smax()
-///Returns the upper limit of the search region
-{
-  return _smax;
 }
 
 

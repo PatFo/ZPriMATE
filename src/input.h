@@ -46,8 +46,6 @@ class conf_reader{
     double _ebeam;
     double _luminosity;
     double _mzssm;
-    double _smax;
-    double _smin;
     std::string _binning;
     std::string _efficiencies;
     std::string _limdir;
@@ -62,8 +60,6 @@ class conf_reader{
     double ebeam();
     double luminosity();
     double mzssm();
-    double smax();
-    double smin();
     std::string binning();
     std::string efficiencies();
     std::string limdir();
