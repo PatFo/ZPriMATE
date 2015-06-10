@@ -6,7 +6,7 @@ dist_doc_DATA = README.md
 
 #Specify path to Cuba
 CUBADIR = Cuba-4.2
-binary = cscan
+binary = zprimate
 
 all: all-local
 

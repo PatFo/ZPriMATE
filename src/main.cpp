@@ -9,7 +9,7 @@
 #include <sys/time.h>
 // #include <ctime>
 
-//CSCAN headers
+//ZPriMATE headers
 #include "input.h"
 #include "pheno.h"
 #include "spectrum_analysis.h"

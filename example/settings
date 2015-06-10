@@ -3,13 +3,13 @@
 
 //PROGRAM PARAMETERS
 // $VERBOSE       = 1
-// $ACC           = 1e-3
+// $ACC           = 1e-2
 // $ODIR          = <outdir>
 // $PDF           = mstw/grid/mstw2008lo.00.dat
 
 
 //SPECIFY MODEL FILE OR SET MASS OF Z_SSM
-// $MODEL = example/example.conf
+// $MODEL         = example/example.conf
 $MODEL         = 2000
 
 

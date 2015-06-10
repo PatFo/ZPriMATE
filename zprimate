@@ -7,8 +7,8 @@ import numpy as np
 from scipy.interpolate import InterpolatedUnivariateSpline
 
 
-CSCANSYS = os.path.dirname(os.path.realpath(__file__))
-#print CSCANSYS
+ZPMSYS = os.path.dirname(os.path.realpath(__file__))
+#print ZPMSYS
 COREX = "./src/core"
 PLTX = "./bin/simple_hist.py"
 LIMX = "./bin/calc_limit"
@@ -22,7 +22,7 @@ if fullfile[0] !='/':
 #print  fullfile
 
 #Cross section calculation
-os.chdir(CSCANSYS)
+os.chdir(ZPMSYS)
 print "\nCalculating cross section ...\n"
 core = subprocess.Popen(["%s %s" %(COREX, fullfile) ], stdout=subprocess.PIPE, shell=True)
 #core = subprocess.Popen(["%s %s" %(COREX, fullfile) ], stdout=None, shell=True)
@@ -82,7 +82,7 @@ if os.path.isfile(inp):
            
            
 #Write Core output
-log = open(odir+"/cscan.log", 'w')
+log = open(odir+"/zprimate.log", 'w')
 log.write("%s"%core_out)
 log.close
 

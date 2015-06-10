@@ -1,6 +1,6 @@
 # Process this file with autoconf to produce a configure script.
 
-AC_INIT([cscan], [0.1], [foldenauer@thphys.uni-heidelberg.de])
+AC_INIT([ZPriMATE], [0.1], [foldenauer@thphys.uni-heidelberg.de])
 AM_INIT_AUTOMAKE([-Wall -Werror foreign])
 
 #Checking for the compiler
@@ -88,8 +88,8 @@ AC_CHECK_LIB([gsl],[gsl_blas_dgemm])
 #AX_BOOST_SYSTEM
 
 #Check for Python
-PY_PROG_PYTHON([2.7.3], ,AC_MSG_ERROR(You need Python >= 2.7.3 to run Cscan. Use --with-python and refer to a valid python binary.) )
-AM_PATH_PYTHON([2.7.3], ,AC_MSG_ERROR(You need Python >= 2.7.3 to run Cscan. Use --with-python and refer to a valid python binary.) )
+PY_PROG_PYTHON([2.7.3], ,AC_MSG_ERROR(You need Python >= 2.7.3 to run ZPriMATE. Use --with-python and refer to a valid python binary.) )
+AM_PATH_PYTHON([2.7.3], ,AC_MSG_ERROR(You need Python >= 2.7.3 to run ZPriMATE. Use --with-python and refer to a valid python binary.) )
 
 #Check for Python modules
 #PY_PYTHON_IMPORT_CHECK(scipy.optimize, [from scipy.optimize import minimize, brentq])

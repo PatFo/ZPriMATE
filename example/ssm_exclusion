@@ -8,7 +8,7 @@ import time
 
 
 
-#Function that writes input file for cscan
+#Function that writes input file for zprimate
 def write_startfile(filepath, outdir, acc, mass, proc):
   f=open(filepath, 'w')
 
@@ -49,8 +49,8 @@ start = time.time()
 proc = int(sys.argv[1])
   
 #Cscan executable and package direcotry  
-CSCANX = "./cscan"
-CSCANSYS =  os.path.dirname(os.path.dirname(os.path.realpath(__file__)))  
+ZPMX = "./zprimate"
+ZPMSYS =  os.path.dirname(os.path.dirname(os.path.realpath(__file__)))  
 
 
 #Create Result directoy in user's home 
@@ -58,7 +58,7 @@ wdir = os.path.expanduser("~") +"/SSM_EXCLUSION"
 if not os.path.isdir(wdir):
   os.mkdir(wdir)
   
-cdir = wdir + "/CSCAN"  
+cdir = wdir + "/ZPM"  
 if not os.path.isdir(cdir):
   os.mkdir(cdir)
 
@@ -71,7 +71,7 @@ lobs =  []
 ltot =  []
   
   
-os.chdir(CSCANSYS)
+os.chdir(ZPMSYS)
 startfile = cdir + "/settings"
 excl = open(wdir + "/exclusion.dat" , 'w')
 excl.write("%-12s\t%-10s\t%-10s\t%-15s\n"%("M_inv [Gev]", "S95_exp", "S95_obs", "Cross Sec [fb]"))
@@ -81,9 +81,9 @@ mzp =  100
 while mzp<=3500 :
   #Write settings
   write_startfile(startfile, cdir, 5e-3, mzp, proc)
-  cscan = subprocess.Popen(["%s %s" %(CSCANX, startfile) ], stdout=subprocess.PIPE, shell=True)
-  cscan.wait() # Wait till finished
-  (out, err) = cscan.communicate() #Catch output and error if send to PIPE
+  zpm = subprocess.Popen(["%s %s" %(ZPMX, startfile) ], stdout=subprocess.PIPE, shell=True)
+  zpm.wait() # Wait till finished
+  (out, err) = zpm.communicate() #Catch output and error if send to PIPE
   print out     
   
   #Get exclusion limits for current model

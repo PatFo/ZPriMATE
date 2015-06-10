@@ -286,7 +286,7 @@ settings::settings(const char* startfile)
   
   ///Get OUTPUT directory 
   it = inmap.find("$ODIR");
-  //Check whether a directory was specified; otherwise defaults to $HOME/CSCAN
+  //Check whether a directory was specified; otherwise defaults to $ZPriMATE/results
   if(it == inmap.end()) 
   {
 //     _odir = getenv("HOME");
