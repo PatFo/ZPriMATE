@@ -1,4 +1,5 @@
-# cscan
+# ZPriMATE
+![](icons/logo_small.png?raw=true)
 Calculate PDF convoluted crossection from general Z' model.
 
 

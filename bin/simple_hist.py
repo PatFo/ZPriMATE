@@ -1,8 +1,10 @@
 #!/usr/bin/python
+import os
 import sys
 import numpy as np
 from matplotlib import pyplot as plt
 
+ZPMSYS =  os.path.dirname(os.path.dirname(os.path.realpath(__file__)))  
 
 OX = []
 OY = []
@@ -29,10 +31,17 @@ plt.semilogy(OX, OY, 'r',label='Signal',drawstyle='steps')
 plt.grid(True)
 plt.ylim((ymi,yma*1.2))
 plt.xlim((xmi,xma))
-plt.ylabel('Cross Section')
-plt.xlabel('M_inv [GeV]')
-plt.title('Events')
+plt.ylabel('Events')
+plt.xlabel(r'$m_{inv}$ [GeV]')
+plt.title('Predicted number of events')
 plt.legend()
 
+#Include ZPriMATE logo on plot
+im = plt.imread(ZPMSYS + "/icons/logo_small.png")
+ax = plt.axes([0.13,0.1, 0.2, 0.2], frameon=False)  # Change the numbers in this array to position your image [left, bottom, width, height])
+ax.imshow(im)
+ax.axis('off')  # get rid of the ticks and ticklabels
+
+
 f=f[:-3]+"pdf"
-plt.savefig(f) 
+plt.savefig(f,dpi=300) 

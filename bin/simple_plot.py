@@ -1,7 +1,10 @@
 #!/usr/bin/python
+import os
 import sys
 import numpy as np
 from matplotlib import pyplot as plt
+
+
 
 # Switches to enable plotting of cross sections
 plot_tot = 1
@@ -14,7 +17,7 @@ plot_sig = 0
 #       This scrip needs the absolute path of the datafile as command line arguments 
 #       and then plots the three column data.
 f= sys.argv[1]
-
+ZPMSYS =  os.path.dirname(os.path.dirname(os.path.realpath(__file__)))  
 
   
 #x, y1, y2 = np.genfromtxt(f, delimiter='\t\t').transpose()
@@ -65,10 +68,15 @@ if plot_sm:
     plt.semilogy(x, y4, 'b',label=ly4)
 
 plt.grid(True)
-plt.ylabel('dSig/dm^2 [fb/Gev^2]')
-plt.xlabel('m_ll [GeV]')
-plt.title('Cross Section')
+plt.ylabel(r'd$\sigma$/d$m^2$ [fb/GeV$^2$]')
+plt.xlabel(r'$m_{inv}$ [GeV]')
+plt.title('Differential Partonic Cross Section')
 plt.legend()
+#Include ZPriMATE logo on plot
+im = plt.imread(ZPMSYS + "/icons/logo_small.png")
+ax = plt.axes([0.13,0.1, 0.17, 0.17], frameon=False)  # Change the numbers in this array to position your image [left, bottom, width, height])
+ax.imshow(im)
+ax.axis('off')  # get rid of the ticks and ticklabels
     
 f=f[:-3]+"pdf"
-plt.savefig(f)
+plt.savefig(f,dpi=300)
