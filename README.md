@@ -1,5 +1,5 @@
-# ZPriMATE
-![](icons/logo_small.png?raw=true)
+# ![](icons/icon.ico?raw=true) ZPriMATE
+
 Calculate PDF convoluted crossection from general Z' model.
 
 
