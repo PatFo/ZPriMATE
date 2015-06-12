@@ -1,6 +1,6 @@
-# <img src=icons/logo_small.png width=225 height=154 /> PriMATE
+# <img src=icons/logotype.png width=225 height=154 /> 
 
-ZPriMATE -- Calculate PDF convoluted crossection from general Z' model.
+ZPriMATE -- Z Prime Models At Terascale Energies
 
 
 DEPENDENCIES:
