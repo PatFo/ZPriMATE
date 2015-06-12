@@ -1,4 +1,4 @@
-# <img src=icons/logotype.png width=260 height=150 /> 
+# <img src=icons/logotype.png width=325 height=187 /> 
 
 ZPriMATE -- Z Prime Models At Terascale Energies
 
