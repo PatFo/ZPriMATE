@@ -82,6 +82,11 @@ AC_CHECK_LIB([m],[cos])
 AC_CHECK_LIB([gslcblas],[cblas_dgemm])
 AC_CHECK_LIB([gsl],[gsl_blas_dgemm])
 
+
+#Check for OpenMP
+AC_OPENMP
+AC_SUBST(AM_CXXFLAGS,"$OPENMP_CXXFLAGS")
+
 ##Check for boost
 #AX_BOOST_BASE([1.33.1])
 #AX_BOOST_FILESYSTEM

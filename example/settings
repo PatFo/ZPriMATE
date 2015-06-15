@@ -14,7 +14,7 @@ $MODEL         = 2000
 
 
 //ANALYSIS PARAMETERS
-$PROC          = 1
+$PROC          = 2
 $EBEAM         = 8000
 $LUM           = 20.3  
 $BINS          = analyses/arXiv_1405_4123/bins.dat

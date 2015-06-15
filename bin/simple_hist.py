@@ -37,7 +37,7 @@ plt.title('Predicted number of events')
 plt.legend()
 
 #Include ZPriMATE logo on plot
-im = plt.imread(ZPMSYS + "/icons/logo_small.png")
+im = plt.imread(ZPMSYS + "/icons/logotype.png")
 ax = plt.axes([0.13,0.1, 0.2, 0.2], frameon=False)  # Change the numbers in this array to position your image [left, bottom, width, height])
 ax.imshow(im)
 ax.axis('off')  # get rid of the ticks and ticklabels
