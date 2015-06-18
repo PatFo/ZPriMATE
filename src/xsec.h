@@ -89,8 +89,8 @@ namespace pheno{
     ///Class for calculcation of partonic cross sections of p p --> f_out f_out~
     private:
       size_t calls;
-      double accuracy_goal;
       double Epp;
+      double accuracy_goal;
       //Internal parton cross sections: no top, as pdf negligible
   public: //####################################################################################### DEBUG ONLY ####################################
       PartonXSec* dxsec;
@@ -121,6 +121,7 @@ namespace pheno{
       double totXsec(double el, double eh, double accuracy, double (* psmear)(double,double)=NULL, int strategy=1);
       //Constructor and destructor to take care of memory allocations
       HadronXSec(fundamental::fermionExt* f_out, pheno::ZpModel* p_model, char* pdf_grid_file, double Ecoll=8000.);
+      HadronXSec(const pheno::HadronXSec& pobj);
       ~HadronXSec();  
   };
   
@@ -331,7 +332,10 @@ namespace pheno{
     int nregions, neval, fail;
     const int dimint(2), dimres(1);
     double integral[dimres], err[dimres], prob[dimres];
+    
+//     std::cout<<"Starting integration \n"; //################################################### DEBUG
  
+    #pragma omp private(integrand_theo<PartialCrossX>)
     Cuhre(dimint, dimres, &integrand_theo<PartialCrossX>, &int_pars, 1, acc, EPSABS, 0|4 , 0, 50000, 11, "", NULL, &nregions, &neval, &fail, integral, err, prob);
     std::cout<<"Integral "<<integral[0]<<" Error: "<<err[0]<<std::endl; //######################## DEBUG
 
@@ -406,8 +410,9 @@ namespace pheno{
     int nregions, neval, fail;
     const int dimint(3), dimres(1);
     double integral[dimres], err[dimres], prob[dimres];
-    
+  
 
+    #pragma omp private(integrand_cuba<PartialCrossX>)
     if(strat==1)
     {
       Cuhre(dimint, dimres, &integrand_cuba<PartialCrossX>, &int_pars, 1, acc, EPSABS, 0|4 , 0, 50000, 11, "", NULL, &nregions, &neval, &fail, integral, err, prob);

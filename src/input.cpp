@@ -34,19 +34,35 @@ const char* const SEPARATOR = "/";
 int split_line(const char** itemlist,  char* line , const char* const DELIMS)
 ///Split a line into its components separated by the DELIMS
 {
-  itemlist[0] = std::strtok(line, DELIMS); //Split the string
+//   itemlist[0] = std::strtok(line, DELIMS); //Split the string
 //   std::cout<<itemlist[0]<<std::endl;  // ###################################### DEBUG ####################### 
   
-  int len=1;
-  for (int n = 1; n < MAX_ITEMS; n++)
-  {
-    // 'NULL' means continue splitting after last successful split
-    itemlist[n] = std::strtok(NULL, DELIMS); 
-    if (!itemlist[n]) break; // no more tokens
-//     std::cout<<itemlist[n]<<std::endl; // ###################################### DEBUG ####################### 
-    ++len;
-  }
-  
+ 
+    char *token = std::strtok(line, DELIMS); //Split the string
+    if(token ==NULL) return 0; //Abort if line is empty
+
+    itemlist[0] = token;
+    int len=1;
+    while (token != NULL) {
+//         std::cout << token << '\n';   // ###################################### DEBUG ####################### 
+        token = std::strtok(NULL, DELIMS); 
+        if(token ==NULL) break; //Abort if no more tokens
+        itemlist[len] = token;
+        ++len;
+    }
+//   for (int n = 1; n < MAX_ITEMS; n++)
+//   {
+//     
+//     // 'NULL' means continue splitting after last successful split
+//     char * curr_token = std::strtok(NULL, DELIMS); 
+//     if (!curr_token) break;
+//     itemlist[n]=curr_token;
+// //     itemlist[n] = std::strtok(NULL, DELIMS); 
+// //     if (!itemlist[n]) break; // no more tokens
+// //     std::cout<<itemlist[n]<<std::endl; // ###################################### DEBUG ####################### 
+//     ++len;
+//   }
+//   std::cout<<"length "<<len<<std::endl; // ###################################### DEBUG ####################### 
   return len;
 }
 
@@ -175,11 +191,14 @@ std::string package_root_path()
   realpath(buf_tmp, buf);
 #else
   //Get full path of running C++ executable under LINUX
-  readlink("/proc/self/exe", buf, sizeof(buf)-1);
+  int linkcount=readlink("/proc/self/exe", buf, sizeof(buf)-1);  //#####Something is going wrong a this point or after (Uninitialised value was created by a stack allocation) ## FIX
+//   std::cout<<"Linksize "<<linkcount<<"\n"; //##################################################### DEBUG
 #endif  
   //Split the path at the separator '/'
+  std::string buf_str(buf);
   const char* words[MAX_ITEMS];
-  int len = split_line(words, buf, SEPARATOR );
+  std::printf( "Buffered path is %s \n", buf_str.c_str());        //##################################################### DEBUG
+  int len = split_line(words, (char *)buf_str.c_str(), SEPARATOR );
   //Strip of the last 2 items of path (exec_dir/exec_name) to get package base path
   std::string path;
   for(int i=0; i<len-2; ++i)

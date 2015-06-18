@@ -117,6 +117,40 @@ int main(int argc, char** argv){
   else throw std::runtime_error("ERROR: Invalid process id.\nCurrently available:\n\n\t0 = jets\n\t1 = e+ e-\n\t2 = mu+ mu-\n\t3 = tau+ tau-\n");
   
   
+  
+//   //################################################################## TESTING  
+//   pheno::HadronXSec* pcopy =  new pheno::HadronXSec(*cs[0]);
+// //   #pragma omp parallel for
+//   for(int i=0; i<8; ++i)
+//   {
+//     Signal sig;
+// //     printf("Function call in iteration %i in parralel yields: %g\n",i, sig(copy,100, 1000, 0.01, 2 ));
+//     printf("Function call in iteration %i in parralel yields: %g\n",i, (*cs[0]).zpXsec(200, 1000, 0.01, fptr, 2));
+//   }
+//   pheno::binning testbins = pheno::get_binning((char *)input.binning().c_str());
+//   (const pheno::binning) testbins;
+//   int len = testbins.size();
+//   #pragma omp parallel for ordered firstprivate(pcopy, fptr)//, testbins)
+// //   for(pheno::binning::iterator itb = testbins.begin(); itb!=testbins.end(); ++itb)
+//   for(int i=0; i<len; ++i)
+//   {
+//     pheno::HadronXSec* pcopy2 =  new pheno::HadronXSec(*cs[0]);
+//     double low = testbins.operator[](i).first;
+//     double high = testbins.operator[](i).second;
+// //     double low = itb->first;
+// //     double high = itb->second;
+//     printf("Signal prediction in bin [%g, %g]: %i \n",low, high, pcopy2->dxsec->pdg_in());    
+//     printf("Signal prediction in bin [%g, %g]: %g \n",low, high, pcopy2->accuracy_goal);    
+//     printf("Signal prediction in bin (iteration %i) [%g, %g] is: %g\n", i, low, high, pcopy2->zpXsec(low, high, 0.01, fptr, 2));
+// //     delete pcopy2;
+//   }
+//   
+//   
+//    printf("\n ***************** Finished prediction **************\n\n");
+//   
+//   //################################################################## TESTING
+  
+  
    
   //Create communication file for python input lying at TMP
   char const * tmp = getenv("TMPDIR");
