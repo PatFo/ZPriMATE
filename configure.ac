@@ -54,9 +54,10 @@ AC_CONFIG_SUBDIRS([Cuba-4.2])
 AC_CANONICAL_HOST
 case $host_os in
   darwin* )
-        # Do something specific for mac
+        # Add the correct std c++ library and diable static-float-initializer warning for clang
         AC_MSG_RESULT([[Oh-oh, we are on mac: ][$host_os]]) 
         CXXFLAGS="$CXXFLAGS -stdlib=libstdc++"
+        CXXFLAGS="$CXXFLAGS -Wno-gnu-static-float-init"
         AC_DEFINE([MAC_SYS], [1], [Variable state is 1 if platform is Mac Osx])
         ;;
   linux*)

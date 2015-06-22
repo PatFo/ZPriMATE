@@ -162,7 +162,7 @@ void fill_map(strmap * pmap, std::ifstream * pistream)
     const char* words[MAX_ITEMS];
     int len = split_line(words, buffer, DELIMITERS2 );
     //Assert that line is not empty
-    if(words[0]!=NULL)
+    if(len>0)
     {
       //Check whether first item is a variable name
       if( words[0][0] =='$')

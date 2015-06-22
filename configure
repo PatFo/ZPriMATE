@@ -3950,10 +3950,11 @@ case $host_os in *\ *) host_os=`echo "$host_os" | sed 's/ /-/g'`;; esac
 
 case $host_os in
   darwin* )
-        # Do something specific for mac
+        # Add the correct std c++ library and diable static-float-initializer warning for clang
         { $as_echo "$as_me:${as_lineno-$LINENO}: result: Oh-oh, we are on mac: $host_os" >&5
 $as_echo "Oh-oh, we are on mac: $host_os" >&6; }
         CXXFLAGS="$CXXFLAGS -stdlib=libstdc++"
+        CXXFLAGS="$CXXFLAGS -Wno-gnu-static-float-init"
 
 $as_echo "#define MAC_SYS 1" >>confdefs.h
 

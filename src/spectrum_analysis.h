@@ -6,7 +6,6 @@
 #include <vector>
 #include <fstream>
 #include <stdio.h> //############################# DEBUG
-#include <omp.h>
 
 
 namespace pheno {
