@@ -43,13 +43,13 @@ namespace fundamental{
   class bsm_parameters{
     private:
       //SM parameters from PDG (http://pdg.lbl.gov/2014/reviews/rpp2014-rev-phys-constants.pdf)
-      const static double aew=1./127.9;  // @q=MZ
-      const static double as=0.1184;
-      const static double mh=125.9; //As of 2013 summary
-      const static double mw=80.385;
-      const static double mz=91.1876;
-      const static double wz=2.4952;
-      const static double sw2=0.23155;// PDG=0.23155;
+      constexpr static double aew=1./127.9;  // @q=MZ
+      constexpr static double as=0.1184;
+      constexpr static double mh=125.9; //As of 2013 summary
+      constexpr static double mw=80.385;
+      constexpr static double mz=91.1876;
+      constexpr static double wz=2.4952;
+      constexpr static double sw2=0.23155;// PDG=0.23155;
       double e;
       double g1;
       double g2;

@@ -269,6 +269,8 @@ pheno::HadronXSec::HadronXSec(fundamental::fermionExt* f_out, pheno::ZpModel* p_
   accuracy_goal = 1e-2;  //Default numerica integ accuracy
   calls = 3000; //Default value for calls per monte carlo integration point
   Epp = Ecoll;
+  this->p_model=p_model;
+  this->f_out = f_out;
   //Allocate parpxsec->sigSM(Ecm)tonic cross sections
   dxsec = new pheno::PartonXSec(&(p_model->d), f_out, p_model);
   uxsec = new pheno::PartonXSec(&(p_model->u), f_out, p_model);
@@ -277,6 +279,22 @@ pheno::HadronXSec::HadronXSec(fundamental::fermionExt* f_out, pheno::ZpModel* p_
   bxsec = new pheno::PartonXSec(&(p_model->b), f_out, p_model);
   //Allocate pdf object
   pdf = new c_mstwpdf(pdf_grid_file);
+}
+
+
+pheno::HadronXSec::HadronXSec(pheno::HadronXSec& copy){
+  accuracy_goal = copy.accuracy_goal;
+  calls = copy.calls;
+  Epp=copy.Epp;
+  p_model=copy.p_model;
+  f_out=copy.f_out;
+  // Initialize with null pointer since 
+  uxsec = new pheno::PartonXSec(&(copy.p_model->d), copy.f_out, copy.p_model);
+  dxsec = new pheno::PartonXSec(&(copy.p_model->d), copy.f_out, copy.p_model);
+  sxsec = new pheno::PartonXSec(&(copy.p_model->d), copy.f_out, copy.p_model);
+  cxsec = new pheno::PartonXSec(&(copy.p_model->d), copy.f_out, copy.p_model);
+  bxsec = new pheno::PartonXSec(&(copy.p_model->d), copy.f_out, copy.p_model);
+
 }
 
 

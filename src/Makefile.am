@@ -3,8 +3,8 @@ MSTWDIR = mstw
 BUILDDIR = build
 CUBATUREDIR = cubature
 
-
-AM_CPPFLAGS = -I$(top_srcdir)/$(MSTWDIR) -I$(top_srcdir)/$(CUBADIR) 
+AM_LDFLAGS = -std=c++11 -pthread
+AM_CPPFLAGS = -I$(top_srcdir)/$(MSTWDIR) -I$(top_srcdir)/$(CUBADIR) -std=c++11 -pthread
 # AM_LDFLAGS =  @BOOST_FILESYSTEM_LIB@
 # AM_LDFLAGS +=  @BOOST_SYSTEM_LIB@
 

@@ -98,6 +98,8 @@ namespace pheno{
       PartonXSec* sxsec;
       PartonXSec* cxsec;
       PartonXSec* bxsec;
+    fundamental::fermionExt *f_out;
+    pheno::ZpModel *p_model;
       c_mstwpdf* pdf;
       //Subroutine for pdf convoluted cross sections: Specify partial cross section in functor object
       template<class PartialCrossX> double pdfconvoluted( double Ecm );
@@ -121,6 +123,7 @@ namespace pheno{
       double totXsec(double el, double eh, double accuracy, double (* psmear)(double,double)=NULL, int strategy=1);
       //Constructor and destructor to take care of memory allocations
       HadronXSec(fundamental::fermionExt* f_out, pheno::ZpModel* p_model, char* pdf_grid_file, double Ecoll=8000.);
+    HadronXSec(pheno::HadronXSec& copy);
       ~HadronXSec();  
   };
   

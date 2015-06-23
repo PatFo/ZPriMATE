@@ -148,6 +148,7 @@ int main(int argc, char** argv){
     
     //Write signal data
     pheno::HistWriter<pheno::HadronXSec> hist( *it, &pheno::HadronXSec::zpXsec, fptr);
+
     hist.writeHist(&bins, input.int_acc(), (char *)filename.c_str(), input.luminosity());
     
     //Calculate total production cross section for process
@@ -207,6 +208,7 @@ int main(int argc, char** argv){
   {
     delete cs[pos];
   }
+
   delete model;
   
   return 0;

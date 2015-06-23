@@ -202,7 +202,8 @@ CUBADIR = Cuba-4.2
 MSTWDIR = mstw
 BUILDDIR = build
 CUBATUREDIR = cubature
-AM_CPPFLAGS = -I$(top_srcdir)/$(MSTWDIR) -I$(top_srcdir)/$(CUBADIR) 
+AM_LDFLAGS = -std=c++11 -pthread
+AM_CPPFLAGS = -I$(top_srcdir)/$(MSTWDIR) -I$(top_srcdir)/$(CUBADIR) -std=c++11 -pthread
 core_SOURCES = main.cpp \
 	input.cpp  input.h \
 	model.cpp  model.h \
