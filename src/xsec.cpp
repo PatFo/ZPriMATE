@@ -282,6 +282,7 @@ pheno::HadronXSec::HadronXSec(fundamental::fermionExt* f_out, pheno::ZpModel* p_
 }
 
 
+<<<<<<< HEAD
 pheno::HadronXSec::HadronXSec(pheno::HadronXSec& copy){
   accuracy_goal = copy.accuracy_goal;
   calls = copy.calls;
@@ -298,6 +299,28 @@ pheno::HadronXSec::HadronXSec(pheno::HadronXSec& copy){
 }
 
 
+=======
+
+//Make a hard copy
+pheno::HadronXSec::HadronXSec(const pheno::HadronXSec& pobj)
+{
+  accuracy_goal = 1e-2;  //Default numerica integ accuracy
+  calls = 3000; //Default value for calls per monte carlo integration point
+  Epp = pobj.Epp;
+//   std::printf("This is custom copy constructor\n");   //############################################  DEBUG
+  //Allocate parpxsec->sigSM(Ecm)tonic cross sections
+  dxsec = new pheno::PartonXSec(*(pobj.dxsec));
+  uxsec = new pheno::PartonXSec(*(pobj.uxsec));
+  sxsec = new pheno::PartonXSec(*(pobj.sxsec));
+  cxsec = new pheno::PartonXSec(*(pobj.cxsec));
+  bxsec = new pheno::PartonXSec(*(pobj.bxsec));
+  //Allocate pdf object
+  pdf = new c_mstwpdf(*(pobj.pdf));
+}
+
+
+
+>>>>>>> parallel
 pheno::HadronXSec::~HadronXSec()
 {
   //Free all pointers

@@ -125,15 +125,13 @@ namespace pheno {
   
      
      
-     
+  
   template<class T>
   void pheno::HistWriter<T>::calculateBin(double lo, 
 					  double hi, 
 					  double acc
 					    )
   {
-    //Integrate with Suave
-
     //cout_mutex.lock();
     //cout <<"Adress in calculateBin: " << this << endl;
     //cout_mutex.unlock();
@@ -153,7 +151,6 @@ namespace pheno {
   template<class T>  
   void pheno::HistWriter<T>::writeHist(binning *pbins, double acc, char* outfile, double factor)
   {  
-
     double prev=0;
     int length = pbins->size();
     //int numCores = std::thread::hardware_concurrency();
@@ -170,11 +167,7 @@ namespace pheno {
     //cout << "Results size before loop: " << results.get()->size() << endl;
 
     for(int i=0; i<length; ++i)
-    {
-      double accuracy = acc;
-      //Calculate first point with high accuracy to have a reliable starting point for convergence test
-      if(i==0){accuracy= 1e-6;} 
-      
+    {      
       double low = (pbins->operator[](i)).first; //Get lower bound for bin
       double high = (pbins->operator[](i)).second; //Get upper bound for bin
       // // Create copy of HistWriter to avoid deadlock within thread
@@ -233,8 +226,49 @@ namespace pheno {
 	      //    for(auto cp=copies.begin();cp!=copies.end();cp++) delete *cp;
     
   }  
-     
   
+  
+  
+  
+  
+     
+//OLD FUNCTIONS -- DON'T USE
+//######################################################################################
+     
+     
+          
+  template<class T>
+  double pheno::HistWriter<T>::writeHistCore(double lo, double hi, double acc, double prev)
+  {
+    //Integrate with Suave
+    double res = (pobj->* pfunc)(lo, hi, acc, psmear, 2);
+//     if(prev!=0)
+//     {
+//       double ratio1, ratio2, diff= res-prev;
+//       if(diff>0)
+//       {
+//         ratio1 = diff/prev;
+//         ratio2 = diff/res;
+//       }else{
+//         ratio1 = -diff/prev;
+//         ratio2 = -diff/res;
+//       }
+// //       std::printf("Checking deviations %g %g\n", ratio1, ratio2);      //#############################################v DEBUG
+//       //Check whether there is a hughe leap in the integral --> wrong convergence
+//       if( ( ratio1 > reldiff) || ( ratio2 > reldiff) || ( -1*ratio1 > reldiff) || ( -1*ratio2 > reldiff) )
+//       {
+//         //Switch to Monte Carlo integration
+//         std::printf("Match jumping criterion. Relative deviations are %g %g\n", ratio1, ratio2);      //#############################################v DEBUG
+//         res = ((this->pobj)->* (this->pfunc))(lo, hi, 1e-2,  this->psmear, 2); 
+//       }
+//     }
+    return res;
+  }
+  
+  
+  
+  
+  //Function that uses a binning functor to calculate bins
   template<class T>
   template<class Binning>
   void pheno::HistWriter<T>::writeHist(double ll, double ul, double acc, char* outfile, double factor)
