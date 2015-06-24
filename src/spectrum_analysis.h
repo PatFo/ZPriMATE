@@ -205,8 +205,8 @@ namespace pheno {
     }
 	    
     // Wait for all threads to finish before writing the result file
-    cout << "##################################################" << endl;
-    cout << "Start joining" <<endl;
+    // cout << "##################################################" << endl;
+    // cout << "Start joining" <<endl;
     for(auto th=threads.begin();th!=threads.end();th++) th->join();
 	   
     
