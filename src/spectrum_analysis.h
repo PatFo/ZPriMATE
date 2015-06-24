@@ -136,10 +136,11 @@ namespace pheno {
 					  double acc
 					    )
   {
+    cout_mutex.lock();
     T *pobject(pobj);
     double (T::* pfunction)(double, double, double, double(*)(double, double), int)(pfunc);
     double(* psmearing)(double, double)(psmear);
-
+    cout_mutex.unlock();
     //cout_mutex.lock();
     // cout <<"Adress in calculateBin: " << this << endl;
     // cout << pobj << endl;
@@ -207,7 +208,7 @@ namespace pheno {
       threads.push_back(
 			std::thread(
 				    &pheno::HistWriter<T>::calculateBin,
-				      this,
+				    this,
 				    //std::ref(copy),
 				    low, high, acc
 				    )
