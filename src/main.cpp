@@ -7,6 +7,7 @@
 #include <sstream>
 #include <sys/stat.h>
 #include <sys/time.h>
+#include <cstring>
 // #include <ctime>
 
 //ZPriMATE headers
@@ -87,7 +88,8 @@ int main(int argc, char** argv){
   //Vector containg the appropriate cross sections
   std::vector< pheno::HadronXSec*> cs;
   double (* fptr)(double, double);
-  char * pdfset = (char *) input.pdfset().c_str();
+  char * pdfset = new char [input.pdfset().length()+1];
+  std::strcpy(pdfset, input.pdfset().c_str());
   //Construct the desired final states
   if(input.proc_id() == 1) 
   {
