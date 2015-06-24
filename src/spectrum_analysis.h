@@ -138,9 +138,13 @@ namespace pheno {
   {
     copy_mutex.lock();
     T *pobject(pobj);
+    //T *pobject= new T(*pobj);
     double (T::* pfunction)(double, double, double, double(*)(double, double), int)(pfunc);
     double(* psmearing)(double, double)(psmear);
     copy_mutex.unlock();
+
+
+
     //copy_mutex.lock();
     // cout <<"Adress in calculateBin: " << this << endl;
     // cout << pobj << endl;
@@ -149,7 +153,7 @@ namespace pheno {
 
 
     // Last argument defines integration method
-    double res = (pobj->*pfunction)(lo, hi, acc, psmearing, 2);
+    double res = (pobject->*pfunction)(lo, hi, acc, psmearing, 2);
         
     //cout <<"Results adress in calculateBin: " << results << endl;
     //cout << results.get()->size() << endl;
@@ -163,6 +167,7 @@ namespace pheno {
     // cout << results.get()->size() << endl;
     // cout << "Use count" << results.use_count() << endl;
     // cout <<"Result saved" << endl;
+
   }
   
   
@@ -238,7 +243,7 @@ namespace pheno {
       // Fix last bin
       if (res==((*results.get()).end()-1)) high=(pbins->operator[](length-1)).second;
 
-      cout << low<<"\t" << high <<"\t" << (res->second)*factor << std::endl;
+      //cout << low<<"\t" << high <<"\t" << (res->second)*factor << std::endl;
       outf << low<<"\t" << high <<"\t" << (res->second)*factor << std::endl;
     }
     outf.close();
