@@ -235,37 +235,6 @@ namespace pheno {
 //OLD FUNCTIONS -- DON'T USE
 //######################################################################################
      
-     
-          
-  template<class T>
-  double pheno::HistWriter<T>::writeHistCore(double lo, double hi, double acc, double prev)
-  {
-    //Integrate with Suave
-    double res = (pobj->* pfunc)(lo, hi, acc, psmear, 2);
-//     if(prev!=0)
-//     {
-//       double ratio1, ratio2, diff= res-prev;
-//       if(diff>0)
-//       {
-//         ratio1 = diff/prev;
-//         ratio2 = diff/res;
-//       }else{
-//         ratio1 = -diff/prev;
-//         ratio2 = -diff/res;
-//       }
-// //       std::printf("Checking deviations %g %g\n", ratio1, ratio2);      //#############################################v DEBUG
-//       //Check whether there is a hughe leap in the integral --> wrong convergence
-//       if( ( ratio1 > reldiff) || ( ratio2 > reldiff) || ( -1*ratio1 > reldiff) || ( -1*ratio2 > reldiff) )
-//       {
-//         //Switch to Monte Carlo integration
-//         std::printf("Match jumping criterion. Relative deviations are %g %g\n", ratio1, ratio2);      //#############################################v DEBUG
-//         res = ((this->pobj)->* (this->pfunc))(lo, hi, 1e-2,  this->psmear, 2); 
-//       }
-//     }
-    return res;
-  }
-  
-  
   
   
   //Function that uses a binning functor to calculate bins
