@@ -197,10 +197,21 @@ static int Integrate(This *t, real *integral, real *error, real *prob)
     nnewL = IMax(
       (minfluct == 0) ? t->nnew/2 : (count)(vLR[0].fluct/minfluct*t->nnew),
       minsamples );
+    if((int)nnewL<0) nnewL=minsamples;
     nL = vLR[0].n + nnewL;
     nnewR = IMax(t->nnew - nnewL, minsamples);
     nR = vLR[1].n + nnewR;
+    /* printf("Test of count: %d\n",(count)(0)); */
+    /* printf("In Integrate.c else clause: %d\n with minfluct: %d\nwith vLR[0].fluct %d\nt->nnew %d\nquotient %d\n",(count)(vLR[0].fluct/minfluct*t->nnew),minfluct,vLR[0].fluct,t->nnew,vLR[0].fluct/minfluct); */
+    /* printf("In Integrate.c else clause without count: %d\n",vLR[0].fluct/minfluct*t->nnew); */
+    /* printf("In Integrate.c minsamples: %d\n",minsamples); */
+    /* printf("In Integrate.c minfluct: %d\n",minfluct); */
 
+    /* printf("In Integrate.c strange thingy: %d\n",(minfluct == 0) ? t->nnew/2 : (count)(vLR[0].fluct/minfluct*t->nnew)); */
+    /* printf("In Integrate.c nL: %d\n",nL); */
+    /* printf("In Integrate.c nnewL: %d\n",nnewL); */
+    /* printf("In Integrate.c nR: %d\n",nR); */
+    /* printf("In Integrate.c nnewR: %d\n",nnewR); */
     regionL = RegionAlloc(t, nL, nnewL);
     regionR = RegionAlloc(t, nR, nnewR);
 

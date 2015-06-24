@@ -70,7 +70,7 @@ namespace pheno {
     ///Pass the function as a pointer
   private:
     std::mutex results_lock;  
-    std::mutex cout_mutex;
+    std::mutex copy_mutex;
     std::shared_ptr< std::vector< std::pair<double,double> > > results;
     constexpr static double reldiff=1e2; //Maximum rel difference between two consecutive bins before switch
     T * pobj;
@@ -136,27 +136,27 @@ namespace pheno {
 					  double acc
 					    )
   {
-    cout_mutex.lock();
+    copy_mutex.lock();
     T *pobject(pobj);
     double (T::* pfunction)(double, double, double, double(*)(double, double), int)(pfunc);
     double(* psmearing)(double, double)(psmear);
-    cout_mutex.unlock();
-    //cout_mutex.lock();
+    copy_mutex.unlock();
+    //copy_mutex.lock();
     // cout <<"Adress in calculateBin: " << this << endl;
     // cout << pobj << endl;
     // cout << "psmear " << (*psmear)(0,0) << endl;
-    //cout_mutex.unlock();
+    //copy_mutex.unlock();
 
 
-
+    // Last argument defines integration method
     double res = (pobj->*pfunction)(lo, hi, acc, psmearing, 2);
-    // Need guard to avoid deadlock when writing to results
-    
-    
+        
     //cout <<"Results adress in calculateBin: " << results << endl;
     //cout << results.get()->size() << endl;
     
     //cout << "Write to results" <<endl;
+    
+    // Need guard to avoid deadlock when writing to results
     std::lock_guard<std::mutex> guard(results_lock);    
     results.get()->push_back(std::pair<double,double>(lo,res));
     
@@ -191,9 +191,9 @@ namespace pheno {
       // // Create copy of HistWriter to avoid deadlock within thread
       // pheno::HistWriter<T> *copy = new pheno::HistWriter<T>(*this);
       // //  // Save pointers in a vector for deletion later on
-      // //  cout_mutex.lock();
+      // //  copy_mutex.lock();
       // // cout << "Copy adress " <<copy << endl;
-      // // cout_mutex.unlock();
+      // // copy_mutex.unlock();
       // // //cout << "This adress " << this << endl;
       // // if(copy==this){
       // // 	throw runtime_error("copy didn't allocate new adress");
