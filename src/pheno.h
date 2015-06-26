@@ -140,6 +140,7 @@ namespace pheno{
       //Constructors
       ZpModel(const char* configfile);
       ZpModel(double mzp); //Constructs the SSM with Zp mass mzp
+    ZpModel(pheno::ZpModel &copy) = delete;
       //Width of Zp
       double wzp_();
   };

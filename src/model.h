@@ -142,10 +142,12 @@ namespace fundamental{
       void set_qzpl(double qzpl);      
       void set_qzpr(double qzpr);
       //Destuctor should take care of vcoeff pointer
-      ~fermionExt();
+    ~fermionExt(); 
+    
     protected:
       //Constructor can only be used by derived classes
-      fermionExt(bool massive, int fam, double t3, double m, double emc, double xlc, double xrc, int n);
+    fermionExt(fundamental::fermionExt &copy);   
+    fermionExt(bool massive, int fam, double t3, double m, double emc, double xlc, double xrc, int n);       
   };
   
 }

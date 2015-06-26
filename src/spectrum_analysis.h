@@ -71,6 +71,8 @@ namespace pheno {
   private:
     std::mutex results_lock;  
     std::mutex copy_mutex;
+    //std::mutex threads;
+    //std::shared_ptr<int> running_threads;
     std::shared_ptr< std::vector< std::pair<double,double> > > results;
     constexpr static double reldiff=1e2; //Maximum rel difference between two consecutive bins before switch
     T * pobj;
@@ -81,7 +83,7 @@ namespace pheno {
     void writeHist(binning *pbins, double acc, char* outfile, double factor=1.);
     template<class Binning> void writeHist(double ll, double ul, double acc, char* outfile, double factor=1.);
     HistWriter(T* pobject, double (T::* pfunction)(double, double, double, double(*)(double, double), int), double(* psmearing)(double, double));
-    //HistWriter(pheno::HistWriter<T> &copy);
+    HistWriter(pheno::HistWriter<T> &copy);
     //~HistWriter();
   };
   
@@ -102,24 +104,26 @@ namespace pheno {
     // }
 
 
-    // template<class T>
-    // pheno::HistWriter<T>::HistWriter(pheno::HistWriter<T> &copy){
-    //   //cout << "Calling copy constructor " << endl;
-    //   // All copies share the same results pointer to write to it
-    //   //cout << "Use count before" << results.use_count() << endl;
-    //   results = copy.results;
-    //   //cout << "Use count after" << results.use_count() << endl;
-    //   pobj=new T(*copy.pobj);
-    //   //results_lock=*(&copy.results_lock);
-    //   pfunc=copy.pfunc;
-    //   psmear=copy.psmear; 
-    // }
+    template<class T>
+    pheno::HistWriter<T>::HistWriter(pheno::HistWriter<T> &copy){
+      //cout << "Calling copy constructor " << endl;
+      // All copies share the same results pointer to write to it
+      //cout << "Use count before" << results.use_count() << endl;
+      //running_threads = copy.running_threads;
+      results = copy.results;
+      //cout << "Use count after" << results.use_count() << endl;
+      pobj=new T(*copy.pobj);
+      //results_lock=*(&copy.results_lock);
+      pfunc=copy.pfunc;
+      psmear=copy.psmear; 
+    }
   
   
   
   template< class T>
   pheno::HistWriter<T>::HistWriter(T* pobject, double (T::* pfunction)(double, double, double, double(*)(double, double), int), double(* psmearing)(double, double))
   {
+    //running_threads=std::shared_ptr<int>(new int(0));
     std::vector<std::pair<double,double>> *res = new std::vector<std::pair<double,double>>();
     results = std::shared_ptr< std::vector<std::pair<double,double>> > (res);
     pobj=pobject;
@@ -136,38 +140,40 @@ namespace pheno {
 					  double acc
 					    )
   {
-    copy_mutex.lock();
-    T *pobject(pobj);
-    //T *pobject= new T(*pobj);
-    double (T::* pfunction)(double, double, double, double(*)(double, double), int)(pfunc);
-    double(* psmearing)(double, double)(psmear);
-    copy_mutex.unlock();
+    // copy_mutex.lock();
+    // T *pobject(pobj);
+    // //T *pobject= new T(*pobj);
+    // double (T::* pfunction)(double, double, double, double(*)(double, double), int)(pfunc);
+    // double(* psmearing)(double, double)(psmear);
+    // copy_mutex.unlock();
 
 
 
-    //copy_mutex.lock();
+    // //copy_mutex.lock();
     // cout <<"Adress in calculateBin: " << this << endl;
     // cout << pobj << endl;
-    // cout << "psmear " << (*psmear)(0,0) << endl;
-    //copy_mutex.unlock();
+    // cout << "psmear " << (*psmear)(10,10) << endl;
+    // copy_mutex.unlock();
 
 
     // Last argument defines integration method
-    double res = (pobject->*pfunction)(lo, hi, acc, psmearing, 2);
+    double res = (pobj->*pfunc)(lo, hi, acc, psmear, 2);
         
     //cout <<"Results adress in calculateBin: " << results << endl;
     //cout << results.get()->size() << endl;
     
-    //cout << "Write to results" <<endl;
+    //cout << "Write to results " << res <<endl;
     
     // Need guard to avoid deadlock when writing to results
-    std::lock_guard<std::mutex> guard(results_lock);    
+    //std::lock_guard<std::mutex> resultguard(results_lock);    
+    //results_lock.lock();
     results.get()->push_back(std::pair<double,double>(lo,res));
     
     // cout << results.get()->size() << endl;
-    // cout << "Use count" << results.use_count() << endl;
+    //cout << "Use count" << results.use_count() << endl;
     // cout <<"Result saved" << endl;
-
+    //results_lock.unlock();
+    //*running_threads-=1;
   }
   
   
@@ -178,7 +184,7 @@ namespace pheno {
     int length = pbins->size();
     //int numCores = std::thread::hardware_concurrency();
     
-    std::vector<std::thread> threads;
+    std::thread threads[length];
     std::vector<pheno::HistWriter<T>*> copies;
    
     //Write histogram to file in loop
@@ -194,11 +200,14 @@ namespace pheno {
       double low = (pbins->operator[](i)).first; //Get lower bound for bin
       double high = (pbins->operator[](i)).second; //Get upper bound for bin
       // // Create copy of HistWriter to avoid deadlock within thread
-      // pheno::HistWriter<T> *copy = new pheno::HistWriter<T>(*this);
+      //copy_mutex.lock();
+      //cout << "this one"<<endl;
+      //pheno::HistWriter<T> *copy = new pheno::HistWriter<T>(*this);
+      //cout << "is the bad guy " <<endl;
       // //  // Save pointers in a vector for deletion later on
-      // //  copy_mutex.lock();
+
       // // cout << "Copy adress " <<copy << endl;
-      // // copy_mutex.unlock();
+      //copy_mutex.unlock();
       // // //cout << "This adress " << this << endl;
       // // if(copy==this){
       // // 	throw runtime_error("copy didn't allocate new adress");
@@ -206,18 +215,23 @@ namespace pheno {
       // // for (auto it = copies.begin(); it != copies.end(); it++ ){
       // // 	if(*it==copy) throw runtime_error("Adress of copy already exists!");
       // // }
-      // // copies.push_back(copy);
+      // copies.push_back(copy);
 
       //calculateBin(low,high,acc);
+      // while(*running_threads>=4){
+      // 	if(*running_threads<4) break;
+      // }
+      //*running_threads+=1;
+      threads[i]=std::thread(
+      		       &pheno::HistWriter<T>::calculateBin,
+      		       this,
+      		       //std::ref(copy),
+      		       low, high, acc
+      		       );
+      // threads[i].join();
+      // threads.push_back(t
 
-      threads.push_back(
-			std::thread(
-				    &pheno::HistWriter<T>::calculateBin,
-				    this,
-				    //std::ref(copy),
-				    low, high, acc
-				    )
-			);
+      // 			);
       
       //calculateBin(low,high,acc);
 
@@ -226,9 +240,16 @@ namespace pheno {
     // Wait for all threads to finish before writing the result file
     cout << "##################################################" << endl;
     cout << "Start joining" <<endl;
-    for(auto th=threads.begin();th!=threads.end();th++) th->join();
+    for (int i =0;i<length;i++) {
+      
+      //cout << "Join thread " << i+1 << endl;
+      threads[i].join();
+      //cout << "Thread "<< i << " done." << endl;
+    }
+    //for(auto th=threads.begin();th!=threads.end();th++) th->join();
 	   
-    
+    //cout << "Press Enter to continue" <<endl;
+    //cin.ignore();
     cout << "##################################################" << endl;
     std::sort(
 	      (*(results.get())).begin(),
@@ -243,14 +264,14 @@ namespace pheno {
       // Fix last bin
       if (res==((*results.get()).end()-1)) high=(pbins->operator[](length-1)).second;
 
-      //cout << low<<"\t" << high <<"\t" << (res->second)*factor << std::endl;
+      cout << low<<"\t" << high <<"\t" << (res->second)*factor << std::endl;
       outf << low<<"\t" << high <<"\t" << (res->second)*factor << std::endl;
     }
     outf.close();
     std::printf("Finished writing to %s\n", outfile);
 
     //for(auto cp=copies.begin();cp!=copies.end();cp++) delete *cp;
-    
+
   }  
   
   

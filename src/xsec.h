@@ -10,6 +10,11 @@
 //PDF package
 #include <mstwpdf.h>
 
+
+//Parallalize
+#include <mutex>
+#include <thread>
+
 //If GSL is present use QAG integration
 #if HAVE_LIBGSLCBLAS
   //Numerical integration
@@ -24,6 +29,9 @@
 
 
 #define EPSABS 0.0
+
+static __thread int testing=0;
+
 
 namespace pheno{
   
@@ -73,9 +81,6 @@ namespace pheno{
 
   
   
-  
-  
-  
 
   
   //*********************************************************//
@@ -87,44 +92,55 @@ namespace pheno{
   
   class HadronXSec{
     ///Class for calculcation of partonic cross sections of p p --> f_out f_out~
-    private:
-      size_t calls;
-      double Epp;
-      double accuracy_goal;
-      //Internal parton cross sections: no top, as pdf negligible
+  private:
+    size_t calls;
+    
+    double accuracy_goal;
+
+
+    // template<class PartialCrossX> 
+    // int integrand_cuba(
+    // 		       const int* ndim, 
+    // 		       const double *x, 
+    // 		       const int* fdim, 
+    // 		       double *fval, 
+    // 		       void *fdata
+    // 		       );
+    //Internal parton cross sections: no top, as pdf negligible
   public: //####################################################################################### DEBUG ONLY ####################################
-      PartonXSec* dxsec;
-      PartonXSec* uxsec;
-      PartonXSec* sxsec;
-      PartonXSec* cxsec;
-      PartonXSec* bxsec;
+    PartonXSec* dxsec;
+    PartonXSec* uxsec;
+    PartonXSec* sxsec;
+    PartonXSec* cxsec;
+    PartonXSec* bxsec;
     fundamental::fermionExt *f_out;
     pheno::ZpModel *p_model;
-      c_mstwpdf* pdf;
-      //Subroutine for pdf convoluted cross sections: Specify partial cross section in functor object
-      template<class PartialCrossX> double pdfconvoluted( double Ecm );
-      //Full experimentally detectable cross section
-      template<class PartialCrossX> double theoXsec(double el, double eh, double acc);
-      template<class PartialCrossX> double detectedXsec(double el, double eh, double acc, int strategy, double (* psmear)(double, double));
-    public:
-      void set_accuracy(double accuracy);
-      void set_monte_calls(size_t int_calls);
-      //Hadronic differential cross sections dSig/dm
-      double dsigSM    (double Ecm );
-      double dsigInt   (double Ecm );
-      double dsigSignal(double Ecm );
-      double dsigTotal (double Ecm );
-      //Member function that fills EMPTY vector with sigSM, sigInt, sigSignal, sigTotal 
-      //ALWAYS use this function if more than one of these cross sections is needed at a time
-      void crossSections (double Ecm, std::vector<double> * results);
-      //Full pure hadronic cross sections
-      double smXsec(double el, double eh, double accuracy, double (* psmear)(double,double)=NULL, int strategy=1);
-      double zpXsec(double el, double eh, double accuracy, double (* psmear)(double,double)=NULL, int strategy=1);
-      double totXsec(double el, double eh, double accuracy, double (* psmear)(double,double)=NULL, int strategy=1);
-      //Constructor and destructor to take care of memory allocations
-      HadronXSec(fundamental::fermionExt* f_out, pheno::ZpModel* p_model, char* pdf_grid_file, double Ecoll=8000.);
-      HadronXSec(pheno::HadronXSec& copy);
-      ~HadronXSec();  
+    c_mstwpdf* pdf;
+    //Subroutine for pdf convoluted cross sections: Specify partial cross section in functor object
+    template<class PartialCrossX> double pdfconvoluted( double Ecm );
+    //Full experimentally detectable cross section
+    template<class PartialCrossX> double theoXsec(double el, double eh, double acc);
+    template<class PartialCrossX> double detectedXsec(double el, double eh, double acc, int strategy, double (* psmear)(double, double));
+  public:
+   double Epp;
+    void set_accuracy(double accuracy);
+    void set_monte_calls(size_t int_calls);
+    //Hadronic differential cross sections dSig/dm
+    double dsigSM    (double Ecm );
+    double dsigInt   (double Ecm );
+    double dsigSignal(double Ecm );
+    double dsigTotal (double Ecm );
+    //Member function that fills EMPTY vector with sigSM, sigInt, sigSignal, sigTotal 
+    //ALWAYS use this function if more than one of these cross sections is needed at a time
+    void crossSections (double Ecm, std::vector<double> * results);
+    //Full pure hadronic cross sections
+    double smXsec(double el, double eh, double accuracy, double (* psmear)(double,double)=NULL, int strategy=1);
+    double zpXsec(double el, double eh, double accuracy, double (* psmear)(double,double)=NULL, int strategy=1);
+    double totXsec(double el, double eh, double accuracy, double (* psmear)(double,double)=NULL, int strategy=1);
+    //Constructor and destructor to take care of memory allocations
+    HadronXSec(fundamental::fermionExt* f_out, pheno::ZpModel* p_model, char* pdf_grid_file, double Ecoll=8000.);
+    HadronXSec(pheno::HadronXSec& copy);
+    ~HadronXSec();  
   };
   
   
@@ -274,11 +290,29 @@ namespace pheno{
   //-------------------------------------------------------------------------------------------
   
   //Parameter struct for integrable function
-  struct parameter_set{ int narr; PartonXSec** ppx; c_mstwpdf* ppdf; double (* psmear)(double, double); double Ecoll; double*  low; double*  high;};
   
   
-
+  struct parameter_set{ 
+    int narr; 
+    PartonXSec** ppx; 
+    c_mstwpdf* ppdf; 
+    double (* psmear)(double, double); 
+    double Ecoll; 
+    double*  low; 
+    double*  high;
+  };
   
+  template<class T>
+  struct parameter_set2{ 
+    int narr; 
+    //PartonXSec** ppx; 
+    //c_mstwpdf* ppdf; 
+    double (* psmear)(double, double); 
+    //double Ecoll; 
+    double*  low; 
+    double*  high;
+    T* HadX;
+  };
   
   //Integrand for theoretical hadron cross section (without smearing)
   template<class PartialCrossX> 
@@ -350,15 +384,82 @@ namespace pheno{
   //Total binned cross section integration (detectable/smeared) 
   //-------------------------------------------------------------------------------------------
   
+  //static std::mutex mtx;
   
-  
-  
+  //Functionoid?!
+  class Functionoid {
+  public:
+    virtual Functionoid operator()(const int* ndim, const double *x, const int* fdim, double *fval, void *fdata);
+    virtual int int_cuba();
+  };
   //Cuba adaptor (Hahn)
+  class test : public Functionoid {
+    virtual int int_cuba() {
+      cout << "test" << endl;
+    }
+  };
+
+  // template<class PartialCrossX> 
+  // int integrand_cuba2(const int* ndim, const double *x, const int* fdim, double *fval, void *fdata)
+  // {
+
+    
+  //   //std::lock_guard<std::mutex> guard(integrand_mtx);
+  //   PartialCrossX cross;
+  //   struct parameter_set2<pheno::HadronXSec>* pars = (struct parameter_set2<pheno::HadronXSec>*)fdata;
+  //   pheno::HadronXSec *xsec = pars->HadX;
+
+  //   PartonXSec* pp[] = {xsec->dxsec,xsec->uxsec,xsec->sxsec,xsec->cxsec,xsec->bxsec};
+
+  //   size_t dim = *ndim;
+  //   double diff1 = pars->high[0] - pars->low[0];
+  //   double diff2 = pars->high[1] - pars->low[1];
+  //   double diff3 = pars->high[2] - pars->low[2];
+  //   double point[3]={diff1*x[0] + pars->low[0], diff2*x[1] + pars->low[1], diff3*x[2] + pars->low[2]};
+
+    
+  //   //Define Bjorken x
+  //   double scoll = xsec->Epp * xsec->Epp;
+  //   double dx1dy = (scoll - point[1]*point[1])/scoll;
+  //   double x1 = dx1dy * point[2] + point[1]*point[1]/scoll; // Variable trafo from x1 to y=a*x1 + b
+  //   double x2 = point[1]*point[1]/(x1 * scoll);
+  //   std::lock_guard<std::mutex> guard(mtx);
+  //   //Calculate sum of cross sections
+  //   double sum = 0.;
+  //   for(int i=0; i<pars->narr; ++i)
+  //   {
+      
+  //     double pdg = pp[i]->pdg_in();
+  //     sum +=  dx1dy * 2 * point[1]/scoll *     //Prefactors 
+  // 	cross(pp[i], point[1]) *  //Parton level cross section
+  // 	( 
+  // 	       xsec->pdf->parton( -1*pdg,  x1, xsec->Epp )/(x1*x1) * //PDFs with antiquark in first proton
+  // 	       xsec->pdf->parton(    pdg,  x2, xsec->Epp )/x2
+  // 	       + 
+  // 	       xsec->pdf->parton(    pdg,  x1, xsec->Epp )/(x1*x1) * //Mirror: PDFs with antiquark in second proton   
+  // 	       xsec->pdf->parton( -1*pdg,  x2, xsec->Epp )/x2 
+  // 	  )*
+  // 	pars->psmear(point[1], point[0]);   //Smearing function
+  //   }
+
+  //   fval[0] = sum * diff1 * diff2 * diff3 ;
+
+  //   return 0;
+  // }
+
+  
   template<class PartialCrossX> 
-  inline int integrand_cuba(const int* ndim, const double *x, const int* fdim, double *fval, void *fdata)
+  int integrand_cuba(const int* ndim, const double *x, const int* fdim, double *fval, void *fdata)
   {
+
+    
+    //std::lock_guard<std::mutex> guard(integrand_mtx);
     PartialCrossX cross;
     struct parameter_set* pars = (struct parameter_set*)fdata;
+    
+
+    //PartonXSec* pp[] = {xsec->dxsec,xsec->uxsec,xsec->sxsec,xsec->cxsec,xsec->bxsec};
+
     size_t dim = *ndim;
     double diff1 = pars->high[0] - pars->low[0];
     double diff2 = pars->high[1] - pars->low[1];
@@ -372,31 +473,40 @@ namespace pheno{
     double x1 = dx1dy * point[2] + point[1]*point[1]/scoll; // Variable trafo from x1 to y=a*x1 + b
     double x2 = point[1]*point[1]/(x1 * scoll);
     
+
+
+    //std::lock_guard<std::mutex> guard(mtx);
     //Calculate sum of cross sections
     double sum = 0.;
     for(int i=0; i<pars->narr; ++i)
     {
-      double pdg = (pars->ppx[i])->pdg_in();
+      
+      double pdg = pars->ppx[i]->pdg_in();
       sum +=  dx1dy * 2 * point[1]/scoll *     //Prefactors 
-              cross(pars->ppx[i], point[1]) *  //Parton level cross section
-              ( 
-              pars->ppdf->parton( -1*pdg,  x1, pars->Ecoll )/(x1*x1) * //PDFs with antiquark in first proton
-              pars->ppdf->parton(    pdg,  x2, pars->Ecoll )/x2
-              + 
-              pars->ppdf->parton(    pdg,  x1, pars->Ecoll )/(x1*x1) * //Mirror: PDFs with antiquark in second proton   
-              pars->ppdf->parton( -1*pdg,  x2, pars->Ecoll )/x2 
-              ) *
-              pars->psmear(point[1], point[0]);   //Smearing function
+	cross(pars->ppx[i], point[1]) *  //Parton level cross section
+	( 
+	       pars->ppdf->parton( -1*pdg,  x1, pars->Ecoll )/(x1*x1) * //PDFs with antiquark in first proton
+	       pars->ppdf->parton(    pdg,  x2, pars->Ecoll )/x2
+	       + 
+	       pars->ppdf->parton(    pdg,  x1, pars->Ecoll )/(x1*x1) * //Mirror: PDFs with antiquark in second proton   
+	       pars->ppdf->parton( -1*pdg,  x2, pars->Ecoll )/x2 
+	  )*
+	pars->psmear(point[1], point[0]);   //Smearing function
     }
+
     fval[0] = sum * diff1 * diff2 * diff3 ;
 
     return 0;
   }
   
+
   
+  // typedef struct {
+  //   corespec spec;
+  //   fdpid fp[];
+  // } Spinlock;
   
-  
-  
+
   template<class PartialCrossX> 
   double pheno::HadronXSec::detectedXsec(double el, double eh, double acc, int strat, double (* psmear)(double, double))
   {
@@ -406,23 +516,97 @@ namespace pheno{
     
     //CUBA parameters
     PartonXSec* pp[]= {dxsec, uxsec, sxsec, cxsec, bxsec};                    
-    struct parameter_set int_pars = {5, pp, pdf, psmear, Epp, xl, xu};  
+    //pheno::HadronXSec *copy = new pheno::HadronXSec(*this);
+    struct parameter_set int_pars = {5, pp, pdf, psmear, Epp, xl, xu };  
     //Construct parameters
     int nregions, neval, fail;
     const int dimint(3), dimres(1);
     double integral[dimres], err[dimres], prob[dimres];
-  
 
+    //cout << "Starting integration" << endl;
+    auto lambda_integrand = [] (const int* ndim, const double *x, const int* fdim, double *fval, void *fdata) -> int {
+
+      //std::lock_guard<std::mutex> guard(integrand_mtx);
+      PartialCrossX cross;
+      struct parameter_set* pars = (struct parameter_set*)fdata;
+    
+      //PartonXSec* pp[] = {xsec->dxsec,xsec->uxsec,xsec->sxsec,xsec->cxsec,xsec->bxsec};
+
+      size_t dim = *ndim;
+      double diff1 = pars->high[0] - pars->low[0];
+      double diff2 = pars->high[1] - pars->low[1];
+      double diff3 = pars->high[2] - pars->low[2];
+      double point[3]={diff1*x[0] + pars->low[0], diff2*x[1] + pars->low[1], diff3*x[2] + pars->low[2]};
+
+    
+      //Define Bjorken x
+      double scoll = pars->Ecoll * pars->Ecoll;
+      double dx1dy = (scoll - point[1]*point[1])/scoll;
+      double x1 = dx1dy * point[2] + point[1]*point[1]/scoll; // Variable trafo from x1 to y=a*x1 + b
+      double x2 = point[1]*point[1]/(x1 * scoll);
+    
+      //__thread Spinlock = {};
+
+      //std::lock_guard<std::mutex> guard(mtx);
+      //Calculate sum of cross sections
+      double sum = 0.;
+      for(int i=0; i<pars->narr; ++i)
+	{
+      
+	  double pdg = pars->ppx[i]->pdg_in();
+	  sum +=  dx1dy * 2 * point[1]/scoll *     //Prefactors 
+	    cross(pars->ppx[i], point[1]) *  //Parton level cross section
+	    ( 
+	     pars->ppdf->parton( -1*pdg,  x1, pars->Ecoll )/(x1*x1) * //PDFs with antiquark in first proton
+	     pars->ppdf->parton(    pdg,  x2, pars->Ecoll )/x2
+	     + 
+	     pars->ppdf->parton(    pdg,  x1, pars->Ecoll )/(x1*x1) * //Mirror: PDFs with antiquark in second proton   
+	     pars->ppdf->parton( -1*pdg,  x2, pars->Ecoll )/x2 
+	      )*
+	    pars->psmear(point[1], point[0]);   //Smearing function
+	}
+
+      fval[0] = sum * diff1 * diff2 * diff3 ;
+
+      return 0;
+    };
     if(strat==1)
-    {
-      Cuhre(dimint, dimres, &integrand_cuba<PartialCrossX>, &int_pars, 1, acc, EPSABS, 0|4 , 0, 50000, 11, "", NULL, &nregions, &neval, &fail, integral, err, prob);
-      std::cout<<"Integral "<<integral[0]<<" Error: "<<err[0]<<std::endl; //######################## DEBUG
-    }
+      {
+	Cuhre(dimint, dimres, &integrand_cuba<PartialCrossX>, &int_pars, 1, acc, EPSABS, 0|4 , 0, 50000, 11, "", NULL, &nregions, &neval, &fail, integral, err, prob);
+	std::cout<<"Integral "<<integral[0]<<" Error: "<<err[0]<<std::endl; //######################## DEBUG
+      }
     else if(strat==2)
     {
-      Suave(dimint, dimres, &integrand_cuba<PartialCrossX>, &int_pars, 1, acc, EPSABS, 0 | 4, 0,   0, 50000, 1000, 2, 25, "", NULL,  &nregions, &neval, &fail, integral, err, prob);
+
+       Suave(dimint, 
+	     dimres, 
+       	     lambda_integrand,
+       	     //&integrand_cuba<PartialCrossX>, 
+       	     &int_pars, 
+	     1, 
+	     acc, 
+	     EPSABS, 
+	     0 | 4,//4, 
+	     0, 
+	     0, 
+	     50000, 
+	     1000, 
+	     2, 
+	     25, 
+	     "", 
+	     NULL,  
+	     &nregions, 
+	     &neval, 
+	     &fail, 
+	     integral, 
+	     err, 
+	     prob
+	     );
+       //std::lock_guard<std::mutex> guard(cout_mtx);
       std::cout<<"Integral "<<integral[0]<<" Error: "<<err[0]<<std::endl; //######################## DEBUG
     }
+    
+    //delete copy;
     
     return integral[0];
   }

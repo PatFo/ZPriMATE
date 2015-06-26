@@ -294,6 +294,18 @@ fermionExt::fermionExt(bool massive, int n_pdg, double t3, double m, double emc,
   is_massive = massive;
 }
 
+fundamental::fermionExt::fermionExt(fundamental::fermionExt &copy):fundamental::fermion(
+	  copy.get_pdg(),
+	  copy.get_iso3(),
+	  copy.get_mass(),
+	  copy.get_emcharge(),
+	  copy.get_xlcharge(),
+	  copy.get_xrcharge())
+{
+  if(copy.pvecc){
+    pvecc = new vcoeff(*copy.pvecc);
+  }
+}
 
 
 

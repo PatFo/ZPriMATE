@@ -176,6 +176,9 @@ ZpModel::ZpModel(double mzp): bsm_parameters(0.1, mzp, 0)
   wzp = wzp_(); // Initialize Z' width to its value in initial model
 }
 
+// ZpModel::ZpModel(pheno::ZpModel &copy):bsm_parameters(copy.gx_(),copy.mzp_(),copy.mixing_()) {
+//   d = copy.d;
+// }
 
 
 

@@ -4,7 +4,7 @@ BUILDDIR = build
 CUBATUREDIR = cubature
 
 AM_LDFLAGS = -std=c++11 -pthread -v
-AM_CPPFLAGS = -I$(top_srcdir)/$(MSTWDIR) -I/Library/Developer/CommandLineTools/usr/lib/c++/v1 -I$(top_srcdir)/$(CUBADIR) -std=c++11 -pthread
+AM_CPPFLAGS = -I$(top_srcdir)/$(MSTWDIR) -I/Library/Developer/CommandLineTools/usr/lib/c++/v1 -I$(top_srcdir)/$(CUBADIR) -std=c++11 -pthread -g
 # AM_LDFLAGS =  @BOOST_FILESYSTEM_LIB@
 # AM_LDFLAGS +=  @BOOST_SYSTEM_LIB@
 

@@ -55,7 +55,9 @@ pheno::PartonXSec::PartonXSec(fundamental::fermionExt* f_in, fundamental::fermio
 {
   //Store for every partial cross section the prefactor consisting of couplings, color factors and phase space constants
   double factor = f_in->Nc()*f_out->Nc()/(48*M_PI)/(f_in->Nc()*f_in->Nc()); //Take into account that either quark can come from either proton, average over color!
-  
+  double test = f_out->vecc().q_gam;
+  double test2 = f_in->vecc().q_gam;
+
   numGam   = factor * couplings(f_in->vecc().q_gam, 
                                 f_in->vecc().q_gam, 
                                 f_in->vecc().q_gam, 
@@ -111,10 +113,6 @@ pheno::PartonXSec::PartonXSec(fundamental::fermionExt* f_in, fundamental::fermio
                                 f_out->vecc().q_zpr);
   pdgin = int(f_in->get_pdg());
 }
-
-
-
-
 
 
 //Elementary Cross Section Pieces
@@ -264,13 +262,15 @@ struct SigTot{
 //CLASS IMPLEMENTATION
 //-------------------------------------------------------------
 //Constructor
-pheno::HadronXSec::HadronXSec(fundamental::fermionExt* f_out, pheno::ZpModel* p_model, char* pdf_grid_file, double Ecoll)
+pheno::HadronXSec::HadronXSec(fundamental::fermionExt* ferm_out, pheno::ZpModel* p_mod, char* pdf_grid_file, double Ecoll)
 {
-  accuracy_goal = 1e-2;  //Default numerica integ accuracy
+  accuracy_goal = 1e-2;  //Default numerical integ accuracy
   calls = 3000; //Default value for calls per monte carlo integration point
   Epp = Ecoll;
-  this->p_model=p_model;
-  this->f_out = f_out;
+  p_model= p_mod;//new pheno::ZpModel(*p_mod);
+  f_out = ferm_out;
+
+  
   //Allocate parpxsec->sigSM(Ecm)tonic cross sections
   dxsec = new pheno::PartonXSec(&(p_model->d), f_out, p_model);
   uxsec = new pheno::PartonXSec(&(p_model->u), f_out, p_model);
@@ -287,14 +287,15 @@ pheno::HadronXSec::HadronXSec(pheno::HadronXSec& copy){
   accuracy_goal = copy.accuracy_goal;
   calls = copy.calls;
   Epp=copy.Epp;
-  p_model=copy.p_model;
+  pdf = new c_mstwpdf(*copy.pdf);
+  p_model=p_model;//new pheno::ZpModel(*copy.p_model);
   f_out=copy.f_out;
   // Initialize with null pointer since 
-  uxsec = new pheno::PartonXSec(&(copy.p_model->d), copy.f_out, copy.p_model);
   dxsec = new pheno::PartonXSec(&(copy.p_model->d), copy.f_out, copy.p_model);
-  sxsec = new pheno::PartonXSec(&(copy.p_model->d), copy.f_out, copy.p_model);
-  cxsec = new pheno::PartonXSec(&(copy.p_model->d), copy.f_out, copy.p_model);
-  bxsec = new pheno::PartonXSec(&(copy.p_model->d), copy.f_out, copy.p_model);
+  uxsec = new pheno::PartonXSec(&(copy.p_model->u), copy.f_out, copy.p_model);
+  sxsec = new pheno::PartonXSec(&(copy.p_model->s), copy.f_out, copy.p_model);
+  cxsec = new pheno::PartonXSec(&(copy.p_model->c), copy.f_out, copy.p_model);
+  bxsec = new pheno::PartonXSec(&(copy.p_model->b), copy.f_out, copy.p_model);
 
 }
 
@@ -302,12 +303,22 @@ pheno::HadronXSec::HadronXSec(pheno::HadronXSec& copy){
 
 pheno::HadronXSec::~HadronXSec()
 {
+  //cout << "Destructor of HadronXSec" << endl;
   //Free all pointers
+  //delete f_out;
+  //cout << "Destructor of HadronXSec" << endl;
+  //delete p_model;
+  //cout << "Destructor of HadronXSec" << endl;
   delete dxsec;
+  //cout << "Destructor of HadronXSec" << endl;
   delete uxsec;
+  //cout << "Destructor of HadronXSec" << endl;
   delete sxsec;
+  //cout << "Destructor of HadronXSec" << endl;
   delete cxsec;
+  //cout << "Destructor of HadronXSec" << endl;
   delete bxsec;
+  //cout << "Destructor of HadronXSec" << endl;
   delete pdf;
 }
 
