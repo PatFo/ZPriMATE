@@ -1,0 +1,21 @@
+
+####################################################################################################
+
+ISSUES concerning the implementation of parallel computing
+
+####################################################################################################
+
+Current development of threading stoped due to undeterministic behaviour. Deadlocks seem to occur randomly. So far the origin of these deadlocks seem to be the underlying implementation of Cuba 4.2. which uses fork() to create child processes for parallel computing. This creates a completly self reliable process with a complete image of memory, CPU registry,... Inter process communication is established via a socket implementation.
+
+Deadlock seems to occur when child processes of different threads get the same socket assigned. Due to the complete image of the process state, different child processes might own file descriptors (socket adresses) to the exact same socket (??). While reading (waiting for input from the socket), one or several of these child processes lock down. Cause might be because another thread/child already closed that particular socket. Other than deadlock issues, thread safety isn't guaranteed and thus results are not reliable.
+
+Possible solution might be to use forking aswell. This however might not be able to increase performance. First the copying of the process state has a huge overhead since we are 'only' interested in the integration but nothing else in the program. Secondly the performance increase (~3 times faster) is probably only possible due to Hyperthreading and I am not sure if HT is possible for new processes.
+
+
+####################################################################################################
+
+Other issues
+
+####################################################################################################
+
+Output of integration (if working) seems to be wrong (too large numbers). This is either due to an improper implementation of the copy constructors or due to data racing during parallel computing. Most likely improper implementation...
