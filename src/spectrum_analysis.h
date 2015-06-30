@@ -69,7 +69,6 @@ namespace pheno {
       T * pobj;
       double (T::* pfunc)(double, double, double, double(*)(double, double), int);
       double(* psmear)(double, double);
-      double writeHistCore(double lo, double hi, double acc, double prev);
     public:
       void writeHist(binning *pbins, double acc, char* outfile, double factor=1.);
       template<class Binning> void writeHist(double ll, double ul, double acc, char* outfile, double factor=1.);
@@ -88,97 +87,38 @@ namespace pheno {
   }
   
      
-     
-     
-  template<class T>
-  double pheno::HistWriter<T>::writeHistCore(double lo, double hi, double acc, double prev)
-  {
-    //Integrate with Suave
-    double res = ((this->pobj)->* (this->pfunc))(lo, hi, acc, this->psmear, 2);
-    if(prev!=0)
-    {
-      double ratio1, ratio2, diff= res-prev;
-      if(diff>0)
-      {
-        ratio1 = diff/prev;
-        ratio2 = diff/res;
-      }else{
-        ratio1 = -diff/prev;
-        ratio2 = -diff/res;
-      }
-//       std::printf("Checking deviations %g %g\n", ratio1, ratio2);      //#############################################v DEBUG
-      //Check whether there is a hughe leap in the integral --> wrong convergence
-      if( ( ratio1 > reldiff) || ( ratio2 > reldiff) || ( -1*ratio1 > reldiff) || ( -1*ratio2 > reldiff) )
-      {
-        //Switch to Monte Carlo integration
-        std::printf("Match jumping criterion. Relative deviations are %g %g\n", ratio1, ratio2);      //#############################################v DEBUG
-        res = ((this->pobj)->* (this->pfunc))(lo, hi, 1e-2,  this->psmear, 2); 
-      }
-    }
-    return res;
-  }
-
-  
-  
-  
   template<class T>  
   void pheno::HistWriter<T>::writeHist(binning *pbins, double acc, char* outfile, double factor)
   {  
-    std::ofstream outf(outfile);
     double prev=0;
     int length = pbins->size();
-    
-    std::printf("Writing data to %s ...\n", outfile); 
-    //Write histogram to file in loop
-    for(int i=0; i<length; ++i)
-    {
-      double accuracy = acc;
-      //Calculate first point with high accuracy to have a reliable starting point for convergence test
-      if(i==0){accuracy= 1e-6;} 
-      
-      double low = (pbins->operator[](i)).first; //Get lower bound for bin
-      double high = (pbins->operator[](i)).second; //Get upper bound for bin
+    binning bincopy(*pbins);
+    //Create a container of binning size to store results
+    std::vector<double> prediction(length);
 
-      //Call core integration function; teh cross section 'res' is given in [fb]
-      double res = this->writeHistCore(low, high, accuracy, prev);
-      
-      outf<<low<<"\t"<<high<<"\t"<<res * factor <<"\n"; //Write the bin to file
-      prev= res;  //Save the last value
-//       std::printf("Previous result %g\n", prev);      //#############################################v DEBUG
+    for(int i1=0; i1<length; ++i1)
+      {
+        //Allocating private copies of all pointers in the game to be used by each thread
+        
+        //Get lower and upper bound of bin
+        double low = bincopy[i1].first; 
+        double high = bincopy[i1].second;
+        
+        //Call core integration function
+        //The cross section is given in [fb]; multiply by factor=luminosity to obtain events
+        prediction[i1] = (pobj->* pfunc)(low, high, acc, psmear, 2) * factor;
+      }
+
+    //Write the prediction to file
+    std::printf("Writing data to %s ...\n", outfile); 
+    std::ofstream outf(outfile);
+    for(int i2=0; i2<length; ++i2)
+    { 
+      outf<<(pbins->operator[](i2)).first<<"\t"<<(pbins->operator[](i2)).second<<"\t"<<prediction[i2]<<"\n"; 
     }
     outf.close();
     std::printf("Finished writing to %s\n", outfile);      //#############################################v DEBUG
-  }  
-     
-  
-  template<class T>
-  template<class Binning>
-  void pheno::HistWriter<T>::writeHist(double ll, double ul, double acc, char* outfile, double factor)
-  {  
-    //Create instance of binning functor
-    Binning f;
-    std::ofstream outf(outfile);
-    double prev=0;
-    //Write histogram to file in loop
-    for(double low = ll; low<ul; )
-    {
-      double high = f(low); //Calculate upper bound for bin
-
-      double res = this->writeHistCore(low, high, acc, prev);
-      
-      outf<<low<<"\t"<<res * factor <<"\n"; //Write the bin to file
-      low = high; //Set new lower bound
-      prev= res;  //Save the last value
-      std::printf("Previous result %g\n", prev);      //#############################################v DEBUG
-    }
-    outf.close();
-  }
-
-  
-  
-  
- 
- 
+  }    
 }
 
 #endif
