@@ -14,7 +14,7 @@ all: all-local
 all-local:
 	cd $(CUBADIR) && $(MAKE) $(AM_MAKEFLAGS) libcuba.a
 	mkdir -p results
-	
+
 # Create a symbolic link to the executable in the srcdir
 install-exec-local:
 	ln -s $(abs_top_srcdir)/$(binary) $(bindir)
@@ -24,6 +24,7 @@ uninstall-local:
 	rm $(bindir)/$(binary)
 
 clean-local:
+	-f $(CUBADIR)/libcuba.a
 	-rm -f src/*.o
 	-rm -f src/*~
 	-rm -r results
