@@ -197,6 +197,15 @@ static int Integrate(This *t, real *integral, real *error, real *prob)
     nnewL = IMax(
       (minfluct == 0) ? t->nnew/2 : (count)(vLR[0].fluct/minfluct*t->nnew),
       minsamples );
+    // ##################################################
+    // Added hotfix for 'fishy malloc'
+    // Typecast to (count) returns sometimes huge negative value which are not 
+    // recognized appropriately by IMax
+
+    if((int)nnewL<0) nnewL=minsamples; 
+
+    // ##################################################
+
     nL = vLR[0].n + nnewL;
     nnewR = IMax(t->nnew - nnewL, minsamples);
     nR = vLR[1].n + nnewR;

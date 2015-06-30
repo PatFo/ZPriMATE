@@ -25,28 +25,26 @@ const char* const SEPARATOR = "/";
 
 
 
-  //**************************************//
-  //         CONFIG READER                //  
-  //**************************************//
+//**************************************//
+//         CONFIG READER                //  
+//**************************************//
 
 
 
 int split_line(const char** itemlist,  char* line , const char* const DELIMS)
 ///Split a line into its components separated by the DELIMS
 {
-  itemlist[0] = std::strtok(line, DELIMS); //Split the string
-//   std::cout<<itemlist[0]<<std::endl;  // ###################################### DEBUG ####################### 
-  
+  char *token = std::strtok(line, DELIMS); //Split the string
+  if(token ==NULL) return 0; //Abort if line is empty
+
+  itemlist[0] = token;
   int len=1;
-  for (int n = 1; n < MAX_ITEMS; n++)
-  {
-    // 'NULL' means continue splitting after last successful split
-    itemlist[n] = std::strtok(NULL, DELIMS); 
-    if (!itemlist[n]) break; // no more tokens
-//     std::cout<<itemlist[n]<<std::endl; // ###################################### DEBUG ####################### 
+  while (token != NULL) {
+    token = std::strtok(NULL, DELIMS); 
+    if(token ==NULL) break; //Abort if no more tokens
+    itemlist[len] = token;
     ++len;
   }
-  
   return len;
 }
 
@@ -60,13 +58,13 @@ void extract_config(dict &config, std::ifstream &istr)
 {
   while(!istr.eof())
   {
-    char buf[MAX_CHARS];        
+    char buf[MAX_CHARS]={0};        
     istr.getline(buf,MAX_CHARS);
 
     //Sear for class beginning by $
     if(buf[0]=='$')
     {      
-      const char* classes[MAX_ITEMS];
+      const char* classes[MAX_ITEMS]={0};
       
       int len = split_line(classes, buf, DELIMITERS1);      
       if(len!=1)
@@ -79,7 +77,7 @@ void extract_config(dict &config, std::ifstream &istr)
       {
 	istr.getline(buf,MAX_CHARS);
 
-	const char* items[MAX_ITEMS];
+	const char* items[MAX_ITEMS]={0};
 	if(buf[0]==0)break;
 	else len = split_line(items, buf, DELIMITERS1);
 	
@@ -141,12 +139,12 @@ void fill_map(strmap * pmap, std::ifstream * pistream)
 {
   while(!pistream->eof())
   {
-    char buffer[MAX_CHARS];        
+    char buffer[MAX_CHARS]={0};        
     pistream->getline(buffer,MAX_CHARS);
-    const char* words[MAX_ITEMS];
+    const char* words[MAX_ITEMS]={0};
     int len = split_line(words, buffer, DELIMITERS2 );
     //Assert that line is not empty
-    if(words[0]!=NULL)
+    if(len>0)
     {
       //Check whether first item is a variable name
       if( words[0][0] =='$')
@@ -167,9 +165,9 @@ void fill_map(strmap * pmap, std::ifstream * pistream)
 ///Get the absolute path to the package root directory
 std::string package_root_path()
 {
-  char buf[1024];
+  char buf[1024]={0};
 #if MAC_SYS
-  char buf_tmp[1024];
+  char buf_tmp[1024]={0};
   uint32_t size = sizeof(buf_tmp);
   _NSGetExecutablePath(buf_tmp, &size);
   realpath(buf_tmp, buf);
@@ -178,7 +176,7 @@ std::string package_root_path()
   readlink("/proc/self/exe", buf, sizeof(buf)-1);
 #endif  
   //Split the path at the separator '/'
-  const char* words[MAX_ITEMS];
+  const char* words[MAX_ITEMS]={0};
   int len = split_line(words, buf, SEPARATOR );
   //Strip of the last 2 items of path (exec_dir/exec_name) to get package base path
   std::string path;
