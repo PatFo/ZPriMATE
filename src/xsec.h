@@ -68,6 +68,9 @@ namespace pheno{
       void crossSections (double Ecm, std::vector<double> * results);
       //Class Constructor: Give model as reference &model
       PartonXSec(fundamental::fermionExt* f_in, fundamental::fermionExt* f_out, pheno::ZpModel* p_model);
+    // No constructor/destructor needed since ZpModel exists only once -> c++11 unique_ptr?
+
+    
       ///Give the two fermions and the model as reference to the constructor!
   };
 
@@ -87,41 +90,44 @@ namespace pheno{
   
   class HadronXSec{
     ///Class for calculcation of partonic cross sections of p p --> f_out f_out~
-    private:
-      size_t calls;
-      double accuracy_goal;
-      double Epp;
-      //Internal parton cross sections: no top, as pdf negligible
+  private:
+    size_t calls;
+    double accuracy_goal;
+    double Epp;
+    //Internal parton cross sections: no top, as pdf negligible
+
   public: //####################################################################################### DEBUG ONLY ####################################
-      PartonXSec* dxsec;
-      PartonXSec* uxsec;
-      PartonXSec* sxsec;
-      PartonXSec* cxsec;
-      PartonXSec* bxsec;
-      c_mstwpdf* pdf;
-      //Subroutine for pdf convoluted cross sections: Specify partial cross section in functor object
-      template<class PartialCrossX> double pdfconvoluted( double Ecm );
-      //Full experimentally detectable cross section
-      template<class PartialCrossX> double theoXsec(double el, double eh, double acc);
-      template<class PartialCrossX> double detectedXsec(double el, double eh, double acc, int strategy, double (* psmear)(double, double));
-    public:
-      void set_accuracy(double accuracy);
-      void set_monte_calls(size_t int_calls);
-      //Hadronic differential cross sections dSig/dm
-      double dsigSM    (double Ecm );
-      double dsigInt   (double Ecm );
-      double dsigSignal(double Ecm );
-      double dsigTotal (double Ecm );
-      //Member function that fills EMPTY vector with sigSM, sigInt, sigSignal, sigTotal 
-      //ALWAYS use this function if more than one of these cross sections is needed at a time
-      void crossSections (double Ecm, std::vector<double> * results);
-      //Full pure hadronic cross sections
-      double smXsec(double el, double eh, double accuracy, double (* psmear)(double,double)=NULL, int strategy=1);
-      double zpXsec(double el, double eh, double accuracy, double (* psmear)(double,double)=NULL, int strategy=1);
-      double totXsec(double el, double eh, double accuracy, double (* psmear)(double,double)=NULL, int strategy=1);
-      //Constructor and destructor to take care of memory allocations
-      HadronXSec(fundamental::fermionExt* f_out, pheno::ZpModel* p_model, char* pdf_grid_file, double Ecoll=8000.);
-      ~HadronXSec();  
+    PartonXSec* dxsec;
+    PartonXSec* uxsec;
+    PartonXSec* sxsec;
+    PartonXSec* cxsec;
+    PartonXSec* bxsec;
+    c_mstwpdf* pdf;
+    //Subroutine for pdf convoluted cross sections: Specify partial cross section in functor object
+    template<class PartialCrossX> double pdfconvoluted( double Ecm );
+    //Full experimentally detectable cross section
+    template<class PartialCrossX> double theoXsec(double el, double eh, double acc);
+    template<class PartialCrossX> double detectedXsec(double el, double eh, double acc, int strategy, double (* psmear)(double, double));
+  public:
+    void set_accuracy(double accuracy);
+    void set_monte_calls(size_t int_calls);
+    //Hadronic differential cross sections dSig/dm
+    double dsigSM    (double Ecm );
+    double dsigInt   (double Ecm );
+    double dsigSignal(double Ecm );
+    double dsigTotal (double Ecm );
+    //Member function that fills EMPTY vector with sigSM, sigInt, sigSignal, sigTotal 
+    //ALWAYS use this function if more than one of these cross sections is needed at a time
+    void crossSections (double Ecm, std::vector<double> * results);
+    //Full pure hadronic cross sections
+    double smXsec(double el, double eh, double accuracy, double (* psmear)(double,double)=NULL, int strategy=1);
+    double zpXsec(double el, double eh, double accuracy, double (* psmear)(double,double)=NULL, int strategy=1);
+    double totXsec(double el, double eh, double accuracy, double (* psmear)(double,double)=NULL, int strategy=1);
+    //Constructor and destructor to take care of memory allocations
+    HadronXSec(fundamental::fermionExt* f_out, pheno::ZpModel* p_model, char* pdf_grid_file, double Ecoll=8000.);
+    HadronXSec(pheno::HadronXSec &copy);
+    HadronXSec & operator= (pheno::HadronXSec &assignment);
+    ~HadronXSec();  
   };
   
   

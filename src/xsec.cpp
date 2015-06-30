@@ -117,6 +117,8 @@ pheno::PartonXSec::PartonXSec(fundamental::fermionExt* f_in, fundamental::fermio
 
 
 
+
+
 //Elementary Cross Section Pieces
 //Calculate pure photonic cross section
 double pheno::PartonXSec::sigGam(double Ecm)
@@ -278,6 +280,66 @@ pheno::HadronXSec::HadronXSec(fundamental::fermionExt* f_out, pheno::ZpModel* p_
   //Allocate pdf object
   pdf = new c_mstwpdf(pdf_grid_file);
 }
+
+// Copy constructor
+pheno::HadronXSec::HadronXSec(pheno::HadronXSec &copy) {
+  accuracy_goal = copy.accuracy_goal;
+  calls = copy.calls;
+  Epp = copy.Epp;
+
+  dxsec = new pheno::PartonXSec(*(copy.dxsec));
+  uxsec = new pheno::PartonXSec(*(copy.uxsec));
+  sxsec = new pheno::PartonXSec(*(copy.sxsec));
+  cxsec = new pheno::PartonXSec(*(copy.cxsec));
+  bxsec = new pheno::PartonXSec(*(copy.bxsec));
+  
+  pdf = new c_mstwpdf(*copy.pdf);
+}
+
+// Copy assignment constructor
+pheno::HadronXSec & pheno::HadronXSec::operator=(pheno::HadronXSec &assignment) {
+  // check if assigment is smth. like x=x
+  if (this != &assignment) {
+    // First create local copy of everything
+    double loc_accuracy_goal = assignment.accuracy_goal;
+    size_t loc_calls = assignment.calls;
+    double loc_Epp = assignment.Epp;
+
+    pheno::PartonXSec *loc_dxsec = new pheno::PartonXSec(*(assignment.dxsec));
+    pheno::PartonXSec *loc_uxsec = new pheno::PartonXSec(*(assignment.uxsec));
+    pheno::PartonXSec *loc_sxsec = new pheno::PartonXSec(*(assignment.sxsec));
+    pheno::PartonXSec *loc_cxsec = new pheno::PartonXSec(*(assignment.cxsec));
+    pheno::PartonXSec *loc_bxsec = new pheno::PartonXSec(*(assignment.bxsec));
+  
+    c_mstwpdf* loc_pdf = new c_mstwpdf(*(assignment.pdf));
+   
+    
+    // If everything went fine delete old object
+    delete 
+      dxsec
+      ,uxsec
+      ,sxsec
+      ,cxsec
+      ,bxsec
+      ,pdf
+      ;
+
+    // Assign new objects
+    accuracy_goal = loc_accuracy_goal;
+    calls = loc_calls;
+    Epp = loc_Epp;
+    
+    dxsec = loc_dxsec;
+    uxsec = loc_uxsec;
+    sxsec = loc_sxsec;
+    cxsec = loc_cxsec;
+    bxsec = loc_bxsec;
+
+  }
+
+  return *this;
+}
+
 
 
 pheno::HadronXSec::~HadronXSec()

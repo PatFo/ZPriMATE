@@ -136,10 +136,13 @@ namespace pheno{
       double calc_zhwidth();
       double calc_wwidth();
       void update_width();
+    // Make sure copy constructor is never called
+    ZpModel(pheno::ZpModel &copy);
     public:
       //Constructors
       ZpModel(const char* configfile);
       ZpModel(double mzp); //Constructs the SSM with Zp mass mzp
+
       //Width of Zp
       double wzp_();
   };
