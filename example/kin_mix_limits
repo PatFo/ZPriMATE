@@ -1,0 +1,226 @@
+#!/usr/bin/python
+from matplotlib import pyplot as plt
+from matplotlib.colors import LogNorm
+from matplotlib.ticker import LogFormatter
+import numpy as np
+import os
+import subprocess
+import sys
+import time
+
+
+
+#Function that writes input file for zprimate
+def write_startfile(filepath, outdir, acc, modelfile, proc):
+  f=open(filepath, 'w')
+
+  if proc ==1:
+    lum = 20.3
+    effs = "eff_el.dat"
+    lims = "el_lims"
+  elif proc ==2:
+    lum = 20.5
+    effs = "eff_mu.dat"
+    lims = "mu_lims"    
+    
+  params="""$VERBOSE = 1
+  $ACC = %(acc)s
+  $ODIR = %(outdir)s
+  $MODEL = %(model)s
+  $PROC = %(proc)s
+  $EBEAM = 8000
+  $LUM = %(lum)s
+  $BINS =  analyses/arXiv_1405_4123/bins.dat
+  $EFFICIENCIES = analyses/arXiv_1405_4123/%(effs)s
+  $LIMITS = analyses/arXiv_1405_4123/%(lims)s"""
+
+  dictionary = { 'acc' : acc, 'outdir':outdir, 'model' : modelfile, 'proc':proc, 'lum':lum, 'effs':effs, 'lims':lims}          
+  f.write(params % dictionary)
+  f.close()
+
+  
+  
+#Function that writes Z' model file
+def write_model(filepath, mass, mixing, coupling):
+  f=open(filepath, 'w')
+    
+    
+  params="""$model_parameters
+mzp = %(mzp)s
+gx = %(gx)s
+chi = %(chi)s
+
+$down
+cxl=0
+cxr=0
+
+$up
+cxl=0
+cxr=0
+
+$strange
+cxl=0
+cxr=0
+
+$charm
+cxl=0
+cxr=0
+
+$bottom
+cxl=0
+cxr=0
+
+$top
+cxl=0
+cxr=0
+
+$electron
+cxl=0
+cxr=0
+
+$muon
+cxl=0
+cxr=0
+
+$tauon
+cxl=0
+cxr=0
+
+$nu_el
+cxl=0
+cxr=0
+
+$nu_mu
+cxl=0
+cxr=0
+
+$nu_tau
+cxl=0
+cxr=0"""
+
+  dictionary = { 'mzp' : mass, 'gx': coupling, 'chi' : mixing}
+  f.write(params % dictionary)
+  f.close()  
+  
+  
+  
+
+  
+  
+  
+  
+#Time the total execution
+start = time.time()
+
+#Get process code: 1 = e+ e-  2 = mu+ mu-
+#proc = int(sys.argv[2])
+proc = int(sys.argv[1])
+  
+#Zprimate executable and package direcotry  
+ZPMX = "./zprimate"
+ZPMSYS =  os.path.dirname(os.path.dirname(os.path.realpath(__file__)))  
+
+
+#Create Result directoy in user's home 
+wdir = os.path.expanduser("~") +"/KINETIC_MIXING"
+#wdir = sys.argv[1]
+if not os.path.isdir(wdir):
+  os.mkdir(wdir)
+  
+#Directory for zprimate output  
+zdir = wdir + "/ZPM"  
+if not os.path.isdir(zdir):
+  os.mkdir(zdir)
+#Directory to store startup files  
+indir = wdir + "/input"  
+if not os.path.isdir(indir):
+  os.mkdir(indir)  
+
+
+  
+#Empty results containers  
+mdim = 15
+cdim = 10
+lobs =  np.zeros((cdim, mdim))
+  
+  
+startfile = indir + "/settings"
+modelfile = indir + "/model"
+limfile = wdir + "/limits.dat" 
+
+gx= 0.1
+masses = np.linspace(100, 3500, mdim)
+mixings = np.logspace(-4, 0, cdim)
+
+limits = open(limfile, 'w')
+line0 = "%-15s"%"Chi \ M [GeV]"
+for m in masses:
+  line0 += "%-10.1f"%m
+limits.write(line0+"\n")
+limits.close()
+
+#Loop over Z' masses and mixings
+os.chdir(ZPMSYS)
+for ic, mix in enumerate(mixings):
+  string = "%-15.2g"%mix
+  for im, mzp in enumerate(masses):
+    #Write settings
+    write_model(modelfile, mzp, mix, gx)
+    write_startfile(startfile, zdir, 1e-2, modelfile, proc)
+    zpm = subprocess.Popen(["%s %s" %(ZPMX, startfile) ], stdout=subprocess.PIPE, shell=True)
+    #zpm.wait() # Wait till finished
+    (out, err) = zpm.communicate() #Catch output and error if send to PIPE
+    print out     
+    
+    #Get exclusion limits for current model
+    robs = 0
+    f= open(zdir + "/results", 'r')
+    lno = 0
+    for line in f:
+      tab = line.split('|')
+      if lno== 7:
+        robs = np.double(tab[1])
+      lno += 1
+    
+    #Append results to lists and file
+    lobs[ic, im] = robs
+    string += "%-10.2g"%robs
+  limits = open(limfile, 'a')
+  limits.write(string+"\n")
+  limits.close()
+  
+  
+
+#Contour plot of limits
+
+#levels = np.linspace(0, np.amax(lobs) , 40)
+loglevels = np.logspace(np.log(np.amin(lobs)), np.log(np.amax(lobs)) , 20)
+l_f = LogFormatter(10, labelOnlyBase=False)
+
+fig, axs = plt.subplots(1,1)
+cs = axs.contourf(masses, mixings, lobs, 
+                  norm = LogNorm(),
+                  levels=loglevels)
+cs2 = axs.contour(masses, mixings, lobs, [1], colors='k')
+#bar = fig.colorbar(cs, ax=axs, format="%.2f")
+bar = fig.colorbar(cs, ticks=loglevels, format=l_f)
+bar.set_label('R-Value')
+
+plt.title('Contour plot for kinetic mixing')
+axs.set_yscale("log") 
+plt.xlabel(r"$M_{Z'_{SSM}}$ [GeV]")
+plt.ylabel(r'Kin. mixing $\chi$')
+#plt.legend()
+##Include ZPriMATE logo on plot
+#im = plt.imread(ZPMSYS + "/icons/logo_small.png")
+#ax = plt.axes([0.13,0.1, 0.17, 0.17], frameon=False)  # Change the numbers in this array to position your image [left, bottom, width, height])
+#ax.imshow(im)
+#ax.axis('off')  # get rid of the ticks and ticklabels
+plt.savefig(wdir + "/limits.pdf", dpi=300) 
+
+#Print execution time
+end = time.time()
+diff =   (end- start)
+seconds = diff%60
+minutes = float(diff - seconds)/60
+print "FINISHED!\nExectution took %i m %.1f sec\n"%(int(minutes), seconds)  
