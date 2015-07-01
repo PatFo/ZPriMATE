@@ -50,7 +50,23 @@ double el_smear(double mu, double x)
   return gaussian(mu, x, sigma);
 }
 
+// Check if file exists
 
+inline bool fileExists(const std::string& name) {
+  struct stat buffer;   
+  return (stat (name.c_str(), &buffer) == 0); 
+}
+
+// 
+void usage(char** argv) {
+  cout <<std::endl;
+  cout << " Usage: " << argv[0] << " inFile [tmpFile]" << std::endl;
+  cout << std::endl;
+  cout << " inFile:\t\t\tSettings file with run specific parameters and paths" << std::endl;
+  cout << " tmpFile (optional):\tTemporary file for communication to python process." <<std::endl;
+  cout << "\t\t\tIf non is given, a default is chosen." << std::endl;
+  cout <<std::endl;
+}
 
 
 //MAIN
@@ -59,6 +75,36 @@ double el_smear(double mu, double x)
 
 int main(int argc, char** argv){
   
+  if(argc<2 || argc>3){
+    usage(argv);
+    return 1;
+  }else if(!fileExists(argv[1])) {
+    cout << "Input file " << argv[1] << " doesn't exist or cannot be opened." << std::endl;
+    return 1;
+  }
+
+  //Extract settings for run given in start file 
+  settings input(argv[1]);
+  
+
+  // Create communication file for python input in TMP
+  // If file is given specifically use this one instead
+  std::string ofname;
+  if (argc == 2) { 
+    char const * tmp = getenv("TMPDIR");
+    if (tmp == 0)
+      tmp = "/tmp";
+    ofname = tmp;
+    ofname.append("/hist");
+
+  } else if(argc==3) {
+    ofname = argv[2];
+  }
+
+  std::ofstream of(ofname.c_str());
+  of<<input.odir()<<std::endl; //Specify the output directory
+  of<<input.limdir()<<std::endl; //Specify the limits directory
+  of<<input.efficiencies()<<std::endl; //Specify the effficiency file
   
   //Allocate pointer to store model
   pheno::ZpModel * model;
@@ -67,10 +113,6 @@ int main(int argc, char** argv){
   //Start timing
   gettimeofday(&tv, NULL);  
   double t0=tv.tv_sec+(tv.tv_usec/1000000.0);     
-   
-  
-  //Extract settings for run given in start file 
-  settings input(argv[1]);
   
   
   //Check whether SSM is to be used or if a model file was given
@@ -121,17 +163,7 @@ int main(int argc, char** argv){
   else throw std::runtime_error("ERROR: Invalid process id.\nCurrently available:\n\n\t0 = jets\n\t1 = e+ e-\n\t2 = mu+ mu-\n\t3 = tau+ tau-\n");
   
   
-   
-  //Create communication file for python input lying at TMP
-  char const * tmp = getenv("TMPDIR");
-  if (tmp == 0)
-    tmp = "/tmp";
-  std::string ofname(tmp);
-  ofname.append("/hist");
-  std::ofstream of(ofname.c_str());
-  of<<input.odir()<<std::endl; //Specify the output directory
-  of<<input.limdir()<<std::endl; //Specify the limits directory
-  of<<input.efficiencies()<<std::endl; //Specify the effficiency file
+
   
   //Calculating and writing the cross section
   int count=1;

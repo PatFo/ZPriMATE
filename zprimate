@@ -3,8 +3,11 @@ import os
 import sys
 import subprocess
 import tempfile
+import time
 import numpy as np
 from scipy.interpolate import InterpolatedUnivariateSpline
+
+import fcntl
 
 
 ZPMSYS = os.path.dirname(os.path.realpath(__file__))
@@ -16,18 +19,24 @@ LIMX = "./bin/calc_limit"
 
 #Get input file
 fullfile = sys.argv[1]
+
 #Check whether inputfile was given with absolute path
 if fullfile[0] !='/':
   fullfile = os.getcwd() + "/" +   fullfile
-#print  fullfile
+
+# Create unique temporary file for communication
+# Filedescriptor and full path to file
+fdTMP, inp = tempfile.mkstemp()
+
 
 #Cross section calculation
 os.chdir(ZPMSYS)
+
 print "\nCalculating cross section ...\n"
-core = subprocess.Popen(["%s %s" %(COREX, fullfile) ], stdout=subprocess.PIPE, shell=True)
-#core = subprocess.Popen(["%s %s" %(COREX, fullfile) ], stdout=None, shell=True)
-core.wait() # Wait till finished
-(core_out, core_err) = core.communicate() #Catch output and error if send to PIPE
+core = subprocess.Popen([COREX,fullfile,inp],stdout=subprocess.PIPE)
+
+# Catch and wait for output and error if send to PIPE
+(core_out, core_err) = core.communicate() 
 
 
 
@@ -39,48 +48,49 @@ limdir = ""
 eff = ""
 
 #Check for plot file and generate plots
-#File containg plotting parameters
-inp =  tempfile.gettempdir() + "/hist" 
-if os.path.isfile(inp):
-  print "Generating plots from %s:"%inp
-  with open(inp, 'r') as openedFile :
-    fno = 0
-    for events in openedFile:
-      #Get output directory
-      if fno ==0 :
-        odir = events.split()[0]
-      #Get limits directory
-      elif fno == 1 :
-        limdir = events.split()[0]
-      #Get efficiencies
-      elif fno == 2 :
-        eff = events.split()[0]
-      #Operate on event files
-      else:
-        events = events.split()[0]
-        print "Plotting %s"%events
-        plot = subprocess.Popen(["%s %s" %(PLTX, events)], stdout=None, shell=True)
-        #Combine events for global analysis
-        with open(events, 'r') as eventfile:
-          lno = 0
-          for line in eventfile:
-            data  = line.split()
-            assert len(data)==3
-            #First read of data
-            if fno == 3:
-              xl.append( np.double(data[0]))
-              xr.append( np.double(data[1]))
-              nev.append( np.double(data[2]))
-            #Append further data
-            else:
-              #print xl[lno], data[0]
-              assert xl[lno] == np.double(data[0])
-              assert xr[lno] == np.double(data[1])
-              nev[lno] += np.double(data[2])
-            lno += 1
-      fno += 1          
+print "Generating plots from temporary file %s:"%inp
+
+with open(inp,'r') as openedFile:
+  fno = 0
+  for events in openedFile:
+    #Get output directory
+    if fno ==0 :
+      odir = events.split()[0]
+    #Get limits directory
+    elif fno == 1 :
+      limdir = events.split()[0]
+    #Get efficiencies
+    elif fno == 2 :
+      eff = events.split()[0]
+    #Operate on event files
+    else:
+      events = events.split()[0]
+      print "Plotting %s"%events
+      plot = subprocess.Popen(["%s %s" %(PLTX, events)], stdout=None, shell=True)
+      #Combine events for global analysis
+      with open(events, 'r') as eventfile:
+        lno = 0
+        for line in eventfile:
+          data  = line.split()
+          assert len(data)==3
+          #First read of data
+          if fno == 3:
+            xl.append( np.double(data[0]))
+            xr.append( np.double(data[1]))
+            nev.append( np.double(data[2]))
+          #Append further data
+          else:
+            # print xl[lno], data[0]
+            assert xl[lno] == np.double(data[0])
+            assert xr[lno] == np.double(data[1])
+            nev[lno] += np.double(data[2])
+          lno += 1
+    fno += 1          
            
-           
+# Remove temporary file
+os.remove(inp)
+       
+    
 #Write Core output
 log = open(odir+"/zprimate.log", 'w')
 log.write("%s"%core_out)
