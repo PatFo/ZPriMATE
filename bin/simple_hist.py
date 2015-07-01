@@ -14,7 +14,7 @@ f=sys.argv[1]
 with open(f, 'r') as openedFile :
     for line in openedFile:
         tab = line.split()
-        OX.append(float(tab[0]))
+        OX.append(float(tab[1]))
         OY.append(float(tab[2]))
 
         
