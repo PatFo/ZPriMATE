@@ -24,7 +24,7 @@ uninstall-local:
 	rm $(bindir)/$(binary)
 
 clean-local:
-	-f $(CUBADIR)/libcuba.a
+	-rm -f $(CUBADIR)/libcuba.a
 	-rm -f src/*.o
 	-rm -f src/*~
 	-rm -r results

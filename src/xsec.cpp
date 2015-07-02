@@ -54,7 +54,7 @@ double couplings(double cinL1, double cinL2, double cinR1, double cinR2, double 
 pheno::PartonXSec::PartonXSec(fundamental::fermionExt* f_in, fundamental::fermionExt* f_out, pheno::ZpModel* p_model): _model(p_model)
 {
   //Store for every partial cross section the prefactor consisting of couplings, color factors and phase space constants
-  double factor = f_in->Nc()*f_out->Nc()/(48*M_PI)/(f_in->Nc()*f_in->Nc()); //Take into account that either quark can come from either proton, average over color!
+  double factor = f_out->Nc()/(48*M_PI*f_in->Nc()); //Take into account that either quark can come from either proton, average over color!
   
   numGam   = factor * couplings(f_in->vecc().q_gam, 
                                 f_in->vecc().q_gam, 
