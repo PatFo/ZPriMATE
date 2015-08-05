@@ -59,6 +59,7 @@ namespace fundamental{
       double gx;
       double mzp;
       double mixing_angle;
+      double whid;
       double fef;
       double xi;
       void calc_fef();
@@ -82,12 +83,14 @@ namespace fundamental{
       double gx_();
       double mzp_();
       double mixing_();
+      double whid_();
       double fef_();
       double xi_();
       //Set parameters
       void set_gx(double g);
       void set_mzp(double m);
       void set_mixing(double mix);
+      void set_whid(double wh);
       //Constructor
       bsm_parameters(double cpl, double mass, double mix=0);
   };

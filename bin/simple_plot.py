@@ -10,7 +10,7 @@ from matplotlib import pyplot as plt
 plot_tot = 1
 plot_sm  = 1
 plot_int = 0
-plot_sig = 0
+plot_sig = 1
 
 
 

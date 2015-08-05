@@ -96,6 +96,7 @@ ZpModel::ZpModel(const char* configfile): bsm_parameters(0.1, 1500, 0) /*partial
     set_gx( (it->second)["gx"] );
     set_mzp( (it->second)["mzp"] );
     set_mixing( (it->second)["chi"] );
+    set_whid( (it->second)["whid"] );
   }
   std::printf("\n\t%-10s %-10s\n\t%-10s|%-10g\n\t%-10s|%-10g\n\t%-10s|%-10g\n\n", "Parameter", "Value", "mzp", mzp_(), "gx", gx_(), "mixing", mixing_());
     
@@ -142,7 +143,7 @@ ZpModel::ZpModel(const char* configfile): bsm_parameters(0.1, 1500, 0) /*partial
 
 
 //DEFAULT CONSTRUCTOR: Generates Sequantial Standard Model 
-// with gx=0.1 mzp=1500 and mixing=0
+// with gx=0.1 mzp=1500, mixing=0 and whid=0
 ///WARNING: Only use for benchmarks
 ZpModel::ZpModel(double mzp): bsm_parameters(0.1, mzp, 0)
 {
@@ -172,6 +173,7 @@ ZpModel::ZpModel(double mzp): bsm_parameters(0.1, mzp, 0)
   //Initialize widths to -1 ("not yet calculated")
   partial_fwidths=NULL;
   higgs_width=-1.;
+  set_whid(0);
   wzp=-1.;
   wzp = wzp_(); // Initialize Z' width to its value in initial model
 }
@@ -248,7 +250,9 @@ void ZpModel::update_width()
     //WW width
     ww_width=calc_wwidth();
     wzp+=ww_width;
+    wzp+=whid_();
     std::printf("\t%-14s|%-14g\n", "WW", ww_width);
+    std::printf("\t%-14s|%-14g\n", "W_hidden", whid_());
 
     std::printf("\t%-14s:%-14g\n\n","Total width",  wzp);
 }

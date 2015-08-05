@@ -208,6 +208,11 @@ double bsm_parameters::mixing_()
   return mixing_angle;
 }
 
+double bsm_parameters::whid_()
+{
+  return whid;
+}
+
 double bsm_parameters::fef_()
 {
   return fef;
@@ -240,6 +245,10 @@ void bsm_parameters::set_mixing(double mix)
   update();
 }
 
+void bsm_parameters::set_whid(double wh)
+{
+  whid=wh;
+}
 
 
 //*****************************************************//
