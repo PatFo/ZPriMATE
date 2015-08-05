@@ -9,8 +9,8 @@
 
 
 //SPECIFY MODEL FILE OR SET MASS OF Z_SSM
-// $MODEL         = example/example.conf
-$MODEL         = 2000
+$MODEL         = example/example.conf
+//$MODEL         = 2000
 
 
 //ANALYSIS PARAMETERS

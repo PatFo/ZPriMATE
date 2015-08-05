@@ -139,8 +139,8 @@ if not os.path.isdir(indir):
 
   
 #Empty results containers  
-mdim = 15
-cdim = 10
+mdim = 40
+cdim = 50
 lobs =  np.zeros((cdim, mdim))
   
   
@@ -148,9 +148,9 @@ startfile = indir + "/settings"
 modelfile = indir + "/model"
 limfile = wdir + "/limits.dat" 
 
-gx= 0.1
-masses = np.linspace(100, 3500, mdim)
-mixings = np.logspace(-4, 0, cdim)
+gx= 0.01  #Influences width (set it small)
+masses = np.logspace(2, 3.544, mdim)
+mixings = np.logspace(-2.3, 0, cdim)
 
 limits = open(limfile, 'w')
 line0 = "%-15s"%"Chi \ M [GeV]"
@@ -217,6 +217,20 @@ plt.ylabel(r'Kin. mixing $\chi$')
 #ax.imshow(im)
 #ax.axis('off')  # get rid of the ticks and ticklabels
 plt.savefig(wdir + "/limits.pdf", dpi=300) 
+
+
+#Write parameters file 
+parfile = open(wdir+"/parameters.txt", 'w')
+parfile.write("Parameters of limit calculation\n%s\n\n"%('-'*25))
+if proc==1:
+  channel="e+e-"
+else:
+  channel="mu+mu-"
+parfile.write("%-20s | %-5s\n"%("Channel", channel))  
+parfile.write("%-20s | %-5s\n"%("Grid (mass x mix)", "%s x %s"%(mdim, cdim)))
+parfile.close()
+  
+
 
 #Print execution time
 end = time.time()
