@@ -13,7 +13,7 @@ import fcntl
 ZPMSYS = os.path.dirname(os.path.realpath(__file__))
 #print ZPMSYS
 COREX = "./src/core"
-PLTX = "./bin/simple_hist.py"
+PLTX = "./bin/plot_signal"
 LIMX = "./bin/calc_limit"
 
 
