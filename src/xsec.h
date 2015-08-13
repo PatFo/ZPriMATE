@@ -25,6 +25,7 @@
 
 #define EPSABS 0.0
 
+
 namespace pheno{
   
   
@@ -76,9 +77,38 @@ namespace pheno{
 
   
   
+  //*********************************************************//
+  //                  K-Factors function                     //
+  //*********************************************************//
   
   
-  
+  //K-factors were calculated from ratio of Nlo/Lo cross sections
+  //NLO cross sections are from personal communication with ATLAS collaboration
+  // 170 fb for M_Z' = 1000 GeV       |k= 1.50474437049
+  // 20 fb for M_Z' = 1500 GeV        |k= 1.44311597602
+  // 3.4 fb for M_Z' = 2000 GeV       |k= 1.38432536532
+  // 0.73 fb for M_Z' = 2500 GeV      |k= 1.28621895675
+  // 0.21 fb for M_Z' = 3000 GeV      |k= 1.20939179111
+
+  //Linear fit of kfactors
+  inline double k_factor(double mzp) 
+  {  
+    double k=  1.66460016254 - 0.000149520435303*mzp;
+    //K-factors smaller than 1 are unphysical for NLO corrections
+    if(k<1)
+    {
+      k=1.0;
+    }
+    return k;
+  }
+
+
+//   void donothing()
+//   {
+//     std::cout<<"Do nothing\n";
+//   }
+
+
 
   
   //*********************************************************//
@@ -94,6 +124,7 @@ namespace pheno{
     size_t calls;
     double accuracy_goal;
     double Epp;
+    double mzp;
     //Internal parton cross sections: no top, as pdf negligible
 
   public: //####################################################################################### DEBUG ONLY ####################################
@@ -266,7 +297,7 @@ namespace pheno{
     
 #endif    
     
-    return result;
+    return result*k_factor(mzp); //Multiply by kfactor
   }
   
   
@@ -341,7 +372,7 @@ namespace pheno{
     Cuhre(dimint, dimres, &integrand_theo<PartialCrossX>, &int_pars, 1, acc, EPSABS, 0|4 , 0, 50000, 11, "", NULL, &nregions, &neval, &fail, integral, err, prob);
     std::cout<<"Integral "<<integral[0]<<" Error: "<<err[0]<<std::endl; //######################## DEBUG
 
-    return integral[0];
+    return integral[0]*k_factor(mzp); //Multiply by kfactor
   }
   
   
@@ -425,7 +456,7 @@ namespace pheno{
       std::cout<<"Integral "<<integral[0]<<" Error: "<<err[0]<<std::endl; //######################## DEBUG
     }
     
-    return integral[0];
+    return integral[0]*k_factor(mzp); //Multiply by kfactor
   }
   
 

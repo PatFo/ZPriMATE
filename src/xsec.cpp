@@ -271,6 +271,7 @@ pheno::HadronXSec::HadronXSec(fundamental::fermionExt* f_out, pheno::ZpModel* p_
   accuracy_goal = 1e-2;  //Default numerica integ accuracy
   calls = 3000; //Default value for calls per monte carlo integration point
   Epp = Ecoll;
+  mzp = p_model->mzp_();
   //Allocate parpxsec->sigSM(Ecm)tonic cross sections
   dxsec = new pheno::PartonXSec(&(p_model->d), f_out, p_model);
   uxsec = new pheno::PartonXSec(&(p_model->u), f_out, p_model);
@@ -304,6 +305,7 @@ pheno::HadronXSec & pheno::HadronXSec::operator=(pheno::HadronXSec &assignment) 
     double loc_accuracy_goal = assignment.accuracy_goal;
     size_t loc_calls = assignment.calls;
     double loc_Epp = assignment.Epp;
+    double mzp = assignment.mzp;
 
     pheno::PartonXSec *loc_dxsec = new pheno::PartonXSec(*(assignment.dxsec));
     pheno::PartonXSec *loc_uxsec = new pheno::PartonXSec(*(assignment.uxsec));
