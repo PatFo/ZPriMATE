@@ -153,7 +153,7 @@ int main(int argc, char** argv){
   }
   else if (input.proc_id() == 0)        // JETS   ->  vector containing cross section objects for each quark
   {
-    fptr = &mu_smear;
+    fptr = 0x0;
     cs.push_back( new pheno::HadronXSec(&(model->u), model, pdfset, input.ebeam()) );
     cs.push_back( new pheno::HadronXSec(&(model->d), model, pdfset, input.ebeam()) );
     cs.push_back( new pheno::HadronXSec(&(model->c), model, pdfset, input.ebeam()) );
