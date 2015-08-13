@@ -69,6 +69,43 @@ void ZpModel::setup_flst()
 }
 
 
+// Helper function for identification of fermion type to assign proper matrices
+// Returns pair indicating <type, familyIndex>
+std::pair<std::string,unsigned int> ZpModel::fermionType(std::string name) {
+  
+  std::pair<std::string,unsigned int>result;
+  
+  if(name=="up" || name == "charm" || name == "top") {
+    result.first = "UP";
+  }
+  else if (name=="down" || name == "strange" || name == "bottom") {
+    result.first = "DOWN";
+  }
+  else if (name == "electron" || name == "muon" || name == "tauon") {
+    result.first = "LEP";
+  }
+  else if (name == "nu_el" || name == "nu_mu" || name == "nu_tau") {
+    result.first = "NEU";
+  } else {
+    throw std::runtime_error("ERROR: Couldn't assign fermion type to "+name+".");
+  }
+
+  if(name=="up" || name == "down" || name == "electron" || name == "nu_el") {
+    result.second = 0;
+  }
+  else if (name=="charm" || name == "strange" || name == "muon" || name == "nu_mu") {
+    result.second = 1;
+  }
+  else if (name == "top" || name == "bottom" || name == "tauon" || name == "nu_tau") {
+    result.second = 2;
+  }
+  else {
+    throw std::runtime_error("ERROR: Couldn't assign fermion family index to "+name+".");
+  }
+  
+  return result;
+}
+
 
 
 //Constructor: Setup model with configuration file specifying couplings
@@ -80,54 +117,99 @@ ZpModel::ZpModel(const char* configfile): bsm_parameters(0.1, 1500, 0) /*partial
   setup_flst();
 
   //Get model configuration from config file
-  conf_reader reader(configfile);
-  dict init = reader.get_config();
-  std::printf("\nReading configuration file %s\n", configfile);
   
-  //Set up MODEL PARAMETERS
-  dict::iterator it= init.find("model_parameters");
-  if(it == init.end())
+  std::printf("\nReading configuration file %s\n", configfile);
+  conf_reader reader(configfile);
+  dict config = reader.get_config();
+
+  if(!reader.couplingUniversal()){
+    throw std::runtime_error("ERROR: Non-universal couplings are not yet supported.");
+  }
+  
+  //Set GEBERAK model parameters
+  dict::iterator it= config.find("GENERAL");
+  if(it == config.end())
   {
     std::printf("No model parameters specified. Using default:\n");
   }
   else
   {
     std::printf("Setting model parameters:\n");
-    set_gx( (it->second)["gx"] );
-    set_mzp( (it->second)["mzp"] );
-    set_mixing( (it->second)["chi"] );
-    set_whid( (it->second)["whid"] );
+    set_mzp( (it->second)[0] );
+    set_gx( (it->second)[1] );
+    set_mixing( (it->second)[2] );
+    set_whid( (it->second)[3] );
+    // bare mixing mass is optional
+    // Not yet implemented
+    if((it->second).size()==5) {
+      set_dm( (it->second)[4] );
+    }
   }
-  std::printf("\n\t%-10s %-10s\n\t%-10s|%-10g\n\t%-10s|%-10g\n\t%-10s|%-10g\n\n", "Parameter", "Value", "mzp", mzp_(), "gx", gx_(), "mixing", mixing_());
+  
+  std::printf(
+	      "\n"
+	      "\t%-10s %-10s\n"
+	      "\t%-10s|%-10g\n"
+	      "\t%-10s|%-10g\n"
+	      "\t%-10s|%-10g\n"
+	      "\t%-10s|%-10g\n\n",
+	      "Parameter", "Value",
+	      "mzp", mzp_(),
+	      "gx", gx_(),
+	      "mixing", mixing_(),
+	      "whid", whid_()
+	      );
     
   //Applying FERMION CONFIGURATION:
   //Iterate over the whole fermion list and check for initialization values passed in config file
   std::printf("Calculating vector couplings:\n\n");
-  std::printf("\t%-10s %-8s %-5s %-5s %-10s %-10s %-10s %-10s %-10s\n","Fermion", "mass", "cxl", "cxr", "qgam/e", "qzl", "qzr", "qzpl", "qzpr");
+  
+  std::printf("\t%-10s %-8s %-5s %-5s %-10s %-10s %-10s %-10s %-10s\n",
+	      "Fermion", "mass", "cxl", "cxr", "qgam/e", "qzl", "qzr", "qzpl", "qzpr"
+	      );
   for (fermion_list::iterator ferms=flst.begin(); ferms!=flst.end(); ++ferms)
   {
-    it = init.find(ferms->first);  //Fermion label(string)
-    if(it == init.end()) //No start parameters found
-    {
-      std::printf("\tUsing default:\n");
-    }
+    std::pair<std::string,unsigned int> fermType = fermionType(ferms->first);
+    std::string type = fermType.first;
+    unsigned int famIndex = fermType.second;
+
+    // Left handed coupling
+    it = config.find((type+"L").c_str());  //Fermion label(string)
+    
+    if(it == config.end()) //No start parameters found
+      {
+	std::printf("\tUsing default:\n");
+      }
     else
-    {
-      //Set new fermion parameters
-      (ferms->second)->update_xlcharge( (it->second)["cxl"] );
-      (ferms->second)->update_xrcharge( (it->second)["cxr"] );
-//       if( !(it->second)["massive"] ) //Check whether massless
-//       {
-//         (ferms->second)->change_mass(0);
-//       }
-    }
+      {
+	//Set new fermion parameters
+	(ferms->second)->update_xlcharge( (it->second)[famIndex] );
+     }
+
+    // Right handed coupling
+    it = config.find((type+"R").c_str());  //Fermion label(string)
+    
+    if(it == config.end()) //No start parameters found
+      {
+	std::printf("\tUsing default:\n");
+      }
+    else
+      {
+	//Set new fermion parameters
+	(ferms->second)->update_xrcharge( (it->second)[famIndex] );
+     }
+
     //Initialize fermion vector couplings
     (ferms->second)->set_vecc( new fundamental::vcoeff( *(ferms->second), *this) );   
     
     //Print fermion parameters after initialization
-    std::printf("\t%-10s|%-8g|%-5g|%-5g|%-10g|%-10g|%-10g|%-10g|%-10g\n"
-                ,ferms->first.c_str(), (ferms->second)->m(), (ferms->second)->get_xlcharge(), (ferms->second)->get_xrcharge(), ((ferms->second)->vecc()).q_gam/e_()
-                ,((ferms->second)->vecc()).q_zl,((ferms->second)->vecc()).q_zr, ((ferms->second)->vecc()).q_zpl,((ferms->second)->vecc()).q_zpr);     
+    std::printf("\t%-10s|%-8g|%-5g|%-5g|%-10g|%-10g|%-10g|%-10g|%-10g\n",
+		ferms->first.c_str(), (ferms->second)->m(),
+		(ferms->second)->get_xlcharge(), (ferms->second)->get_xrcharge(),
+		((ferms->second)->vecc()).q_gam/e_(),
+		((ferms->second)->vecc()).q_zl, ((ferms->second)->vecc()).q_zr,
+		((ferms->second)->vecc()).q_zpl, ((ferms->second)->vecc()).q_zpr
+		);     
   } 
   
   //Initialize widths to -1 ("not yet calculated")

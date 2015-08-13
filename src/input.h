@@ -5,7 +5,8 @@
 #include <string>
 #include <vector>
 
-typedef  std::map<std::string, double>  parmap;
+// integer index for parameters
+typedef std::map<unsigned int, double>  parmap;
 typedef std::map<std::string, parmap >  dict;
 
 typedef std::map<std::string, std::vector<std::string> > strmap;
@@ -20,8 +21,14 @@ typedef std::map<std::string, std::vector<std::string> > strmap;
 class conf_reader{
   private:
     dict config;
+  // Flags for input scheme
+  void extract_config(dict &config, std::ifstream &istr);
+  bool fullInput;
+
   
   public:
+  // Check if ALL couplings are diagonal and family universal
+  bool couplingUniversal();
     dict get_config();
     //Constructor
     conf_reader(const char* filename);

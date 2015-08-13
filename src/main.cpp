@@ -50,6 +50,43 @@ double el_smear(double mu, double x)
   return gaussian(mu, x, sigma);
 }
 
+// Intermediate dijet resolution, i.e. variance of gaussian
+// This includes only smearing but nothing else
+double dijet_resolution(double x)
+{
+  double 
+    a = 0.00109900233544, 
+    b = 1.1507949966, 
+    c = 47.2285104911,
+    resolution = x * sqrt( a + b / x + c / pow(x,2) )
+    ;
+  return resolution;
+}
+
+// Complete shape function for dijets
+// parameter mu: central value, x: position to evaluate function
+double dijet_shape(double mu, double x)
+{
+  // Preliminary values
+  double
+    alpha = 0.3,
+    n = 10.0,
+    norm = 1.0,
+    t,a,b
+    ;
+  // Relative distance to central value
+  t = ( x - mu )/dijet_resolution(mu);
+
+  // Determine if power law or gaussian
+  if ( t >= alpha ) {
+    return norm * exp(-0.5 * pow(t,2) );
+  } else {
+    a = pow( n/alpha ,n ) * exp(-0.5*pow(alpha,2));
+    b = n/alpha - alpha;
+    return norm*(a / pow(b-t , n));
+  }
+}
+
 // Check if file exists
 
 inline bool fileExists(const std::string& name) {

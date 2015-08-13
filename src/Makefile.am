@@ -4,7 +4,7 @@ BUILDDIR = build
 CUBATUREDIR = cubature
 
 
-AM_CPPFLAGS = -I$(top_srcdir)/$(MSTWDIR) -I$(top_srcdir)/$(CUBADIR) 
+AM_CPPFLAGS = -I$(top_srcdir)/$(MSTWDIR) -I$(top_srcdir)/$(CUBADIR)
 # AM_LDFLAGS =  @BOOST_FILESYSTEM_LIB@
 # AM_LDFLAGS +=  @BOOST_SYSTEM_LIB@
 

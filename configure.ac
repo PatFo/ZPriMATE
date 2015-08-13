@@ -1,7 +1,7 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_INIT([ZPriMATE], [0.1], [foldenauer@thphys.uni-heidelberg.de])
-AM_INIT_AUTOMAKE([-Wall -Werror foreign])
+AM_INIT_AUTOMAKE([-Wall -Werror foreign subdir-objects])
 
 #Checking for the compiler
 AC_PROG_CC(clang  gcc)
@@ -56,12 +56,13 @@ case $host_os in
   darwin* )
         # Do something specific for mac
         AC_MSG_RESULT([[Oh-oh, we are on mac: ][$host_os]]) 
-        CXXFLAGS="$CXXFLAGS -stdlib=libc++"
+        CXXFLAGS="$CXXFLAGS -stdlib=libc++ -std=c++11"
         AC_DEFINE([MAC_SYS], [1], [Variable state is 1 if platform is Mac Osx])
         ;;
   linux*)
         # Do something specific for linux
-        AC_MSG_RESULT([[We are on linux: ][$host_os]]) 
+        AC_MSG_RESULT([[We are on linux: ][$host_os]])
+	CXXFLAGS="$CXXFLAGS -std=c++11"
         AC_DEFINE([MAC_SYS], [0], [Variable state is 1 if platform is Mac Osx])
         ;;
    *BSD*)

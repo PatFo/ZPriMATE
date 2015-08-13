@@ -65,7 +65,7 @@ namespace pheno {
     ///Pass the binning scheme functor as temnplate argument 'Binning' and the class whose function gets plotted as argument 'T'
     ///Pass the function as a pointer
     private:
-      const static double reldiff=1e2; //Maximum rel difference between two consecutive bins before switch
+      constexpr static double reldiff=1e2; //Maximum rel difference between two consecutive bins before switch
       T * pobj;
       double (T::* pfunc)(double, double, double, double(*)(double, double), int);
       double(* psmear)(double, double);
