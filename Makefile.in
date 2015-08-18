@@ -834,6 +834,8 @@ uninstall-am: uninstall-dist_docDATA uninstall-local
 	uninstall-dist_docDATA uninstall-local
 
 
+.IGNORE: config.h.in
+
 all: all-local
 
 #From the Cuba package build only the libcub.a; rest is not necessary

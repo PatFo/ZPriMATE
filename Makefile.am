@@ -8,6 +8,8 @@ dist_doc_DATA = README.md
 CUBADIR = Cuba-4.2
 binary = zprimate
 
+.IGNORE: config.h.in
+
 all: all-local
 
 #From the Cuba package build only the libcub.a; rest is not necessary
