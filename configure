@@ -701,7 +701,6 @@ ac_user_opts='
 enable_option_checking
 enable_silent_rules
 enable_dependency_tracking
-with_python
 '
       ac_precious_vars='build_alias
 host_alias
@@ -1340,11 +1339,6 @@ Optional Features:
                           do not reject slow dependency extractors
   --disable-dependency-tracking
                           speeds up one-time build
-
-Optional Packages:
-  --with-PACKAGE[=ARG]    use PACKAGE [ARG=yes]
-  --without-PACKAGE       do not use PACKAGE (same as --with-PACKAGE=no)
-  --with-python=CMD       name of python executable
 
 Some influential environment variables:
   CC          C compiler command
@@ -4244,67 +4238,7 @@ fi
 #AX_BOOST_SYSTEM
 
 #Check for Python
-
-# Check whether --with-python was given.
-if test "${with_python+set}" = set; then :
-  withval=$with_python;
-else
-  with_python=no
-fi
-
-  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for python" >&5
-$as_echo_n "checking for python... " >&6; }
-  if test "x$with_python" != xno && test -x "$with_python"; then
-    PYTHON="$with_python"
-    { $as_echo "$as_me:${as_lineno-$LINENO}: result: $PYTHON" >&5
-$as_echo "$PYTHON" >&6; }
-
-  else
-    # Extract the first word of "python", so it can be a program name with args.
-set dummy python; ac_word=$2
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
-$as_echo_n "checking for $ac_word... " >&6; }
-if ${ac_cv_path_PYTHON+:} false; then :
-  $as_echo_n "(cached) " >&6
-else
-  case $PYTHON in
-  [\\/]* | ?:[\\/]*)
-  ac_cv_path_PYTHON="$PYTHON" # Let the user override the test with a path.
-  ;;
-  *)
-  as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
-for as_dir in $PATH
-do
-  IFS=$as_save_IFS
-  test -z "$as_dir" && as_dir=.
-    for ac_exec_ext in '' $ac_executable_extensions; do
-  if as_fn_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
-    ac_cv_path_PYTHON="$as_dir/$ac_word$ac_exec_ext"
-    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
-    break 2
-  fi
-done
-  done
-IFS=$as_save_IFS
-
-  test -z "$ac_cv_path_PYTHON" && ac_cv_path_PYTHON="python"
-  ;;
-esac
-fi
-PYTHON=$ac_cv_path_PYTHON
-if test -n "$PYTHON"; then
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $PYTHON" >&5
-$as_echo "$PYTHON" >&6; }
-else
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; }
-fi
-
-
-    { $as_echo "$as_me:${as_lineno-$LINENO}: result: $PYTHON" >&5
-$as_echo "$PYTHON" >&6; }
-  fi
-
+PY_PROG_PYTHON(2.7.3, ,as_fn_error $? "You need Python >= 2.7.3 to run ZPriMATE. Use --with-python and refer to a valid python binary." "$LINENO" 5 )
 
 
 
@@ -4569,44 +4503,8 @@ $as_echo "$am_cv_python_pyexecdir" >&6; }
 
 #Check for Python modules
 #PY_PYTHON_IMPORT_CHECK(scipy.optimize, [from scipy.optimize import minimize, brentq])
-
-    module=numpy
-    scriptCode="import numpy"
-    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for Python module $module" >&5
-$as_echo_n "checking for Python module $module... " >&6; }
-    rv=`$PYTHON -c "import sys; \
-$scriptCode "`
-    if test "$?" != "0"; then
-        { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; }
-        as_fn_error $? "You need the following python module available
-
-$module
-
-Please install this module and then rerun configure." "$LINENO" 5
-    fi
-    { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
-$as_echo "yes" >&6; }
-
-
-    module=matplotlib
-    scriptCode="from matplotlib import pyplot as plt"
-    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for Python module $module" >&5
-$as_echo_n "checking for Python module $module... " >&6; }
-    rv=`$PYTHON -c "import sys; \
-$scriptCode "`
-    if test "$?" != "0"; then
-        { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; }
-        as_fn_error $? "You need the following python module available
-
-$module
-
-Please install this module and then rerun configure." "$LINENO" 5
-    fi
-    { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
-$as_echo "yes" >&6; }
-
+PY_PYTHON_IMPORT_CHECK(numpy, import numpy)
+PY_PYTHON_IMPORT_CHECK(matplotlib, from matplotlib import pyplot as plt)
 
 
 
