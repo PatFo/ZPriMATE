@@ -127,7 +127,7 @@ ZPMSYS =  os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
 wdir = os.path.expanduser("~") +"/KINETIC_MIXING"
 if proc==1:
   wdir=wdir + "_EE"
-if proc==2:
+elif proc==2:
   wdir=wdir + "_MM"  
 else:
   sys.exit("\nERROR: INVALID INPUT!\nProcess key on input:\n\t1 = ee\n\t2 = mu mu\n")
