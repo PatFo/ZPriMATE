@@ -24,14 +24,29 @@ class conf_reader{
   // Flags for input scheme
   void extract_config(dict &config, std::ifstream &istr);
   bool fullInput;
-
-  
+  // Flag to identify if there are universal couplings
+  // e.g. QUARK, LEPTON, LEPTONR
+  // QUARK|QUARKL|QUARKR|LEPTON|LEPTONL|LEPTONR
+  unsigned int CouplingFlag;
+  unsigned int getFlag(std::string blockName);
+  unsigned int updateFlag(std::string blockName);
+  void checkFlag(unsigned int flag);
+  void addConfig(std::string, parmap);
   public:
   // Check if ALL couplings are diagonal and family universal
   bool couplingUniversal();
-    dict get_config();
-    //Constructor
-    conf_reader(const char* filename);
+
+  // These methods do NOT check for diagonal or family universal but merely
+  // offer a tool for a quick readout of the flag
+  bool QuarkUni();
+  bool QuarkLeftUni();
+  bool QuarkRightUni();
+  bool LeptonUni();
+  bool LeptonLeftUni();
+  bool LeptonRightUni();
+  dict get_config();
+  //Constructor
+  conf_reader(const char* filename);
   
 };
 

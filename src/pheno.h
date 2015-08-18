@@ -131,7 +131,7 @@ namespace pheno{
     // Helper function to identify fermion type, i.e. up-type, charged lepton, etc.
     // and set family type
     
-    std::pair<std::string,unsigned int> fermionType(std::string name);
+    std::tuple<std::string,unsigned int,int> fermionType(std::string name);
     
     
       //Zp width related

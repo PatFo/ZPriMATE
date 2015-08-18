@@ -3,7 +3,7 @@
 #include "pheno.h"
 #include <cstdio>
 #include <cmath>
-
+#include <iostream>
 using namespace pheno;
 
 
@@ -71,38 +71,51 @@ void ZpModel::setup_flst()
 
 // Helper function for identification of fermion type to assign proper matrices
 // Returns pair indicating <type, familyIndex>
-std::pair<std::string,unsigned int> ZpModel::fermionType(std::string name) {
-  
-  std::pair<std::string,unsigned int>result;
+std::tuple<std::string,unsigned int,int> ZpModel::fermionType(std::string name) {
+  std::string type;
+  unsigned int familyInd;
+  int pdgID;
   
   if(name=="up" || name == "charm" || name == "top") {
-    result.first = "UP";
+    type = "UP";
   }
   else if (name=="down" || name == "strange" || name == "bottom") {
-    result.first = "DOWN";
+    type = "DOWN";
   }
   else if (name == "electron" || name == "muon" || name == "tauon") {
-    result.first = "LEP";
+    type = "LEP";
   }
   else if (name == "nu_el" || name == "nu_mu" || name == "nu_tau") {
-    result.first = "NEU";
+    type = "NEU";
   } else {
     throw std::runtime_error("ERROR: Couldn't assign fermion type to "+name+".");
   }
 
   if(name=="up" || name == "down" || name == "electron" || name == "nu_el") {
-    result.second = 0;
+    familyInd = 0;
   }
   else if (name=="charm" || name == "strange" || name == "muon" || name == "nu_mu") {
-    result.second = 1;
+    familyInd = 1;
   }
   else if (name == "top" || name == "bottom" || name == "tauon" || name == "nu_tau") {
-    result.second = 2;
+    familyInd = 2;
   }
   else {
     throw std::runtime_error("ERROR: Couldn't assign fermion family index to "+name+".");
   }
+
+  if (type=="DOWN"){
+    pdgID = 1+2*familyInd;
+  } else if( type=="UP"){
+    pdgID = 2+2*familyInd;
+  } else if( type == "LEP") {
+    pdgID = 11 + 2*familyInd;
+  } else if(type == "NEU") {
+    pdgID = 12 + 2*familyInd;
+  }
   
+    
+  std::tuple<std::string,unsigned int,int>result=std::make_tuple(type,familyInd,pdgID);
   return result;
 }
 
@@ -122,9 +135,7 @@ ZpModel::ZpModel(const char* configfile): bsm_parameters(0.1, 1500, 0) /*partial
   conf_reader reader(configfile);
   dict config = reader.get_config();
 
-  if(!reader.couplingUniversal()){
-    throw std::runtime_error("ERROR: Non-universal couplings are not yet supported.");
-  }
+
   
   //Set GEBERAK model parameters
   dict::iterator it= config.find("GENERAL");
@@ -169,9 +180,10 @@ ZpModel::ZpModel(const char* configfile): bsm_parameters(0.1, 1500, 0) /*partial
 	      );
   for (fermion_list::iterator ferms=flst.begin(); ferms!=flst.end(); ++ferms)
   {
-    std::pair<std::string,unsigned int> fermType = fermionType(ferms->first);
-    std::string type = fermType.first;
-    unsigned int famIndex = fermType.second;
+    auto fermType = fermionType(ferms->first);
+    std::string type = std::get<0>(fermType);
+    unsigned int famIndex = std::get<1>(fermType);
+    int pdgID = std::get<2>(fermType);
 
     // Left handed coupling
     it = config.find((type+"L").c_str());  //Fermion label(string)
@@ -184,8 +196,8 @@ ZpModel::ZpModel(const char* configfile): bsm_parameters(0.1, 1500, 0) /*partial
       {
 	//Set new fermion parameters
 	(ferms->second)->update_xlcharge( (it->second)[famIndex] );
-     }
-
+      }
+    
     // Right handed coupling
     it = config.find((type+"R").c_str());  //Fermion label(string)
     
@@ -198,7 +210,7 @@ ZpModel::ZpModel(const char* configfile): bsm_parameters(0.1, 1500, 0) /*partial
 	//Set new fermion parameters
 	(ferms->second)->update_xrcharge( (it->second)[famIndex] );
      }
-
+    
     //Initialize fermion vector couplings
     (ferms->second)->set_vecc( new fundamental::vcoeff( *(ferms->second), *this) );   
     
@@ -211,6 +223,13 @@ ZpModel::ZpModel(const char* configfile): bsm_parameters(0.1, 1500, 0) /*partial
 		((ferms->second)->vecc()).q_zpl, ((ferms->second)->vecc()).q_zpr
 		);     
   } 
+
+
+  std::cout << "Check for universality" << std::endl;
+  if(!reader.couplingUniversal()){
+    throw std::runtime_error("ERROR: Non-universal couplings are not yet supported.");
+  }
+  std::cout << "Couplings are universal" << std::endl;
   
   //Initialize widths to -1 ("not yet calculated")
   partial_fwidths=NULL;

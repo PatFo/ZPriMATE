@@ -35,7 +35,13 @@ std::vector<std::string> BLOCKNAMES ={
   "LEPL",
   "LEPR",
   "NEUL",
-  "NEUR"
+  "NEUR",
+  "QUARK",
+  "QUARKL",
+  "QUARKR",
+  "LEPTON",
+  "LEPTONL",
+  "LEPTONR"
 };
 
 std::map<std::string,int> GENERALIND ={
@@ -45,6 +51,112 @@ std::map<std::string,int> GENERALIND ={
   {"whid",3},
   {"dm",4}
 };
+
+
+unsigned int conf_reader::getFlag(std::string blockname) {
+  // everything beyond BLOCKNAMES[8] is a 'big' block, i.e. for all quarks, leptons, ...
+  //  int smallInd = 8;
+  //int index=0;
+
+  // Flag to identify if there are universal couplings
+  // e.g. QUARK, LEPTON, LEPTONR
+  // QUARK|QUARKL|QUARKR|LEPTON|LEPTONL|LEPTONR
+  unsigned int flag =0;
+  for(auto iter : BLOCKNAMES){
+    if(iter== "QUARK")  flag=1<<5;
+    if(iter== "QUARKL") flag=1<<4;      
+    if(iter== "QUARKR") flag=1<<3;
+    if(iter== "LEPTON") flag=1<<2;
+    if(iter== "LEPTONR") flag=1<<1;
+    if(iter== "LEPTONR") flag=1;
+  }
+}
+void conf_reader::checkFlag(unsigned int flag){
+  std::string error_msg;
+  if(flag>7) throw std::runtime_error("ERROR: Coupling flag not recognized! "
+				      "Please check your input file for sanity.");
+  switch(flag){
+  case 5:
+    error_msg="Both global and right chiral couplings are set. "
+      "Please avoid duplicate entries in config file.";
+    break;
+  case 6:
+    error_msg="Both global and left chiral couplings are set. "
+      "Please avoid duplicate entries in config file.";
+    break;
+  case 7:
+    error_msg="Global and both chiral couplings are set. "
+      "Please avoid duplicate entries in config file.";
+    break;
+  default:
+    return;
+  }
+  throw std::runtime_error(("ERROR: "+error_msg).c_str());
+}
+
+unsigned int conf_reader::updateFlag(std::string blockname) {
+  // update flag
+  CouplingFlag = CouplingFlag | getFlag(blockname);
+
+  // Checkf if input makes sense
+  unsigned int LepFlag = CouplingFlag & 7; // All LeptonFlags == 7
+  unsigned int QuarkFlag = (CouplingFlag & 86)>>3; // All Quark Flags == 86
+  checkFlag(LepFlag);
+  checkFlag(QuarkFlag);
+  return CouplingFlag;
+}
+
+bool conf_reader::QuarkUni(){
+  if(CouplingFlag==32) return true;
+  return false;
+};
+bool conf_reader::QuarkLeftUni(){
+  if(CouplingFlag==16 || CouplingFlag== 48) return true;
+  return false;
+};
+bool conf_reader::QuarkRightUni(){
+  if(CouplingFlag==8 || CouplingFlag==40) return true;
+  return false;
+};
+bool conf_reader::LeptonUni(){
+  if(CouplingFlag==4) return true;
+  return false;
+};
+bool conf_reader::LeptonLeftUni()
+  {
+  if(CouplingFlag==2 || CouplingFlag==6) return true;
+  return false;
+};
+bool conf_reader::LeptonRightUni(){
+  if(CouplingFlag==1 || CouplingFlag==5) return true;
+  return false;
+};
+
+void conf_reader::addConfig(std::string blockName ,parmap map){
+  if(blockName == "QUARK") {
+    addConfig("QUARKL",map);
+    addConfig("QUARKR",map);
+  } else if( blockName == "QUARKL") {
+    addConfig("DOWNL",map);
+    addConfig("UPL",map);
+  } else if( blockName == "QUARKR") {
+    addConfig("DOWNR",map);
+    addConfig("UPR",map);
+  } if(blockName == "LEPTON") {
+    addConfig("LEPTONL",map);
+    addConfig("LEPTONR",map);
+  } else if( blockName == "LEPTONL") {
+    addConfig("LEPL",map);
+    addConfig("NEUL",map);
+  } else if( blockName == "LEPTONR") {
+    addConfig("LEPR",map);
+    addConfig("LEPR",map);
+  } else {
+    std::cout << "Adding config of " << blockName << std::endl;
+    config[blockName]=map;
+  }
+}
+
 
 //**************************************//
 //         CONFIG READER                //  
@@ -72,19 +184,23 @@ int split_line(const char** itemlist,  char* line , const char* const DELIMS)
 bool conf_reader::couplingUniversal(){
   // If only simple input scheme was chosen the couplings are universal by definition
   if(!fullInput) return true;
-  for (auto iter = BLOCKNAMES.begin(); iter!=BLOCKNAMES.end();iter++){
-    if((*iter).compare("GENERAL")==0) continue;
+  for (auto iter:BLOCKNAMES){
+    if(iter.compare("GENERAL")==0) continue;
     
-    auto it = config.find(*iter);
+    auto it = config.find(iter);
     // Check if coupling was specified/is in config
     if (it==config.end()) continue;
+
+   
     auto pars = it->second;
+    int size = pars.size();
+    
     // Check if diagonal are equal
-    for (int i=1;i<=2;i++){
+    for (int i=1;i<=2;i++) {
       if (pars[0]!=pars[i]) return false;
     }
-    for (int i=3;i<=pars.size();i++){
-      if (pars[0]!=pars[i]) return false;
+    for (int i=3;i<size;i++) {
+      if (pars[i]>0.0) return false;
     }
   }
 
@@ -131,6 +247,7 @@ void conf_reader::extract_config(dict &config, std::ifstream &istr)
 	while(iter!=BLOCKNAMES.end()) {
 	  if(blockName.compare(*iter)==0){
 	    found = true;
+	    updateFlag(blockName);
 	  }
 	iter++;
 	}
@@ -138,7 +255,8 @@ void conf_reader::extract_config(dict &config, std::ifstream &istr)
 	  throw std::runtime_error("ERROR: Block '"+
 				   blockName+
 				   "' is defined a second time in line "+
-				   std::to_string(lineNumber)+".");
+				   std::to_string(lineNumber)+". "
+				   "This may also happen if a global block like $QUARK(X) or $LEPTON(X) was used prior to this initialization.");
 	}
 	
 	if (!found) {
@@ -243,9 +361,9 @@ void conf_reader::extract_config(dict &config, std::ifstream &istr)
 	itemmap[2] = itemmap[0];
       }
 
-      //Fill the dictionary with the class and corresponding item map
-      config[blockName]=itemmap;
-    }   
+
+      addConfig(blockName,itemmap);
+    } 
   }
 }
 
@@ -258,6 +376,7 @@ conf_reader::conf_reader(const char* filename)
 //Implementation of constructor for reader
 {
   fullInput=false;
+  CouplingFlag=0;
   std::ifstream ifs(filename);
   
   //Check whether specified file is readable. Else raise error and exit.
@@ -279,10 +398,6 @@ dict conf_reader::get_config()
 {
   return config;
 }
-
-
-
-
 
   //**************************************//
   //         START FILE READER            //
