@@ -21,11 +21,9 @@
 using namespace std;
 
 
-
-
-
 //SMEARING FUNCTIONS FOR DIFFERENT PARTICLE TYPES
 //-------------------------------------------------------------
+
 
 //Gaussian distribution
 double gaussian(double mu, double x, double sigma) 

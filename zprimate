@@ -48,7 +48,7 @@ limdir = ""
 eff = ""
 
 #Check for plot file and generate plots
-print "Generating plots from temporary file %s:"%inp
+#print "Generating plots from temporary file %s:"%inp
 
 with open(inp,'r') as openedFile:
   fno = 0

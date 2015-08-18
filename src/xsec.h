@@ -25,9 +25,10 @@
 
 #define EPSABS 0.0
 
+
 namespace pheno{
-  
-  
+
+
   const double GeV2fb =  0.3894e12;
   
   //*******************************************************//
@@ -422,7 +423,7 @@ namespace pheno{
     else if(strat==2)
     {
       Suave(dimint, dimres, &integrand_cuba<PartialCrossX>, &int_pars, 1, acc, EPSABS, 0 | 4, 0,   0, 50000, 1000, 2, 25, "", NULL,  &nregions, &neval, &fail, integral, err, prob);
-      std::cout<<"Integral "<<integral[0]<<" Error: "<<err[0]<<std::endl; //######################## DEBUG
+      //std::cout<<"Integral "<<integral[0]<<" Error: "<<err[0]<<std::endl; //######################## DEBUG
     }
     
     return integral[0];

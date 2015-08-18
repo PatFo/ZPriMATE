@@ -16,4 +16,4 @@ core_SOURCES = main.cpp \
 	xsec.cpp  xsec.h \
 	../mstw/mstwpdf.cc ../mstw/mstwpdf.h \
 	../Cuba-4.2/cuba.h
-core_LDADD = $(top_srcdir)/$(CUBADIR)/libcuba.a 
+core_LDADD = ../Cuba-4.2/libcuba.a 

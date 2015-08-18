@@ -97,7 +97,7 @@ am_core_OBJECTS = main.$(OBJEXT) input.$(OBJEXT) model.$(OBJEXT) \
 	pheno.$(OBJEXT) spectrum_analysis.$(OBJEXT) xsec.$(OBJEXT) \
 	../mstw/mstwpdf.$(OBJEXT)
 core_OBJECTS = $(am_core_OBJECTS)
-core_DEPENDENCIES = $(top_srcdir)/$(CUBADIR)/libcuba.a
+core_DEPENDENCIES = ../Cuba-4.2/libcuba.a
 AM_V_P = $(am__v_P_@AM_V@)
 am__v_P_ = $(am__v_P_@AM_DEFAULT_V@)
 am__v_P_0 = false
@@ -286,7 +286,7 @@ core_SOURCES = main.cpp \
 	../mstw/mstwpdf.cc ../mstw/mstwpdf.h \
 	../Cuba-4.2/cuba.h
 
-core_LDADD = $(top_srcdir)/$(CUBADIR)/libcuba.a 
+core_LDADD = ../Cuba-4.2/libcuba.a 
 all: all-am
 
 .SUFFIXES:

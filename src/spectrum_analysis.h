@@ -9,7 +9,25 @@
 
 
 namespace pheno {
+    
+
+  inline void printProgBar( int percent ){
+    std::string bar;
   
+    for(int i = 0; i < 50; i++){
+      if( i < (percent/2)){
+	bar.replace(i,1,"=");
+      }else if( i == (percent/2)){
+	bar.replace(i,1,">");
+      }else{
+	bar.replace(i,1," ");
+      }
+    }
+    
+    std::clog<< "\r" "[" << bar << "] ";
+    std::clog.width( 3 );
+    std::clog<< percent << "%     " << std::flush;
+  } 
   
   
   typedef std::vector<double*> sampling_scheme;
@@ -95,9 +113,12 @@ namespace pheno {
     binning bincopy(*pbins);
     //Create a container of binning size to store results
     std::vector<double> prediction(length);
-
+    double progress=0;
+    std::printf("Starting integration:");
     for(int i1=0; i1<length; ++i1)
       {
+	progress = ((double)i1+1)/((double)length);
+	printProgBar(progress*100);
         //Allocating private copies of all pointers in the game to be used by each thread
         
         //Get lower and upper bound of bin
@@ -108,6 +129,8 @@ namespace pheno {
         //The cross section is given in [fb]; multiply by factor=luminosity to obtain events
         prediction[i1] = (pobj->* pfunc)(low, high, acc, psmear, 2) * factor;
       }
+    // Newline for progressbar
+    std::clog << std::endl << std::endl;
 
     //Write the prediction to file
     std::printf("Writing data to %s ...\n", outfile); 
