@@ -188,11 +188,7 @@ ZpModel::ZpModel(const char* configfile): bsm_parameters(0.1, 1500, 0) /*partial
     // Left handed coupling
     it = config.find((type+"L").c_str());  //Fermion label(string)
     
-    if(it == config.end()) //No start parameters found
-      {
-	std::printf("\tUsing default:\n");
-      }
-    else
+    if(it != config.end()) //No start parameters found
       {
 	//Set new fermion parameters
 	(ferms->second)->update_xlcharge( (it->second)[famIndex] );
@@ -201,11 +197,7 @@ ZpModel::ZpModel(const char* configfile): bsm_parameters(0.1, 1500, 0) /*partial
     // Right handed coupling
     it = config.find((type+"R").c_str());  //Fermion label(string)
     
-    if(it == config.end()) //No start parameters found
-      {
-	std::printf("\tUsing default:\n");
-      }
-    else
+    if(it != config.end()) //No start parameters found
       {
 	//Set new fermion parameters
 	(ferms->second)->update_xrcharge( (it->second)[famIndex] );
@@ -224,12 +216,12 @@ ZpModel::ZpModel(const char* configfile): bsm_parameters(0.1, 1500, 0) /*partial
 		);     
   } 
 
-
-  std::cout << "Check for universality" << std::endl;
+  // Check if couplings are universal
+  // This is only a temporary check until implemented
+  
   if(!reader.couplingUniversal()){
     throw std::runtime_error("ERROR: Non-universal couplings are not yet supported.");
   }
-  std::cout << "Couplings are universal" << std::endl;
   
   //Initialize widths to -1 ("not yet calculated")
   partial_fwidths=NULL;

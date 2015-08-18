@@ -70,7 +70,9 @@ unsigned int conf_reader::getFlag(std::string blockname) {
     if(iter== "LEPTONR") flag=1<<1;
     if(iter== "LEPTONR") flag=1;
   }
+  return flag;
 }
+
 void conf_reader::checkFlag(unsigned int flag){
   std::string error_msg;
   if(flag>7) throw std::runtime_error("ERROR: Coupling flag not recognized! "
@@ -85,7 +87,7 @@ void conf_reader::checkFlag(unsigned int flag){
       "Please avoid duplicate entries in config file.";
     break;
   case 7:
-    error_msg="Global and both chiral couplings are set. "
+    error_msg="Global, left and right chiral couplings are set. "
       "Please avoid duplicate entries in config file.";
     break;
   default:
@@ -152,7 +154,6 @@ void conf_reader::addConfig(std::string blockName ,parmap map){
     addConfig("LEPR",map);
     addConfig("LEPR",map);
   } else {
-    std::cout << "Adding config of " << blockName << std::endl;
     config[blockName]=map;
   }
 }
