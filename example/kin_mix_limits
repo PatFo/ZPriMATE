@@ -114,6 +114,8 @@ start = time.time()
 
 #Get process code: 1 = e+ e-  2 = mu+ mu-
 #proc = int(sys.argv[2])
+if len(sys.argv)!=2:
+  sys.exit("\nERROR: WRONG NUMBER OF ARGUMENTS!\nOne argument expected - process key:\n\t1 = ee\n\t2 = mu mu\n")
 proc = int(sys.argv[1])
   
 #Zprimate executable and package direcotry  
@@ -123,6 +125,13 @@ ZPMSYS =  os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
 
 #Create Result directoy in user's home 
 wdir = os.path.expanduser("~") +"/KINETIC_MIXING"
+if proc==1:
+  wdir=wdir + "_EE"
+if proc==2:
+  wdir=wdir + "_MM"  
+else:
+  sys.exit("\nERROR: INVALID INPUT!\nProcess key on input:\n\t1 = ee\n\t2 = mu mu\n")
+  
 #wdir = sys.argv[1]
 if not os.path.isdir(wdir):
   os.mkdir(wdir)
@@ -153,7 +162,7 @@ masses = np.logspace(2, 3.544, mdim)
 mixings = np.logspace(-2.3, 0, cdim)
 
 limits = open(limfile, 'w')
-line0 = "%-15s"%"Chi \ M [GeV]"
+line0 = "%-15s"%"Chi\M[GeV]"
 for m in masses:
   line0 += "%-10.1f"%m
 limits.write(line0+"\n")
