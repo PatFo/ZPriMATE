@@ -2150,8 +2150,8 @@ test "$program_suffix" != NONE &&
 ac_script='s/[\\$]/&&/g;s/;s,x,x,$//'
 program_transform_name=`$as_echo "$program_transform_name" | sed "$ac_script"`
 
-# Expand $ac_aux_dir to an absolute path.
-am_aux_dir=`cd "$ac_aux_dir" && pwd`
+# expand $ac_aux_dir to an absolute path
+am_aux_dir=`cd $ac_aux_dir && pwd`
 
 if test x"${MISSING+set}" != xset; then
   case $am_aux_dir in
@@ -4608,6 +4608,24 @@ Please install this module and then rerun configure." "$LINENO" 5
     { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 $as_echo "yes" >&6; }
 
+
+    module=scipy
+    scriptCode="from scipy.interpolate import InterpolatedUnivariateSpline"
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for Python module $module" >&5
+$as_echo_n "checking for Python module $module... " >&6; }
+    rv=`$PYTHON -c "import sys; \
+$scriptCode "`
+    if test "$?" != "0"; then
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+        as_fn_error $? "You need the following python module available
+
+$module
+
+Please install this module and then rerun configure." "$LINENO" 5
+    fi
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
 
 
 
