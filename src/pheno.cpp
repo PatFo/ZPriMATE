@@ -124,14 +124,14 @@ std::tuple<std::string,unsigned int,int> ZpModel::fermionType(std::string name) 
 //Constructor: Setup model with configuration file specifying couplings
 ZpModel::ZpModel(const char* configfile): bsm_parameters(0.1, 1500, 0) /*partial_widths(),*/  //Default values if no parameters are specified in config file
 {
-  std::printf("\n*** CONSTRUCTING MODEL ***\n");
+  std::fprintf(stderr,"\n*** CONSTRUCTING MODEL ***\n");
   
   //Initialize fermion list
   setup_flst();
 
   //Get model configuration from config file
   
-  std::printf("\nReading configuration file %s\n", configfile);
+  std::fprintf(stderr,"\nReading configuration file %s\n", configfile);
   conf_reader reader(configfile);
   dict config = reader.get_config();
 
@@ -141,11 +141,11 @@ ZpModel::ZpModel(const char* configfile): bsm_parameters(0.1, 1500, 0) /*partial
   dict::iterator it= config.find("GENERAL");
   if(it == config.end())
   {
-    std::printf("No model parameters specified. Using default:\n");
+    std::fprintf(stderr,"No model parameters specified. Using default:\n");
   }
   else
   {
-    std::printf("Setting model parameters:\n");
+    std::fprintf(stderr,"Setting model parameters:\n");
     set_mzp( (it->second)[0] );
     set_gx( (it->second)[1] );
     set_mixing( (it->second)[2] );
@@ -157,7 +157,7 @@ ZpModel::ZpModel(const char* configfile): bsm_parameters(0.1, 1500, 0) /*partial
     }
   }
   
-  std::printf(
+  std::fprintf(stderr,
 	      "\n"
 	      "\t%-10s %-10s\n"
 	      "\t%-10s|%-10g\n"
@@ -173,9 +173,9 @@ ZpModel::ZpModel(const char* configfile): bsm_parameters(0.1, 1500, 0) /*partial
     
   //Applying FERMION CONFIGURATION:
   //Iterate over the whole fermion list and check for initialization values passed in config file
-  std::printf("Calculating vector couplings:\n\n");
+  std::fprintf(stderr,"Calculating vector couplings:\n\n");
   
-  std::printf("\t%-10s %-8s %-5s %-5s %-10s %-10s %-10s %-10s %-10s\n",
+  std::fprintf(stderr,"\t%-10s %-8s %-5s %-5s %-10s %-10s %-10s %-10s %-10s\n",
 	      "Fermion", "mass", "cxl", "cxr", "qgam/e", "qzl", "qzr", "qzpl", "qzpr"
 	      );
   for (fermion_list::iterator ferms=flst.begin(); ferms!=flst.end(); ++ferms)
@@ -207,7 +207,7 @@ ZpModel::ZpModel(const char* configfile): bsm_parameters(0.1, 1500, 0) /*partial
     (ferms->second)->set_vecc( new fundamental::vcoeff( *(ferms->second), *this) );   
     
     //Print fermion parameters after initialization
-    std::printf("\t%-10s|%-8g|%-5g|%-5g|%-10g|%-10g|%-10g|%-10g|%-10g\n",
+    std::fprintf(stderr,"\t%-10s|%-8g|%-5g|%-5g|%-10g|%-10g|%-10g|%-10g|%-10g\n",
 		ferms->first.c_str(), (ferms->second)->m(),
 		(ferms->second)->get_xlcharge(), (ferms->second)->get_xrcharge(),
 		((ferms->second)->vecc()).q_gam/e_(),
@@ -228,7 +228,7 @@ ZpModel::ZpModel(const char* configfile): bsm_parameters(0.1, 1500, 0) /*partial
   higgs_width=-1.;
   wzp=-1.;
   wzp = wzp_(); // Initialize Z' width to its value in initial model
-  std::printf("\n*** MODEL CONSTRUCTED ***\n\n");
+  std::fprintf(stderr,"\n*** MODEL CONSTRUCTED ***\n\n");
 }
 
 
@@ -244,8 +244,8 @@ ZpModel::ZpModel(double mzp): bsm_parameters(0.1, mzp, 0)
   setup_flst();
   
   
-  std::printf("Sequential Standard Model couplings:\n\n");
-  std::printf("\t%-10s %-8s %-10s %-10s %-10s %-10s %-10s\n","Fermion", "mass", "qgam/e", "qzl", "qzr", "qzpl", "qzpr");
+  std::fprintf(stderr,"Sequential Standard Model couplings:\n\n");
+  std::fprintf(stderr,"\t%-10s %-8s %-10s %-10s %-10s %-10s %-10s\n","Fermion", "mass", "qgam/e", "qzl", "qzr", "qzpl", "qzpr");
   for (fermion_list::iterator ferms=flst.begin(); ferms!=flst.end(); ++ferms)
   {
     //Initialize fermion vector couplings with default values
@@ -258,11 +258,11 @@ ZpModel::ZpModel(double mzp): bsm_parameters(0.1, mzp, 0)
     (ferms->second)->set_qzpr((ferms->second)->vecc().q_zr);
     
     //Print fermion parameters after initialization
-    std::printf("\t%-10s|%-8g|%-10g|%-10g|%-10g|%-10g|%-10g\n"
+    std::fprintf(stderr,"\t%-10s|%-8g|%-10g|%-10g|%-10g|%-10g|%-10g\n"
                 ,ferms->first.c_str(), (ferms->second)->m(), ((ferms->second)->vecc()).q_gam/e_(), ((ferms->second)->vecc()).q_zl
                 ,((ferms->second)->vecc()).q_zr, ((ferms->second)->vecc()).q_zpl,((ferms->second)->vecc()).q_zpr);     
   }
-  std::printf("\n");
+  std::fprintf(stderr,"\n");
   //Initialize widths to -1 ("not yet calculated")
   partial_fwidths=NULL;
   higgs_width=-1.;
@@ -282,7 +282,7 @@ double ZpModel::calc_fwidth(fundamental::fermionExt& f)
 //   std::cout<<f.get_mass();
   if(ratio>0.5*0.5)
   {
-    std::printf("INFO: Following decay channel kinematically not possible: 2*mf>mzp !\nSet to zero:\n");
+    std::fprintf(stderr,"INFO: Following decay channel kinematically not possible: 2*mf>mzp !\nSet to zero:\n");
     return 0;
   }else{
     return mzp_()* double(f.Nc()) /(24*M_PI) * sqrt(1.-4*ratio) * ( (pow(f.vecc().q_zpl, 2) + pow(f.vecc().q_zpr, 2))*(1.-ratio) + 6*f.vecc().q_zpl*f.vecc().q_zpr*ratio );
@@ -295,7 +295,7 @@ double ZpModel::calc_zhwidth()
 {
   if(mh_()+mz_()>mzp_())
   {
-    std::printf("INFO: Zp -> Z H kinematically not possible: mz + mh > mzp !\nSet to zero:\n");
+    std::fprintf(stderr,"INFO: Zp -> Z H kinematically not possible: mz + mh > mzp !\nSet to zero:\n");
     return 0;
   }else{
     double geff = (gz_()*sin(xi_()) + g1_()*cos(xi_())*tan(mixing_()))*(gz_()*cos(xi_()) - g1_()*sin(xi_())*tan(mixing_()));
@@ -312,7 +312,7 @@ double ZpModel::calc_wwidth()
 {
   if(2*mw_()>mzp_())
   {
-    std::printf("INFO: Zp -> W+ W- kinematically not possible: 2*mw > mzp !\nSet to zero:\n");
+    std::fprintf(stderr,"INFO: Zp -> W+ W- kinematically not possible: 2*mw > mzp !\nSet to zero:\n");
     return 0;
   }else{
     double ratio = pow(mw_()/mzp_(), 2);
@@ -327,27 +327,27 @@ double ZpModel::calc_wwidth()
 //Calculate total Zp width
 void ZpModel::update_width()
 {
-    std::printf("\nCalculating Zp width:\n\n\t%-14s %-14s\n", "Decay channel", "Width [GeV]");
+    std::fprintf(stderr,"\nCalculating Zp width:\n\n\t%-14s %-14s\n", "Decay channel", "Width [GeV]");
     wzp=0;
     for(fermion_list::iterator it=flst.begin(); it!=flst.end(); ++it)
     {
       double pwidth = calc_fwidth( *(it->second) );
       wzp+= pwidth;
-      std::printf("\t%-14s|%-14g\n", it->first.c_str(), pwidth);
+      std::fprintf(stderr,"\t%-14s|%-14g\n", it->first.c_str(), pwidth);
     }
     //Higgs width
     higgs_width=calc_zhwidth();
     wzp+=higgs_width;
-    std::printf("\t%-14s|%-14g\n", "Higgs Z", higgs_width);
+    std::fprintf(stderr,"\t%-14s|%-14g\n", "Higgs Z", higgs_width);
     
     //WW width
     ww_width=calc_wwidth();
     wzp+=ww_width;
     wzp+=whid_();
-    std::printf("\t%-14s|%-14g\n", "WW", ww_width);
-    std::printf("\t%-14s|%-14g\n", "W_hidden", whid_());
+    std::fprintf(stderr,"\t%-14s|%-14g\n", "WW", ww_width);
+    std::fprintf(stderr,"\t%-14s|%-14g\n", "W_hidden", whid_());
 
-    std::printf("\t%-14s:%-14g\n\n","Total width",  wzp);
+    std::fprintf(stderr,"\t%-14s:%-14g\n\n","Total width",  wzp);
 }
 
 

@@ -134,7 +134,7 @@ void pheno::SpectrumScanner<CrossSection>::scan(char* outfile)
   {
     sampler(outfile, (*it)[0], (*it)[1], (*it)[2]);
   }
-  std::printf("Cross section scan written to %s\n", outfile);
+  std::fprintf(stderr,"Cross section scan written to %s\n", outfile);
 }
 
 

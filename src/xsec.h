@@ -340,7 +340,7 @@ namespace pheno{
     double integral[dimres], err[dimres], prob[dimres];
  
     Cuhre(dimint, dimres, &integrand_theo<PartialCrossX>, &int_pars, 1, acc, EPSABS, 0|4 , 0, 50000, 11, "", NULL, &nregions, &neval, &fail, integral, err, prob);
-    std::cout<<"Integral "<<integral[0]<<" Error: "<<err[0]<<std::endl; //######################## DEBUG
+    // std::cout<<"Integral "<<integral[0]<<" Error: "<<err[0]<<std::endl; //######################## DEBUG
 
     return integral[0];
   }
@@ -418,12 +418,12 @@ namespace pheno{
     if(strat==1)
     {
       Cuhre(dimint, dimres, &integrand_cuba<PartialCrossX>, &int_pars, 1, acc, EPSABS, 0|4 , 0, 50000, 11, "", NULL, &nregions, &neval, &fail, integral, err, prob);
-      std::cout<<"Integral "<<integral[0]<<" Error: "<<err[0]<<std::endl; //######################## DEBUG
+      // std::cout<<"Integral "<<integral[0]<<" Error: "<<err[0]<<std::endl; //######################## DEBUG
     }
     else if(strat==2)
     {
       Suave(dimint, dimres, &integrand_cuba<PartialCrossX>, &int_pars, 1, acc, EPSABS, 0 | 4, 0,   0, 50000, 1000, 2, 25, "", NULL,  &nregions, &neval, &fail, integral, err, prob);
-      //std::cout<<"Integral "<<integral[0]<<" Error: "<<err[0]<<std::endl; //######################## DEBUG
+      // std::cout<<"Integral "<<integral[0]<<" Error: "<<err[0]<<std::endl; //######################## DEBUG
     }
     
     return integral[0];

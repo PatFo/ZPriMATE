@@ -1,7 +1,7 @@
 #include <config.h>
 #include <cstring>
 #include <errno.h>
-#include <iostream>
+#include <stdio.h>
 #include <fstream>
 #include <stdexcept>
 #include <stdlib.h>
@@ -484,7 +484,7 @@ std::string abs_path(std::string path, std::string base)
 ///Read input file and extrac settings
 settings::settings(const char* startfile)
 {
-  std::printf( "Reading from input file %s ...\n", startfile);       
+  std::fprintf(stderr, "Reading from input file %s ...\n", startfile);       
   
   std::ifstream input(startfile);
   //Check whether specified file is readable. Else raise error and exit.
@@ -558,14 +558,14 @@ settings::settings(const char* startfile)
 //     _odir = getenv("HOME");
     _odir = basepath;
     _odir.append("/results");    
-    if(_verb) std::printf("INFO: No output directoy specified. Defaults to %s\n\n\t Else define on input as: \'$ODIR = /absolute/path/to/dir\'\n\n", _odir.c_str());
+    if(_verb) std::fprintf(stderr,"INFO: No output directoy specified. Defaults to %s\n\n\t Else define on input as: \'$ODIR = /absolute/path/to/dir\'\n\n", _odir.c_str());
   }
   else  _odir = abs_path((it->second)[0], basepath);   
   //Check whether _odir exists; if not mkdir
   if(stat(_odir.c_str(),&st) != 0)
   {
     int status = mkdir(_odir.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH); 
-    if(status == 0 && _verb)  std::printf("Created output directory %s \n", _odir.c_str());
+    if(status == 0 && _verb)  std::fprintf(stderr,"Created output directory %s \n", _odir.c_str());
     else if (status==-1)
     {
       std::printf("ERROR: Could not create directoy %s \n", _odir.c_str());

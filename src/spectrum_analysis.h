@@ -13,20 +13,21 @@ namespace pheno {
 
   inline void printProgBar( int percent ){
     std::string bar;
-  
-    for(int i = 0; i < 50; i++){
-      if( i < (percent/2)){
+    int barSize = 40;
+    double dpercent = ((double)percent)/100;
+    for(int i = 0; i < barSize; i++){
+      if( i < (int)(dpercent*barSize)){
 	bar.replace(i,1,"=");
-      }else if( i == (percent/2)){
+      }else if( i == (int)(dpercent*barSize)){
 	bar.replace(i,1,">");
       }else{
 	bar.replace(i,1," ");
       }
     }
     
-    std::clog<< "\r" "[" << bar << "] ";
-    std::clog.width( 3 );
-    std::clog<< percent << "%     " << std::flush;
+    std::cout<< "\r" "[" << bar << "] ";
+    std::cout.width( 3 );
+    std::cout<< percent << "%" << std::flush;
   } 
   
   
@@ -114,7 +115,7 @@ namespace pheno {
     //Create a container of binning size to store results
     std::vector<double> prediction(length);
     double progress=0;
-    std::printf("Starting integration:");
+    std::fprintf(stderr,"Starting integration:");
     for(int i1=0; i1<length; ++i1)
       {
 	progress = ((double)i1+1)/((double)length);
@@ -130,17 +131,17 @@ namespace pheno {
         prediction[i1] = (pobj->* pfunc)(low, high, acc, psmear, 2) * factor;
       }
     // Newline for progressbar
-    std::clog << std::endl << std::endl;
+    std::cout << std::endl << std::endl;
 
     //Write the prediction to file
-    std::printf("Writing data to %s ...\n", outfile); 
+    std::fprintf(stderr,"Writing data to %s ...\n", outfile); 
     std::ofstream outf(outfile);
     for(int i2=0; i2<length; ++i2)
     { 
       outf<<(pbins->operator[](i2)).first<<"\t"<<(pbins->operator[](i2)).second<<"\t"<<prediction[i2]<<"\n"; 
     }
     outf.close();
-    std::printf("Finished writing to %s\n", outfile);      //#############################################v DEBUG
+    std::fprintf(stderr,"Finished writing to %s\n", outfile);      //#############################################v DEBUG
   }    
 }
 

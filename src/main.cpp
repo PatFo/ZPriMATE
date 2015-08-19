@@ -153,12 +153,12 @@ int main(int argc, char** argv){
   //Check whether SSM is to be used or if a model file was given
   if(input.use_ssm())
   {
-    if(input.verbose()) printf("Constructing Sequential Standard Model...\n\n");
+    if(input.verbose()) fprintf(stderr,"Constructing Sequential Standard Model...\n\n");
     model = new pheno::ZpModel(input.mzssm());
   }
   else
   {
-    if(input.verbose()) printf("Constructing Z' Model...\n\n");
+    if(input.verbose()) fprintf(stderr,"Constructing Z' Model...\n\n");
     model = new pheno::ZpModel(input.model().c_str());
   }
   
@@ -239,7 +239,7 @@ int main(int argc, char** argv){
   //Print total execution time
   gettimeofday(&tv, NULL);
   double t1=tv.tv_sec+(tv.tv_usec/1000000.0);     
-  printf("Signal calculation took %g s\n\n", t1-t0);
+  fprintf(stderr,"Signal calculation took %g s\n\n", t1-t0);
   
   
   
@@ -270,7 +270,7 @@ int main(int argc, char** argv){
   //Print scanning time
   gettimeofday(&tv, NULL);
   double t2=tv.tv_sec+(tv.tv_usec/1000000.0);     
-  printf("Cross section scan took %g s\n\n", t2-t1);
+  fprintf(stderr,"Cross section scan took %g s\n\n", t2-t1);
   
   
   //Free memory 
