@@ -16,37 +16,37 @@ namespace pheno{
   class down : public fundamental::fermionExt{
   /// Down-quark class that has default U(1)_X charges xlc=1, xrc=1
     public:
-      down(double xlc=1., double xrc=1., bool massive = true);
+      down(double xlc=0.0, double xrc=0.0, bool massive = true);
   };
   
   class up : public fundamental::fermionExt{
   /// Up-quark class that has default U(1)_X charges xlc=1, xrc=1
     public:
-      up(double xlc=1., double xrc=1., bool massive = true);
+      up(double xlc=0.0, double xrc=0.0, bool massive = true);
   };
   
   class strange : public fundamental::fermionExt{
   /// Strange-quark class that has default U(1)_X charges xlc=1, xrc=1
     public:
-      strange(double xlc=1., double xrc=1., bool massive = true);
+      strange(double xlc=0.0, double xrc=0.0, bool massive = true);
   };
   
   class charm : public fundamental::fermionExt{
   /// Charm-quark class that has default U(1)_X charges xlc=1, xrc=1
     public:
-      charm(double xlc=1., double xrc=1., bool massive = true);
+      charm(double xlc=0.0, double xrc=0.0, bool massive = true);
   };
   
   class bottom : public fundamental::fermionExt{
   /// Bottom-quark class that has default U(1)_X charges xlc=1, xrc=1
     public:
-      bottom(double xlc=1., double xrc=1., bool massive = true);
+      bottom(double xlc=0.0, double xrc=0.0, bool massive = true);
   };
   
   class top : public fundamental::fermionExt{
   /// Top-quark class that has default U(1)_X charges xlc=1, xrc=1
     public:
-      top(double xlc=1., double xrc=1., bool massive = true);
+      top(double xlc=0.0, double xrc=0.0, bool massive = true);
   };
 
 
@@ -59,38 +59,38 @@ namespace pheno{
   class electron : public fundamental::fermionExt{
   /// Electron class that has default U(1)_X charges xlc=1, xrc=1
     public:
-      electron(double xlc=1., double xrc=1., bool massive = true);
+      electron(double xlc=0.0, double xrc=0.0, bool massive = true);
   };
   
   class muon : public fundamental::fermionExt{
   /// Muon class that has default U(1)_X charges xlc=1, xrc=1
     public:
-      muon(double xlc=1., double xrc=1., bool massive = true);
+      muon(double xlc=0.0, double xrc=0.0, bool massive = true);
   };
   
   class tauon : public fundamental::fermionExt{
   /// Tauon class that has default U(1)_X charges xlc=1, xrc=1
     public:
-      tauon(double xlc=1., double xrc=1., bool massive = true);
+      tauon(double xlc=0.0, double xrc=0.0, bool massive = true);
   };
   
   //Neutrinos
   class nu_el : public fundamental::fermionExt{
   /// Electron neutrino class that has default U(1)_X charges xlc=1, xrc=0 (no right-handed neutrino in SM)
     public:
-      nu_el(double xlc=1., double xrc=0);
+      nu_el(double xlc=0.0, double xrc=0);
   };
   
   class nu_mu : public fundamental::fermionExt{
   /// Muon neutrino class that has default U(1)_X charges xlc=1, xrc=0 (no right-handed neutrino in SM)
     public:
-      nu_mu(double xlc=1., double xrc=0);
+      nu_mu(double xlc=0.0, double xrc=0);
   };
   
   class nu_tau : public fundamental::fermionExt{
   /// Tauon neutrino class that has default U(1)_X charges xlc=1, xrc=0 (no right-handed neutrino in SM)
     public:
-      nu_tau(double xlc=1., double xrc=0);
+      nu_tau(double xlc=0.0, double xrc=0);
   };
   
   
@@ -127,6 +127,13 @@ namespace pheno{
     private:
       fermion_list flst;
       void setup_flst();
+
+    // Helper function to identify fermion type, i.e. up-type, charged lepton, etc.
+    // and set family type
+    
+    std::tuple<std::string,unsigned int,int> fermionType(std::string name);
+    
+    
       //Zp width related
       double* partial_fwidths;
       double higgs_width;

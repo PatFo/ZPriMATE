@@ -10,6 +10,21 @@ from scipy.interpolate import InterpolatedUnivariateSpline
 import fcntl
 
 
+logoSmall="""
+ _______     _ __  __   _ _____ ___ 
+|_  / _ \_ _(_)  \/  | /_\_   _| __|
+ / /|  _/ '_| | |\/| |/ _ \| | | _| 
+/___|_| |_| |_|_|  |_/_/ \_\_| |___|            
+"""
+logo="""
+ _________       _ __  __    _  _____ _____ 
+|__  /  _ \ _ __(_)  \/  |  / \|_   _| ____|
+  / /| |_) | '__| | |\/| | / _ \ | | |  _|  
+ / /_|  __/| |  | | |  | |/ ___ \| | | |___ 
+/____|_|   |_|  |_|_|  |_/_/   \_\_| |_____|
+"""
+print logo
+
 ZPMSYS = os.path.dirname(os.path.realpath(__file__))
 #print ZPMSYS
 COREX = "./src/core"
@@ -33,13 +48,18 @@ fdTMP, inp = tempfile.mkstemp()
 os.chdir(ZPMSYS)
 
 print "\nCalculating cross section ...\n"
-core = subprocess.Popen([COREX,fullfile,inp],stdout=subprocess.PIPE)
+core = subprocess.Popen([COREX,fullfile,inp],stderr=subprocess.PIPE)
 
 # Catch and wait for output and error if send to PIPE
 (core_out, core_err) = core.communicate() 
 
+       
+    
+# Write Core output
+# Keep file open for later writing access
+# File is closed at the end
 
-
+logname="zprimate.log"
 xl   = []
 xr   = []
 nev  = []
@@ -48,7 +68,7 @@ limdir = ""
 eff = ""
 
 #Check for plot file and generate plots
-print "Generating plots from temporary file %s:"%inp
+#print "Generating plots from temporary file %s:"%inp
 
 with open(inp,'r') as openedFile:
   fno = 0
@@ -65,7 +85,8 @@ with open(inp,'r') as openedFile:
     #Operate on event files
     else:
       events = events.split()[0]
-      print "Plotting %s"%events
+      with open(os.path.join(odir,logname), 'w') as log:
+        log.write("Plotting %s\n"%events)
       plot = subprocess.Popen(["%s %s" %(PLTX, events)], stdout=None, shell=True)
       #Combine events for global analysis
       with open(events, 'r') as eventfile:
@@ -89,14 +110,15 @@ with open(inp,'r') as openedFile:
            
 # Remove temporary file
 os.remove(inp)
-       
-    
-#Write Core output
-log = open(odir+"/zprimate.log", 'w')
-log.write("%s"%core_out)
-log.close
+
+with open(os.path.join(odir,logname), 'a') as log:
+  log.write("%s"%core_err)
 
 
+print """Calculation finished.
+
+You can find the results in:
+%s"""%odir
 
 #FIT EFFICIENCIES  
 #Allocate empty data arrays
@@ -119,11 +141,11 @@ combined = open(comfile, 'w')
 for i in range(len(xl)):
   midpoint = xl[i] + (xr[i]-xl[i])/2
   combined.write("%s\t%s\t%s\n"%(xl[i], xr[i], nev[i]*eff_fit(midpoint)))
-combined.close()  
-print "Plotting %s"%comfile
+combined.close()
+with open(os.path.join(odir,logname), 'a') as log:
+  log.write("Plotting %s"%comfile)
 plot = subprocess.Popen(["%s %s" %(PLTX, comfile)], stdout=None, shell=True)
-  
   
 #Calculate best exclusion limit
 limit = subprocess.Popen(["%s %s %s" %(LIMX, limdir, comfile) ], stdout=None, shell=True)
-limit.wait()           
+limit.wait()

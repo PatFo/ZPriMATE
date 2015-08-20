@@ -43,25 +43,26 @@ namespace fundamental{
   class bsm_parameters{
     private:
       //SM parameters from PDG (http://pdg.lbl.gov/2014/reviews/rpp2014-rev-phys-constants.pdf)
-      const static double aew=1./127.9;  // @q=MZ
-      const static double as=0.1184;
-      const static double mh=125.9; //As of 2013 summary
-      const static double mw=80.385;
-      const static double mz=91.1876;
-      const static double wz=2.4952;
-      const static double sw2=0.23155;// PDG=0.23155;
+      constexpr static double aew=1./127.9;  // @q=MZ
+      constexpr static double as=0.1184;
+      constexpr static double mh=125.9; //As of 2013 summary
+      constexpr static double mw=80.385;
+      constexpr static double mz=91.1876;
+      constexpr static double wz=2.4952;
+      constexpr static double sw2=0.23155;// PDG=0.23155;
       double e;
       double g1;
       double g2;
       double gz;
       double vev;
       //BSM parameters
-      double gx;
-      double mzp;
-      double mixing_angle;
-      double whid;
-      double fef;
-      double xi;
+      double gx; // Gauge coupling 
+      double mzp; // Bare Zp mass
+      double mixing_angle; // Mixing angle
+      double whid; // Hidden width
+      double fef; // ??
+      double xi; // Mass mixing angle
+      double dm; // Bare mass mixing
       void calc_fef();
       void calc_xi();
       void update();
@@ -86,11 +87,13 @@ namespace fundamental{
       double whid_();
       double fef_();
       double xi_();
+      double dm_();
       //Set parameters
       void set_gx(double g);
       void set_mzp(double m);
       void set_mixing(double mix);
       void set_whid(double wh);
+      void set_dm(double ddm);
       //Constructor
       bsm_parameters(double cpl, double mass, double mix=0);
   };

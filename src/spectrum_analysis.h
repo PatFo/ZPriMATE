@@ -9,7 +9,26 @@
 
 
 namespace pheno {
-  
+    
+
+  inline void printProgBar( int percent ){
+    std::string bar;
+    int barSize = 40;
+    double dpercent = ((double)percent)/100;
+    for(int i = 0; i < barSize; i++){
+      if( i < (int)(dpercent*barSize)){
+	bar.replace(i,1,"=");
+      }else if( i == (int)(dpercent*barSize)){
+	bar.replace(i,1,">");
+      }else{
+	bar.replace(i,1," ");
+      }
+    }
+    
+    std::cout<< "\r" "[" << bar << "] ";
+    std::cout.width( 3 );
+    std::cout<< percent << "%" << std::flush;
+  } 
   
   
   typedef std::vector<double*> sampling_scheme;
@@ -65,7 +84,7 @@ namespace pheno {
     ///Pass the binning scheme functor as temnplate argument 'Binning' and the class whose function gets plotted as argument 'T'
     ///Pass the function as a pointer
     private:
-      const static double reldiff=1e2; //Maximum rel difference between two consecutive bins before switch
+      constexpr static double reldiff=1e2; //Maximum rel difference between two consecutive bins before switch
       T * pobj;
       double (T::* pfunc)(double, double, double, double(*)(double, double), int);
       double(* psmear)(double, double);
@@ -95,9 +114,12 @@ namespace pheno {
     binning bincopy(*pbins);
     //Create a container of binning size to store results
     std::vector<double> prediction(length);
+    double progress=0;
 
     for(int i1=0; i1<length; ++i1)
       {
+	progress = ((double)i1+1)/((double)length);
+	printProgBar(progress*100);
         //Allocating private copies of all pointers in the game to be used by each thread
         
         //Get lower and upper bound of bin
@@ -108,16 +130,18 @@ namespace pheno {
         //The cross section is given in [fb]; multiply by factor=luminosity to obtain events
         prediction[i1] = (pobj->* pfunc)(low, high, acc, psmear, 2) * factor;
       }
+    // Newline for progressbar
+    std::cout << std::endl << std::endl;
 
     //Write the prediction to file
-    std::printf("Writing data to %s ...\n", outfile); 
+    std::fprintf(stderr,"Writing data to %s ...\n", outfile); 
     std::ofstream outf(outfile);
     for(int i2=0; i2<length; ++i2)
     { 
       outf<<(pbins->operator[](i2)).first<<"\t"<<(pbins->operator[](i2)).second<<"\t"<<prediction[i2]<<"\n"; 
     }
     outf.close();
-    std::printf("Finished writing to %s\n", outfile);      //#############################################v DEBUG
+    std::fprintf(stderr,"Finished writing to %s\n", outfile);      //#############################################v DEBUG
   }    
 }
 

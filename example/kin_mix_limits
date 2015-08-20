@@ -45,69 +45,17 @@ def write_model(filepath, mass, mixing, coupling):
   f=open(filepath, 'w')
     
     
-  params="""$model_parameters
+  params="""$GENERAL
 mzp = %(mzp)s
 gx = %(gx)s
 chi = %(chi)s
-
-$down
-cxl=0
-cxr=0
-
-$up
-cxl=0
-cxr=0
-
-$strange
-cxl=0
-cxr=0
-
-$charm
-cxl=0
-cxr=0
-
-$bottom
-cxl=0
-cxr=0
-
-$top
-cxl=0
-cxr=0
-
-$electron
-cxl=0
-cxr=0
-
-$muon
-cxl=0
-cxr=0
-
-$tauon
-cxl=0
-cxr=0
-
-$nu_el
-cxl=0
-cxr=0
-
-$nu_mu
-cxl=0
-cxr=0
-
-$nu_tau
-cxl=0
-cxr=0"""
+$END
+"""
 
   dictionary = { 'mzp' : mass, 'gx': coupling, 'chi' : mixing}
   f.write(params % dictionary)
   f.close()  
-  
-  
-  
 
-  
-  
-  
   
 #Time the total execution
 start = time.time()
@@ -179,7 +127,7 @@ for ic, mix in enumerate(mixings):
     zpm = subprocess.Popen(["%s %s" %(ZPMX, startfile) ], stdout=subprocess.PIPE, shell=True)
     #zpm.wait() # Wait till finished
     (out, err) = zpm.communicate() #Catch output and error if send to PIPE
-    print out     
+    #print out     
     
     #Get exclusion limits for current model
     robs = 0

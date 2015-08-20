@@ -5,7 +5,8 @@
 #include <string>
 #include <vector>
 
-typedef  std::map<std::string, double>  parmap;
+// integer index for parameters
+typedef std::map<unsigned int, double>  parmap;
 typedef std::map<std::string, parmap >  dict;
 
 typedef std::map<std::string, std::vector<std::string> > strmap;
@@ -20,11 +21,32 @@ typedef std::map<std::string, std::vector<std::string> > strmap;
 class conf_reader{
   private:
     dict config;
-  
+  // Flags for input scheme
+  void extract_config(dict &config, std::ifstream &istr);
+  bool fullInput;
+  // Flag to identify if there are universal couplings
+  // e.g. QUARK, LEPTON, LEPTONR
+  // QUARK|QUARKL|QUARKR|LEPTON|LEPTONL|LEPTONR
+  unsigned int CouplingFlag;
+  unsigned int getFlag(std::string blockName);
+  unsigned int updateFlag(std::string blockName);
+  void checkFlag(unsigned int flag);
+  void addConfig(std::string, parmap);
   public:
-    dict get_config();
-    //Constructor
-    conf_reader(const char* filename);
+  // Check if ALL couplings are diagonal and family universal
+  bool couplingUniversal();
+
+  // These methods do NOT check for diagonal or family universal but merely
+  // offer a tool for a quick readout of the flag
+  bool QuarkUni();
+  bool QuarkLeftUni();
+  bool QuarkRightUni();
+  bool LeptonUni();
+  bool LeptonLeftUni();
+  bool LeptonRightUni();
+  dict get_config();
+  //Constructor
+  conf_reader(const char* filename);
   
 };
 

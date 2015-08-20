@@ -223,13 +223,22 @@ double bsm_parameters::xi_()
   return xi;
 }
 
-
+double bsm_parameters::dm_()
+{
+  return dm;
+}
 
 //Set parameters
 
 void bsm_parameters::set_gx(double g)
 {
   gx=g;
+  update();
+}
+
+void bsm_parameters::set_dm(double ddm)
+{
+  dm =ddm;
   update();
 }
 

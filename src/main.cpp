@@ -21,11 +21,9 @@
 using namespace std;
 
 
-
-
-
 //SMEARING FUNCTIONS FOR DIFFERENT PARTICLE TYPES
 //-------------------------------------------------------------
+
 
 //Gaussian distribution
 double gaussian(double mu, double x, double sigma) 
@@ -48,6 +46,43 @@ double el_smear(double mu, double x)
   double sigma = mu * sqrt( pow(a/mu, 2) + pow(b/sqrt(mu), 2) + c*c );
 //   double sig_lin = 0.00561922585506*mu + 1.62532781953;
   return gaussian(mu, x, sigma);
+}
+
+// Intermediate dijet resolution, i.e. variance of gaussian
+// This includes only smearing but nothing else
+double dijet_resolution(double x)
+{
+  double 
+    a = 0.00109900233544, 
+    b = 1.1507949966, 
+    c = 47.2285104911,
+    resolution = x * sqrt( a + b / x + c / pow(x,2) )
+    ;
+  return resolution;
+}
+
+// Complete shape function for dijets
+// parameter mu: central value, x: position to evaluate function
+double dijet_shape(double mu, double x)
+{
+  // Preliminary values
+  double
+    alpha = 0.3,
+    n = 10.0,
+    norm = 1.0,
+    t,a,b
+    ;
+  // Relative distance to central value
+  t = ( x - mu )/dijet_resolution(mu);
+
+  // Determine if power law or gaussian
+  if ( t >= alpha ) {
+    return norm * exp(-0.5 * pow(t,2) );
+  } else {
+    a = pow( n/alpha ,n ) * exp(-0.5*pow(alpha,2));
+    b = n/alpha - alpha;
+    return norm*(a / pow(b-t , n));
+  }
 }
 
 // Check if file exists
@@ -118,12 +153,12 @@ int main(int argc, char** argv){
   //Check whether SSM is to be used or if a model file was given
   if(input.use_ssm())
   {
-    if(input.verbose()) printf("Constructing Sequential Standard Model...\n\n");
+    if(input.verbose()) fprintf(stderr,"Constructing Sequential Standard Model...\n\n");
     model = new pheno::ZpModel(input.mzssm());
   }
   else
   {
-    if(input.verbose()) printf("Constructing Z' Model...\n\n");
+    if(input.verbose()) fprintf(stderr,"Constructing Z' Model...\n\n");
     model = new pheno::ZpModel(input.model().c_str());
   }
   
@@ -204,8 +239,7 @@ int main(int argc, char** argv){
   //Print total execution time
   gettimeofday(&tv, NULL);
   double t1=tv.tv_sec+(tv.tv_usec/1000000.0);     
-  printf("Signal calculation took %g s\n\n", t1-t0);
-  
+  fprintf(stderr,"Signal calculation took %g s\n\n", t1-t0);
   
   
   //Construct sampling scheme for Cross section plotting
@@ -235,8 +269,9 @@ int main(int argc, char** argv){
   //Print scanning time
   gettimeofday(&tv, NULL);
   double t2=tv.tv_sec+(tv.tv_usec/1000000.0);     
-  printf("Cross section scan took %g s\n\n", t2-t1);
+  fprintf(stderr,"Cross section scan took %g s\n\n", t2-t1);
   
+  fprintf(stderr,"Total cross-section: %g fb\n\n",totx);
   
   //Free memory 
   for(unsigned int pos =0 ; pos < cs.size(); ++pos)
