@@ -97,7 +97,7 @@ AM_PATH_PYTHON([2.7.3], ,AC_MSG_ERROR(You need Python >= 2.7.3 to run ZPriMATE. 
 #PY_PYTHON_IMPORT_CHECK(scipy.optimize, [from scipy.optimize import minimize, brentq])
 PY_PYTHON_IMPORT_CHECK(numpy, [import numpy])
 PY_PYTHON_IMPORT_CHECK(matplotlib, [from matplotlib import pyplot as plt])
-PY_PYTHON_IMPORT_CHECK(scipy,[from scipy.interpolate import InterpolatedUnivariateSpline])
+PY_PYTHON_IMPORT_CHECK(scipy,[import scipy])
 
 
 

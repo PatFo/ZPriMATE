@@ -2150,8 +2150,8 @@ test "$program_suffix" != NONE &&
 ac_script='s/[\\$]/&&/g;s/;s,x,x,$//'
 program_transform_name=`$as_echo "$program_transform_name" | sed "$ac_script"`
 
-# expand $ac_aux_dir to an absolute path
-am_aux_dir=`cd $ac_aux_dir && pwd`
+# Expand $ac_aux_dir to an absolute path.
+am_aux_dir=`cd "$ac_aux_dir" && pwd`
 
 if test x"${MISSING+set}" != xset; then
   case $am_aux_dir in
@@ -4610,7 +4610,7 @@ $as_echo "yes" >&6; }
 
 
     module=scipy
-    scriptCode="from scipy.interpolate import InterpolatedUnivariateSpline"
+    scriptCode="import scipy"
     { $as_echo "$as_me:${as_lineno-$LINENO}: checking for Python module $module" >&5
 $as_echo_n "checking for Python module $module... " >&6; }
     rv=`$PYTHON -c "import sys; \
