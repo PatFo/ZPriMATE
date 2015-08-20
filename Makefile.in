@@ -834,7 +834,7 @@ uninstall-am: uninstall-dist_docDATA uninstall-local
 	uninstall-dist_docDATA uninstall-local
 
 
-.IGNORE: config.h.in
+.IGNORE: config.h.in missing
 
 all: all-local
 
