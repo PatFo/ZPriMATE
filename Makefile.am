@@ -1,7 +1,9 @@
 #Include the autoconf macros in the m4 directory
 ACLOCAL_AMFLAGS = -I m4
 
-SUBDIRS = src  
+# The '.' is necessary as a subdir
+# this way .NOTPARALLEL actually works and src is only built AFTER src
+SUBDIRS = . src  
 dist_doc_DATA = README.md
 
 #Specify path to Cuba
@@ -11,6 +13,9 @@ binary = zprimate
 if MAC_SYS
 .IGNORE: config.h.in missing aclocal.m4 configure
 endif
+
+.NOTPARALLEL: all-recursive
+
 all: all-local
 
 #From the Cuba package build only the libcub.a; rest is not necessary
@@ -30,5 +35,4 @@ clean-local:
 	-rm -f $(CUBADIR)/libcuba.a
 	-rm -f src/*.o
 	-rm -f src/*~
-	-rm -r results
 	-rm -f *~
