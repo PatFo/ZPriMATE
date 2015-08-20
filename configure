@@ -598,6 +598,8 @@ PYTHON_EXEC_PREFIX
 PYTHON_PREFIX
 PYTHON_VERSION
 PYTHON
+MAC_SYS_FALSE
+MAC_SYS_TRUE
 host_os
 host_vendor
 host_cpu
@@ -4072,12 +4074,13 @@ case $host_os in *\ *) host_os=`echo "$host_os" | sed 's/ /-/g'`;; esac
 case $host_os in
   darwin* )
         # Do something specific for mac
-        { $as_echo "$as_me:${as_lineno-$LINENO}: result: Oh-oh, we are on mac: $host_os" >&5
-$as_echo "Oh-oh, we are on mac: $host_os" >&6; }
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: We noticed you are using macOS. If you are having any trouble, please consult: http://www.ubuntu.com/$host_os" >&5
+$as_echo "We noticed you are using macOS. If you are having any trouble, please consult: http://www.ubuntu.com/$host_os" >&6; }
         CXXFLAGS="$CXXFLAGS -stdlib=libc++ -std=c++11"
 
 $as_echo "#define MAC_SYS 1" >>confdefs.h
 
+	MAC_SYS=TRUE
         ;;
   linux*)
         # Do something specific for linux
@@ -4097,6 +4100,13 @@ $as_echo "#define MAC_SYS 0" >>confdefs.h
         ;;
 esac
 
+ if test x$MAC_SYS = xTRUE; then
+  MAC_SYS_TRUE=
+  MAC_SYS_FALSE='#'
+else
+  MAC_SYS_TRUE='#'
+  MAC_SYS_FALSE=
+fi
 
 
 #Check for GSL
@@ -4765,6 +4775,10 @@ Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${am__fastdepCXX_TRUE}" && test -z "${am__fastdepCXX_FALSE}"; then
   as_fn_error $? "conditional \"am__fastdepCXX\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${MAC_SYS_TRUE}" && test -z "${MAC_SYS_FALSE}"; then
+  as_fn_error $? "conditional \"MAC_SYS\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 

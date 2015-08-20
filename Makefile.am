@@ -8,8 +8,9 @@ dist_doc_DATA = README.md
 CUBADIR = Cuba-4.2
 binary = zprimate
 
+if MAC_SYS
 .IGNORE: config.h.in missing aclocal.m4 configure
-
+endif
 all: all-local
 
 #From the Cuba package build only the libcub.a; rest is not necessary

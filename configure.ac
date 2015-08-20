@@ -56,9 +56,10 @@ AC_CANONICAL_HOST
 case $host_os in
   darwin* )
         # Do something specific for mac
-        AC_MSG_RESULT([[Oh-oh, we are on mac: ][$host_os]]) 
+        AC_MSG_RESULT([[We noticed you are using macOS. If you are having any trouble, please consult: http://www.ubuntu.com/][$host_os]]) 
         CXXFLAGS="$CXXFLAGS -stdlib=libc++ -std=c++11"
         AC_DEFINE([MAC_SYS], [1], [Variable state is 1 if platform is Mac Osx])
+	MAC_SYS=TRUE
         ;;
   linux*)
         # Do something specific for linux
@@ -75,7 +76,7 @@ case $host_os in
         ;;
 esac
 
-
+AM_CONDITIONAL([MAC_SYS],test x$MAC_SYS = xTRUE)
 
 #Check for GSL 
 #If the library is found then the tests will define the macros HAVE_LIBGSL, HAVE_LIBGSLCBLAS, HAVE_LIBM 

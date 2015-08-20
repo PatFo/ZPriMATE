@@ -242,7 +242,6 @@ int main(int argc, char** argv){
   fprintf(stderr,"Signal calculation took %g s\n\n", t1-t0);
   
   
-  
   //Construct sampling scheme for Cross section plotting
 //   double stepsize=model->wz_();
   double stepsize=10;
@@ -272,6 +271,7 @@ int main(int argc, char** argv){
   double t2=tv.tv_sec+(tv.tv_usec/1000000.0);     
   fprintf(stderr,"Cross section scan took %g s\n\n", t2-t1);
   
+  fprintf(stderr,"Total cross-section: %g fb\n\n",totx);
   
   //Free memory 
   for(unsigned int pos =0 ; pos < cs.size(); ++pos)

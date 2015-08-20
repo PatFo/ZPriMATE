@@ -115,7 +115,7 @@ namespace pheno {
     //Create a container of binning size to store results
     std::vector<double> prediction(length);
     double progress=0;
-    std::fprintf(stderr,"Starting integration:");
+
     for(int i1=0; i1<length; ++i1)
       {
 	progress = ((double)i1+1)/((double)length);
