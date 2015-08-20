@@ -10,6 +10,18 @@ import time
 
 
 
+
+#Grid parameters  
+mdim = 3
+cdim = 3
+masses = np.logspace(2, 3.544, mdim)  
+mixings = np.logspace(-2.3, 0, cdim)
+
+
+
+
+
+
 #Function that writes input file for zprimate
 def write_startfile(filepath, outdir, acc, modelfile, proc):
   f=open(filepath, 'w')
@@ -42,8 +54,7 @@ def write_startfile(filepath, outdir, acc, modelfile, proc):
   
 #Function that writes Z' model file
 def write_model(filepath, mass, mixing, coupling):
-  f=open(filepath, 'w')
-    
+  f=open(filepath, 'w')    
     
   params="""$GENERAL
 mzp = %(mzp)s
@@ -51,11 +62,16 @@ gx = %(gx)s
 chi = %(chi)s
 $END
 """
-
   dictionary = { 'mzp' : mass, 'gx': coupling, 'chi' : mixing}
   f.write(params % dictionary)
   f.close()  
 
+  
+  
+  
+  
+  
+  
   
 #Time the total execution
 start = time.time()
@@ -95,31 +111,26 @@ if not os.path.isdir(indir):
 
 
   
-#Empty results containers  
-mdim = 40
-cdim = 50
-lobs =  np.zeros((cdim, mdim))
-  
   
 startfile = indir + "/settings"
 modelfile = indir + "/model"
 limfile = wdir + "/limits.dat" 
 
-gx= 0.01  #Influences width (set it small)
-masses = np.logspace(2, 3.544, mdim)
-mixings = np.logspace(-2.3, 0, cdim)
+
 
 limits = open(limfile, 'w')
-line0 = "%-15s"%"Chi\M[GeV]"
+line0 = "%-20s"%"Chi\M[GeV]"
 for m in masses:
   line0 += "%-10.1f"%m
 limits.write(line0+"\n")
 limits.close()
 
 #Loop over Z' masses and mixings
+gx= 0.01  #Influences width (set it small)
+lobs =  np.zeros((cdim, mdim))
 os.chdir(ZPMSYS)
 for ic, mix in enumerate(mixings):
-  string = "%-15.2g"%mix
+  string = "%-20.4g"%mix
   for im, mzp in enumerate(masses):
     #Write settings
     write_model(modelfile, mzp, mix, gx)
@@ -127,7 +138,7 @@ for ic, mix in enumerate(mixings):
     zpm = subprocess.Popen(["%s %s" %(ZPMX, startfile) ], stdout=subprocess.PIPE, shell=True)
     #zpm.wait() # Wait till finished
     (out, err) = zpm.communicate() #Catch output and error if send to PIPE
-    #print out     
+    print out     
     
     #Get exclusion limits for current model
     robs = 0
@@ -165,7 +176,7 @@ bar.set_label('R-Value')
 
 plt.title('Contour plot for kinetic mixing')
 axs.set_yscale("log") 
-plt.xlabel(r"$M_{Z'_{SSM}}$ [GeV]")
+plt.xlabel(r"$M_{Z^\prime}$ [GeV]")
 plt.ylabel(r'Kin. mixing $\chi$')
 #plt.legend()
 ##Include ZPriMATE logo on plot
