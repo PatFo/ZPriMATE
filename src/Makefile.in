@@ -589,8 +589,8 @@ uninstall-am:
 
 # This is redundand libcuba should be built previous to src
 # in case this isn't built correctly uncomment these lines
-#$(CUBADIR)/libcuba.a:
-#	cd $(CUBADIR) && $(MAKE) $(AM_MAKEFLAGS) libcuba.a
+$(CUBADIR)/libcuba.a:
+	cd $(CUBADIR) && $(MAKE) $(AM_MAKEFLAGS) libcuba.a
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

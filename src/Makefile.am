@@ -20,5 +20,5 @@ core_LDADD = ../Cuba-4.2/libcuba.a
 
 # This is redundand libcuba should be built previous to src
 # in case this isn't built correctly uncomment these lines
-#$(CUBADIR)/libcuba.a:
-#	cd $(CUBADIR) && $(MAKE) $(AM_MAKEFLAGS) libcuba.a
+$(CUBADIR)/libcuba.a:
+	cd $(CUBADIR) && $(MAKE) $(AM_MAKEFLAGS) libcuba.a

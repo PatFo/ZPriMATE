@@ -296,49 +296,50 @@ pheno::HadronXSec::HadronXSec(pheno::HadronXSec &copy) {
   pdf = new c_mstwpdf(*copy.pdf);
 }
 
-// Copy assignment constructor
-pheno::HadronXSec & pheno::HadronXSec::operator=(pheno::HadronXSec &assignment) {
-  // check if assigment is smth. like x=x
-  if (this != &assignment) {
-    // First create local copy of everything
-    double loc_accuracy_goal = assignment.accuracy_goal;
-    size_t loc_calls = assignment.calls;
-    double loc_Epp = assignment.Epp;
+// // Copy assignment constructor
+// // Don't need it
+// pheno::HadronXSec & pheno::HadronXSec::operator=(pheno::HadronXSec &assignment) {
+//   // check if assigment is smth. like x=x
+//   if (this != &assignment) {
+//     // First create local copy of everything
+//     double loc_accuracy_goal = assignment.accuracy_goal;
+//     size_t loc_calls = assignment.calls;
+//     double loc_Epp = assignment.Epp;
 
-    pheno::PartonXSec *loc_dxsec = new pheno::PartonXSec(*(assignment.dxsec));
-    pheno::PartonXSec *loc_uxsec = new pheno::PartonXSec(*(assignment.uxsec));
-    pheno::PartonXSec *loc_sxsec = new pheno::PartonXSec(*(assignment.sxsec));
-    pheno::PartonXSec *loc_cxsec = new pheno::PartonXSec(*(assignment.cxsec));
-    pheno::PartonXSec *loc_bxsec = new pheno::PartonXSec(*(assignment.bxsec));
+//     pheno::PartonXSec *loc_dxsec = new pheno::PartonXSec(*(assignment.dxsec));
+//     pheno::PartonXSec *loc_uxsec = new pheno::PartonXSec(*(assignment.uxsec));
+//     pheno::PartonXSec *loc_sxsec = new pheno::PartonXSec(*(assignment.sxsec));
+//     pheno::PartonXSec *loc_cxsec = new pheno::PartonXSec(*(assignment.cxsec));
+//     pheno::PartonXSec *loc_bxsec = new pheno::PartonXSec(*(assignment.bxsec));
   
-    c_mstwpdf* loc_pdf = new c_mstwpdf(*(assignment.pdf));
+//     c_mstwpdf* loc_pdf = new c_mstwpdf(*(assignment.pdf));
    
     
-    // If everything went fine delete old object
-    delete 
-      dxsec
-      ,uxsec
-      ,sxsec
-      ,cxsec
-      ,bxsec
-      ,pdf
-      ;
+//     // If everything went fine delete old object
+//     delete 
+//       assignment.dxsec,
+//       assignment.uxsec,
+//       assignment.sxsec,
+//       assignment.cxsec,
+//       assignment.bxsec,
+//       assignment.pdf
+//       ;
 
-    // Assign new objects
-    accuracy_goal = loc_accuracy_goal;
-    calls = loc_calls;
-    Epp = loc_Epp;
+//     // Assign new objects
+//     accuracy_goal = loc_accuracy_goal;
+//     calls = loc_calls;
+//     Epp = loc_Epp;
     
-    dxsec = loc_dxsec;
-    uxsec = loc_uxsec;
-    sxsec = loc_sxsec;
-    cxsec = loc_cxsec;
-    bxsec = loc_bxsec;
+//     dxsec = loc_dxsec;
+//     uxsec = loc_uxsec;
+//     sxsec = loc_sxsec;
+//     cxsec = loc_cxsec;
+//     bxsec = loc_bxsec;
 
-  }
+//   }
 
-  return *this;
-}
+//   return *this;
+// }
 
 
 
