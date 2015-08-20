@@ -12,8 +12,8 @@ import time
 
 
 #Grid parameters  
-mdim = 3
-cdim = 3
+mdim = 50
+cdim = 40
 masses = np.logspace(2, 3.544, mdim)  
 mixings = np.logspace(-2.3, 0, cdim)
 
