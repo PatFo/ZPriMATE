@@ -600,6 +600,7 @@ PYTHON_VERSION
 PYTHON
 MAC_SYS_FALSE
 MAC_SYS_TRUE
+ON_MAC
 host_os
 host_vendor
 host_cpu
@@ -2152,8 +2153,8 @@ test "$program_suffix" != NONE &&
 ac_script='s/[\\$]/&&/g;s/;s,x,x,$//'
 program_transform_name=`$as_echo "$program_transform_name" | sed "$ac_script"`
 
-# Expand $ac_aux_dir to an absolute path.
-am_aux_dir=`cd "$ac_aux_dir" && pwd`
+# expand $ac_aux_dir to an absolute path
+am_aux_dir=`cd $ac_aux_dir && pwd`
 
 if test x"${MISSING+set}" != xset; then
   case $am_aux_dir in
@@ -2558,7 +2559,6 @@ END
     as_fn_error $? "Your 'rm' program is bad, sorry." "$LINENO" 5
   fi
 fi
-
 
 #Checking for the compiler
 ac_ext=c
@@ -4080,6 +4080,8 @@ $as_echo "We noticed you are using macOS. If you are having any trouble, please 
 
 $as_echo "#define MAC_SYS 1" >>confdefs.h
 
+        ON_MAC=1
+
 	MAC_SYS=TRUE
         ;;
   linux*)
@@ -4107,6 +4109,8 @@ else
   MAC_SYS_TRUE='#'
   MAC_SYS_FALSE=
 fi
+
+
 
 
 #Check for GSL
