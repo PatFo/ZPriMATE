@@ -59,7 +59,7 @@ uninstall-local:
 	fi;
 	@if [ -a unset.sh ] ; \
 	then \
-		echo -e "\nTo also remove the ZPriMATE path from your \$$PATH environement variable run\n\n\t./unset.sh\n"; \
+		echo -e "\n\nTo also remove the ZPriMATE path from your \$$PATH environement variable run\n\n\t./unset.sh\n"; \
 	fi;
 
 clean-local:
