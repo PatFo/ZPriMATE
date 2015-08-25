@@ -27,3 +27,5 @@
 *.o
 3500/*
 mstw/.*
+/setup.sh
+/unset.sh

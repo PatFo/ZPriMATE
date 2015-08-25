@@ -39,15 +39,15 @@ install-exec-local:
 	@NOT_PRESENT=`echo ${PATH} | grep -o $(bindir)` ; \
 	if test -z "$$NOT_PRESENT" ; then \
 		if test -n "$(ON_MAC)"; then \
-			echo 'IS_PRESENT=`echo $$PATH | grep -o $(bindir)`\nif test -z "$$IS_PRESENT"\nthen\n\techo "export PATH=\$$PATH:$(bindir)" >> ~/.bash_profile\n\tsource ~/.bash_profile\nelse\n\techo "Path is already set up."\nfi'  > setup.sh \
-			&& echo 'IS_PRESENT=`grep -o "$(bindir)" ~/.bash_profile`\nif test -n "$$IS_PRESENT"\nthen\n\tgrep -v "$(bindir)" ~/.bash_profile > ~/.bash_profile2\n\tmv ~/.bash_profile2 ~/.bash_profile\n\techo "Removed $(bindir) from \$$PATH environement variable\nClose session and restart shell to make changes effective"\nelse\n\techo "Nothing to be done"\nfi' > unset.sh \
+			echo 'IS_PRESENT=`echo $$PATH | grep -o $(bindir)`\nif test -z "$$IS_PRESENT"\nthen\n\tcp ~/.bashrc ~/.bashrc_backup\n \techo "export PATH=\$$PATH:$(bindir)" >> ~/.bash_profile\n\tsource ~/.bash_profile\nelse\n\techo "Path is already set up."\nfi'  > setup.sh \
+			&& echo 'IS_PRESENT=`grep -o "$(bindir)" ~/.bash_profile`\nif test -n "$$IS_PRESENT"\nthen\n\tcp ~/.bashrc ~/.bashrc_backup\n\tgrep -v "$(bindir)" ~/.bash_profile > ~/.bash_profile2\n\tmv ~/.bash_profile2 ~/.bash_profile\n\techo "Removed $(bindir) from \$$PATH environement variable\nClose session and restart shell to make changes effective"\nelse\n\techo "Nothing to be done"\nfi' > unset.sh \
 			&& chmod a+x unset.sh \
-			&& echo "\n\nRun the command \n\n\tsource setup.sh\n\nto set up the ZPriMATE command line tool.\n\n"; \
+			&& echo "\n\nRun the command \n\n\tsource setup.sh\n\nto set up the ZPriMATE command line tool.\nThis will add the install path to your .bash_profile file.\n\n"; \
 		else \
-			echo -e 'IS_PRESENT=`echo $$PATH | grep -o $(bindir)`\nif test -z "$$IS_PRESENT"\nthen\n\techo "export PATH=\$$PATH:$(bindir)" >> ~/.bashrc\n\tsource ~/.bashrc\nelse\n\techo "Path is already set up."\nfi'  > setup.sh \
-			&& echo -e 'IS_PRESENT=`grep -o "$(bindir)" ~/.bashrc`\nif test -n "$$IS_PRESENT"\nthen\n\tgrep -v "$(bindir)" ~/.bashrc > ~/.bashrc2\n\tmv ~/.bashrc2 ~/.bashrc\n\techo "Removed $(bindir) from \$$PATH environement variable\nClose session and restart shell to make changes effective"\nelse\n\techo "Nothing to be done"\nfi' > unset.sh \
+			echo -e 'IS_PRESENT=`echo $$PATH | grep -o $(bindir)`\nif test -z "$$IS_PRESENT"\nthen\n\tcp ~/.bashrc ~/.bashrc_backup\n\techo "export PATH=\$$PATH:$(bindir)" >> ~/.bashrc\n\tsource ~/.bashrc\nelse\n\techo "Path is already set up."\nfi'  > setup.sh \
+			&& echo -e 'IS_PRESENT=`grep -o "$(bindir)" ~/.bashrc`\nif test -n "$$IS_PRESENT"\nthen\n\tcp ~/.bashrc ~/.bashrc_backup\n\tgrep -v "$(bindir)" ~/.bashrc > ~/.bashrc2\n\tmv ~/.bashrc2 ~/.bashrc\n\techo "Removed $(bindir) from \$$PATH environement variable\nClose session and restart shell to make changes effective"\nelse\n\techo "Nothing to be done"\nfi' > unset.sh \
 			&& chmod a+x unset.sh \
-			&& echo -e "\n\nRun the command \n\n\tsource setup.sh\n\nto set up the ZPriMATE command line tool.\n\n"; fi;\
+			&& echo -e "\n\nRun the command \n\n\tsource setup.sh\n\nto set up the ZPriMATE command line tool.\nThis will add the install path to your .bashrc file.\n\n"; fi;\
 	else \
 		echo "$(bindir) already in PATH"; fi;
 
