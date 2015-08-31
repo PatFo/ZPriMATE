@@ -42,7 +42,7 @@ any dependencies are missing, an error is thrown and the user is informed of the
 
 #Installation
 
-Obtaining sources with git
+##Obtaining sources with git
 -------------------------
 
 The most convenient and platform independent way to obtain a copy of ZPriMATE is to clone the git repository. 
@@ -52,7 +52,7 @@ $ git clone https://github.com/PatFo/ZPriMATE.git
 ```
 This will create a subdirectory called ZPriMATE in the directory where you have issued the command. 
 
-Obtaining sources without git
+##Obtaining sources without git
 -------------------------
 If git is not installed, one can obtain a copy of the master branch from the github mirror.
 
@@ -66,7 +66,7 @@ $ curl -Lk https://github.com/PatFo/ZPriMATE/archive/master.tar.gz | tar xz
 ```
 Issuing one of those commands create a subdirectory called ZPriMATE-master. 
 Building
------------------------
+
 Once the source files have been obtained, installation works  as usual
 ```
 $ cd ZPriMATE(-master)
@@ -81,7 +81,7 @@ running
 $ source setup.sh
 ```
 
-The program structure
+#The program structure
 ---------------------------------
 
 ZPriMATE was designed as a modular program package implemented in a hybrid Python/C++ approach. The input the user has to provide essentially consists
@@ -94,7 +94,7 @@ A second Python routine  (*Plotter*)  plots the  calculated signal prediction s_
 In the following section, the individual parts of ZPriMATE are described in more detail.
 
 
-Input
+##Input
 -------------------
 
 ZPriMATE is a command line tool that is invoked after successful installation  by running 
