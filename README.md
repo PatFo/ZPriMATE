@@ -85,12 +85,12 @@ $ source setup.sh
 ---------------------------------
 
 ZPriMATE was designed as a modular program package implemented in a hybrid Python/C++ approach. The input the user has to provide essentially consists
-of the model characterized by a set of parameters **\theta** and a LHC analysis that the model shall be tested 
+of the model characterized by a set of model parameters and a LHC analysis that the model shall be tested 
 against. The input is passed to the  C++ core application (*Core*) that calculates the semi-analytical 
 cross section and turns it into a prediction of the signal events s_i. The signal prediction and the analysis are 
 then passed on to a Python routine  (*Limit Calculator*) responsible for the statistical evaluation and 
-the determination of the *R*-value. Based on the determined $R$-value, a model can be excluded or not. 
-A second Python routine  (*Plotter*)  plots the  calculated signal prediction s_i. \\
+the determination of the *R*-value. Based on the determined *R*-value, a model can be excluded or not. 
+A second Python routine  (*Plotter*)  plots the  calculated signal prediction s_i. 
 In the following section, the individual parts of ZPriMATE are described in more detail.
 
 
