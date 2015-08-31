@@ -8,38 +8,44 @@ Obtaining ZPriMATE
 
 First and foremost, it has to be pointed out that ZPriMATE is work in progress and so far only a minimal working 
 pre-release version for dilepton final states exists. At this stage, sources are available only from a public 
-\texttt{git} 
-repository at \url{https://github.com/PatFo/ZPriMATE.git}
+git} 
+repository at https://github.com/PatFo/ZPriMATE.git
 
 
 Prerequisites
 -------------------------
 
-ZPriMATE has been developed for the \texttt{UNIX} systems  Linux\footnote{Tested on Debian 8.1 
-(Jessie), Ubuntu 14.04 LTS (Trusty Tahr) and Ubuntu 15.04 (Vivid Vervet)} and OS X\footnote{Tested on OS X 10.9 
-(Mavericks) and OS X 10.10 
-(Yosemite)}. The program package was designed to be as self-contained as possible. However, there are some 
+ZPriMATE has been developed for the UNIX systems  Linux and OS X and hast been tested on the following systems:
+
+-Debian 8.1 (Jessie),
+-Ubuntu 14.04 LTS (Trusty Tahr)
+-Ubuntu 15.04 (Vivid Vervet)
+-OS X 10.9 (Mavericks)
+-OS X 10.10 (Yosemite)
+
+The program package was designed to be as self-contained as possible. However, there are some 
 dependencies 
 that are required for installing and running ZPriMATE:
-\begin{itemize}
- \item \emph{C/C++ Compiler}: The package needs an installed version of the \texttt{g++} or \texttt{clang} compiler.
- \item \emph{Python 2.7}: Python 2.7.3 is the minimum required version.  Additionally the following Python packages are 
+
+
+-C/C++ Compiler: The package needs an installed version of the g++ or clang compiler.
+-Python 2.7: Python 2.7.3 is the minimum required version.  Additionally the following Python packages are 
 needed
-\begin{itemize}
- \item Numpy \cite{scipy}
- \item Scipy \cite{scipy}
- \item Matplotlib  \cite{Hunter:2007}
-\end{itemize}
-\end{itemize}
+	- Numpy 
+	- Scipy
+	- Matplotlib
+
+
 
 During configuration of ZPriMATE, the presence of all dependencies is inquired. If 
 any dependencies are missing, an error is thrown and the user is informed of the absence of the  missing prerequisite.
 
-\subsection{Installation}
-\subsubsection{Obtaining sources with \texttt{git}}
+Installation
+-------------------------
+\subsubsection{Obtaining sources with git}}
 
-The most convenient and platform independent way to obtain a copy of ZPriMATE is to clone the \texttt{git} repository. 
-If \texttt{git} is installed on the machine, it is sufficient to run the following command in a terminal
+The most convenient and platform independent way to obtain a copy of ZPriMATE is to clone the git} repository. 
+If git} is installed on the machine, it is sufficient to run the following command in a terminal
 \begin{lstlisting}[%backgroundcolor = \color{lightgray},
 		  language = bash,
 		  basicstyle=\footnotesize\ttfamily,
@@ -47,10 +53,10 @@ If \texttt{git} is installed on the machine, it is sufficient to run the followi
 		  framexleftmargin = 0em]
 $ git clone https://github.com/PatFo/ZPriMATE.git
 \end{lstlisting}
-This will create a subdirectory called \texttt{ZPriMATE} in the directory where you have issued the command. 
+This will create a subdirectory called ZPriMATE} in the directory where you have issued the command. 
 
-\subsubsection{Obtaining sources without \texttt{git}}
-If \texttt{git} is not installed, one can obtain a copy of the master branch from the github mirror.
+\subsubsection{Obtaining sources without git}}
+If git} is not installed, one can obtain a copy of the master branch from the github mirror.
 \newline
 \\ \underline{On Linux}:
 \begin{lstlisting}[%backgroundcolor = \color{lightgray},
@@ -68,7 +74,7 @@ $ wget https://github.com/PatFo/ZPriMATE/archive/master.tar.gz -O - | tar xz
 		  framexleftmargin = 0em]
 $ curl -Lk https://github.com/PatFo/ZPriMATE/archive/master.tar.gz | tar xz
 \end{lstlisting}
-Issuing one of those commands create a subdirectory called \texttt{ZPriMATE-master}. 
+Issuing one of those commands create a subdirectory called ZPriMATE-master}. 
 \subsubsection{Building}
 Once the source files have been obtained, installation works  as usual
     \begin{lstlisting}[%backgroundcolor = \color{lightgray},
@@ -81,8 +87,8 @@ $ ./configure [--prefix=<install-path>]
 $ make 
 $ make install
 \end{lstlisting}
-The optional -\texttt{-prefix} variable allows to specify an installation path. The default path is 
-\texttt{/usr/local}. Depending on where you install ZPriMATE to, you might be asked to set up the program properly by 
+The optional --prefix} variable allows to specify an installation path. The default path is 
+/usr/local}. Depending on where you install ZPriMATE to, you might be asked to set up the program properly by 
 running
     \begin{lstlisting}[%backgroundcolor = \color{lightgray},
 		  language = bash,
@@ -181,14 +187,14 @@ east)+(0.5,-0.6)$);
 \label{zpschematic}
 \end{figure}
 
-ZPriMATE was designed as a modular program package implemented in a hybrid \texttt{Python/C++} approach. Its 
+ZPriMATE was designed as a modular program package implemented in a hybrid Python/C++} approach. Its 
 conceptional structure is depicted in \cref{zpschematic}. The input the user has to provide essentially consists
 of the model characterized by a set of parameters $\boldsymbol\theta$ and a LHC analysis that the model shall be tested 
-against. The input is passed to the  \texttt{C++} core application (\textit{Core}) that calculates the semi-analytical 
+against. The input is passed to the  C++} core application (\textit{Core}) that calculates the semi-analytical 
 cross section and turns it into a prediction of the signal events $\{s_i\}$. The signal prediction and the analysis are 
-then passed on to a \texttt{Python} routine  (\textit{Limit Calculator}) responsible for the statistical evaluation and 
+then passed on to a Python} routine  (\textit{Limit Calculator}) responsible for the statistical evaluation and 
 the determination of the $R$-value. Based on the determined $R$-value, a model can be excluded or not. 
-A second \texttt{Python} routine  (\textit{Plotter})  plots the  calculated signal prediction $\{s_i\}$. \\
+A second Python} routine  (\textit{Plotter})  plots the  calculated signal prediction $\{s_i\}$. \\
 In the following section, the individual parts of ZPriMATE are described in more detail.
 
 
@@ -238,13 +244,13 @@ $ zprimate <settings/file/path>
 It needs as input parameter the path to a valid settings file, which contains the main parameters needed for running. In 
 \cref{settings} a minimum example of a settings file is shown, which is shipped with the ZPriMATE package and is 
 found under\\
-\texttt{(\$ZPriMATE)/example/settings}. In essence, the parameters can be grouped into three blocks. The first block 
+(\$ZPriMATE)/example/settings}. In essence, the parameters can be grouped into three blocks. The first block 
 of program parameters  concerning the 
 run behavior of ZPriMATE is optional and will not be discussed here.
 
 \subsubsection{Model parametrization}
  
- The second block consists of a single variable called \texttt{\$MODEL}. This variable can take two types of values:
+ The second block consists of a single variable called \$MODEL}. This variable can take two types of values:
  \begin{itemize}
   \item A floating point number: If a single number is specified the program automatically chooses the SSM as the 
 tested model and interprets the number as the mass $M_{Z'_{SSM}}$ of the SSM $Z'$. 
@@ -284,7 +290,7 @@ $DOWNL
 0.0 # sb~ / bs~
 $END
 \end{lstlisting}
-  \caption{Excerpt from \texttt{example.conf} model file.}
+  \caption{Excerpt from example.conf} model file.}
   \label{modelfile}
 \end{figure}
 
@@ -294,13 +300,13 @@ $END
 The last block of parameters in the settings file are the analysis parameters. The information that ZPriMATE needs for 
 running is
 \begin{itemize}
- \item \texttt{\$PROC}: The final state id (1=dielectron, 2=dimuon)
- \item \texttt{\$EBEAM}: The center of mass energy $\sqrt{s}$ in GeV
- \item \texttt{\$LUM}: The integrated luminosity $L$ at which data has been taken in fb$^{-1}$
- \item \texttt{\$BINS}: The file containing the bins of invariant mass used in the anlaysis
- \item \texttt{\$EFFICIENCIES}: The file containing acceptance $\times$ efficiency of selected final state
- \item \texttt{\$LIMITS}: The directory containing the limitfiles generated as described in \cref{sec_limits}
+ \item \$PROC}: The final state id (1=dielectron, 2=dimuon)
+ \item \$EBEAM}: The center of mass energy $\sqrt{s}$ in GeV
+ \item \$LUM}: The integrated luminosity $L$ at which data has been taken in fb$^{-1}$
+ \item \$BINS}: The file containing the bins of invariant mass used in the anlaysis
+ \item \$EFFICIENCIES}: The file containing acceptance $\times$ efficiency of selected final state
+ \item \$LIMITS}: The directory containing the limitfiles generated as described in \cref{sec_limits}
 \end{itemize}
 So far, one ATLAS analysis for 
 dilepton resonances at $\sqrt{s}=8$ TeV \cite{Aad:2014cka} has been implemented. The corresponding files are part of 
-the ZPriMATE package and are stored under \texttt{(\$ZPriMATE)/analyses/arXiv\_1405\_4123}. 
+the ZPriMATE package and are stored under (\$ZPriMATE)/analyses/arXiv\_1405\_4123}. 
