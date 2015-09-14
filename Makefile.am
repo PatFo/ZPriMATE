@@ -10,7 +10,7 @@ dist_doc_DATA = README.md
 CUBADIR = Cuba-4.2
 binary = zprimate
 
-
+PYFILES = zprimate calc_limit excl_limit get_s95 plot_signal
 
 if MAC_SYS
 .IGNORE: config.h.in missing aclocal.m4 configure
@@ -24,9 +24,18 @@ all: all-local
 all-local:
 	cd $(CUBADIR) && $(MAKE) $(AM_MAKEFLAGS) libcuba.a
 	mkdir -p results
-	sed -i''  '1s:.*:#!$(PYTHON):' 'zprimate'
-	sed -i'' '1s:.*:#!$(PYTHON):' 'bin/calc_limit'
-	sed -i'' '1s:.*:#!$(PYTHON):' 'bin/plot_signal'
+	mkdir -p bin
+	for file in $(PYFILES); \
+	do \
+	sed "1s:*.*:#!$(PYTHON):" src/$${file}.py > bin/$${file}; \
+	done
+	chmod +x bin/zprimate
+	mv src/core bin/core
+	@if [ -e zprimate ] ;  \
+	then \
+		rm -f zprimate ;\
+	fi;
+	ln -s bin/zprimate
 
 # Create a symbolic link to the executable in the srcdir
 # Check whether the bindir already is in the SYSTEMS PATH variable
@@ -67,6 +76,7 @@ uninstall-local:
 
 clean-local:
 	-rm -f $(CUBADIR)/libcuba.a
+	-rm -rf bin
 	-rm -f src/*.o
 	-rm -f src/*~
 	-rm -f *~

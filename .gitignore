@@ -23,9 +23,11 @@
 /Cuba-4.2/makefile
 /example/settings_jets
 /example/settings_jets~
+/bin/*
 *~
 *.o
 3500/*
 mstw/.*
 /setup.sh
 /unset.sh
+/bin/get_s95
