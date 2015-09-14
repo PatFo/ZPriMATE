@@ -85,6 +85,8 @@ with open(inp,'r') as openedFile:
     #Operate on event files
     else:
       events = events.split()[0]
+      if not os.path.exists(os.path.dirname(logname)):
+        os.makedirs(os.path.dirname(logname))
       with open(os.path.join(odir,logname), 'w') as log:
         log.write("Plotting %s\n"%events)
       plot = subprocess.Popen(["%s %s" %(PLTX, events)], stdout=None, shell=True)
