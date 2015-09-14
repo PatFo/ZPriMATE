@@ -196,11 +196,20 @@ def getOptions(argv):
   # At this point the returning of the options is redundant but keep mechanics for now...
   
   global debug
-  options = dict()
-  if(len(argv)==1):
-    return argv[0],[]
+  options = dict()  
   try:
-    opts,args = getopt.getopt(argv,"hvd",["help","verbose","debug"])
+    
+    if(len(argv)==1):
+      return argv[0],[]
+    
+    if(len(argv)==0):
+      print """
+You didn't supply any arguments!"""
+      opts=[("-h","")]
+      args=[]
+    else:
+      opts,args = getopt.getopt(argv,"hvd",["help","verbose","debug"])
+
     # If there are too many arguments recognized, check if input was given in the wrong order
     if len(args)>1:
       newInput = args[1:]

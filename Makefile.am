@@ -79,6 +79,7 @@ uninstall-local:
 
 clean-local:
 	-rm -f $(CUBADIR)/libcuba.a
+	-rm -f zprimate
 	-rm -rf bin
 	-rm -f src/*.o
 	-rm -f src/*~
