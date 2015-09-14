@@ -853,12 +853,15 @@ all-local:
 	for file in $(PYFILES); \
 	do \
 	sed "1s:*.*:#!$(PYTHON):" src/$${file}.py > bin/$${file}; \
+	chmod +x bin/$${file} ; \
 	done
-	chmod +x bin/zprimate
-	mv src/core bin/core
+	@if [ -e src/core ] ;  \
+	then \
+		mv src/core bin/core ; \
+	fi;
 	@if [ -e zprimate ] ;  \
 	then \
-		rm -f zprimate ;\
+		rm -f zprimate ; \
 	fi;
 	ln -s bin/zprimate
 

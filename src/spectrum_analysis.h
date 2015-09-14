@@ -115,11 +115,10 @@ namespace pheno {
     //Create a container of binning size to store results
     std::vector<double> prediction(length);
     double progress=0;
-
+    printProgBar(0);
     for(int i1=0; i1<length; ++i1)
       {
-	progress = ((double)i1+1)/((double)length);
-	printProgBar(progress*100);
+
         //Allocating private copies of all pointers in the game to be used by each thread
         
         //Get lower and upper bound of bin
@@ -129,6 +128,8 @@ namespace pheno {
         //Call core integration function
         //The cross section is given in [fb]; multiply by factor=luminosity to obtain events
         prediction[i1] = (pobj->* pfunc)(low, high, acc, psmear, 2) * factor;
+	progress = ((double)i1+1)/((double)length);
+	printProgBar(progress*100);
       }
     // Newline for progressbar
     std::cout << std::endl << std::endl;
@@ -136,6 +137,7 @@ namespace pheno {
     //Write the prediction to file
     std::fprintf(stderr,"Writing data to %s ...\n", outfile); 
     std::ofstream outf(outfile);
+
     for(int i2=0; i2<length; ++i2)
     { 
       outf<<(pbins->operator[](i2)).first<<"\t"<<(pbins->operator[](i2)).second<<"\t"<<prediction[i2]<<"\n"; 
