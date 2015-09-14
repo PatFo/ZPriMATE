@@ -35,7 +35,7 @@ debug=False
 def startZPriMATE(
     settingsFile,
     ZPMSYS=os.path.split(os.path.dirname(os.path.realpath(__file__)))[0], # ZPDIR
-    CORE="./bin/core"
+    CORE="./src/core"
 ):
   global tmpFile
 
@@ -44,8 +44,9 @@ def startZPriMATE(
     # First, file descriptor is not used
     fdTMP, tmpFile = tempfile.mkstemp()
   #Cross section calculation
+
   os.chdir(ZPMSYS)
-  
+
   print "\nCalculating cross section ...\n"
   if not debug:
     core = subprocess.Popen([CORE,settingsFile,tmpFile],stderr=subprocess.PIPE)

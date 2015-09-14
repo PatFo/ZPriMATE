@@ -855,10 +855,10 @@ all-local:
 	sed "1s:*.*:#!$(PYTHON):" src/$${file}.py > bin/$${file}; \
 	chmod +x bin/$${file} ; \
 	done
-	@if [ -e src/core ] ;  \
-	then \
-		mv src/core bin/core ; \
-	fi;
+# @if [ -e src/core ] ;  \
+# then \
+# 	mv src/core bin/core ; \
+# fi;
 	@if [ -e zprimate ] ;  \
 	then \
 		rm -f zprimate ; \
