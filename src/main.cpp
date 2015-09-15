@@ -109,7 +109,7 @@ int main(int argc, char** argv){
       ofname.append("/hist");
 
     } else if(input.arguments.size()==2) {
-      ofname = input.arguments.at(2);
+      ofname = input.arguments.at(1);
     }
     
     std::ofstream of(ofname.c_str());
