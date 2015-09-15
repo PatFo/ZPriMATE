@@ -22,6 +22,7 @@ def write_startfile(filepath, outdir, acc, mass, proc):
     lims = "mu_lims"    
     
   params="""$VERBOSE = 1
+  $FORCE = 1
   $ACC = %(acc)s
   $ODIR = %(outdir)s
   $MODEL = %(mass)s

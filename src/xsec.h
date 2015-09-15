@@ -460,9 +460,7 @@ namespace pheno{
       Suave(dimint, dimres, &integrand_cuba<PartialCrossX>, &int_pars, 1, acc, EPSABS, 0 | 4, 0,   0, 50000, 1000, 2, 25, "", NULL,  &nregions, &neval, &fail, integral, err, prob);
       // std::cout<<"Integral "<<integral[0]<<" Error: "<<err[0]<<std::endl; //######################## DEBUG
     }
-    if (fail!=0) {
-      throw std::runtime_error("Integration accuracy was not reached");
-    }
+
     
     return integral[0]*k_factor(mzp); //Multiply by kfactor
   }

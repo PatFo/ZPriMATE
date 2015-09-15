@@ -37,6 +37,7 @@ def write_startfile(filepath, outdir, acc, modelfile, proc):
     
   params="""$VERBOSE = 1
   $ACC = %(acc)s
+  $FORCE = 1
   $ODIR = %(outdir)s
   $MODEL = %(model)s
   $PROC = %(proc)s
