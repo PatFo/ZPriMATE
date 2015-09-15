@@ -386,6 +386,11 @@ namespace pheno{
   
   
   //Cuba adaptor (Hahn)
+  /* 
+     If this integrand throws an error, the exception is caught by Cuba and we do not have access
+     to the output!!
+
+   */
   template<class PartialCrossX> 
   inline int integrand_cuba(const int* ndim, const double *x, const int* fdim, double *fval, void *fdata)
   {
@@ -397,7 +402,7 @@ namespace pheno{
     double diff3 = pars->high[2] - pars->low[2];
     double point[3]={diff1*x[0] + pars->low[0], diff2*x[1] + pars->low[1], diff3*x[2] + pars->low[2]};
 
-    
+
     //Define Bjorken x
     double scoll = pars->Ecoll * pars->Ecoll;
     double dx1dy = (scoll - point[1]*point[1])/scoll;
@@ -454,6 +459,9 @@ namespace pheno{
     {
       Suave(dimint, dimres, &integrand_cuba<PartialCrossX>, &int_pars, 1, acc, EPSABS, 0 | 4, 0,   0, 50000, 1000, 2, 25, "", NULL,  &nregions, &neval, &fail, integral, err, prob);
       // std::cout<<"Integral "<<integral[0]<<" Error: "<<err[0]<<std::endl; //######################## DEBUG
+    }
+    if (fail!=0) {
+      throw std::runtime_error("Integration accuracy was not reached");
     }
     
     return integral[0]*k_factor(mzp); //Multiply by kfactor
