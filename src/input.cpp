@@ -3,9 +3,12 @@
 #include <errno.h>
 #include <stdio.h>
 #include <fstream>
+#include <iostream>
 #include <stdexcept>
 #include <stdlib.h>
 #include <sys/stat.h>
+#include <sys/types.h>
+#include <dirent.h>
 #include <unistd.h>
 #include <algorithm>
 
@@ -564,6 +567,34 @@ int settings::parseCmdLine(int argc,char** argv) {
 }
 
 
+
+// Count items in directory
+int countDirEntries(const char * dirname){
+  dirent* d;
+  int nitems=-2; // readdir counts '.' and '..' also as entry --> overcounts by 2
+  DIR* dir = opendir(dirname);
+  while((d = readdir(dir))!=NULL) nitems++;
+  closedir(dir);  
+  return nitems;
+}
+
+
+//Delete contents of directory
+void deleteDirEntries(const char * dirname)
+{
+  DIR *dir = opendir(dirname);
+  struct dirent *next_file;
+  char filepath[256];
+
+  while ( (next_file = readdir(dir)) != NULL )
+  {
+    // build the path for each file in the folder
+    sprintf(filepath, "%s/%s", dirname, next_file->d_name);
+    remove(filepath);
+  }
+}
+
+
 ///Read input file and extrac settings
 settings::settings(int argc,char** argv)
 {
@@ -664,10 +695,31 @@ settings::settings(int argc,char** argv)
       std::printf("ERROR: Could not create directoy %s \n", _odir.c_str());
       throw std::runtime_error("ERROR: Output directory not created\n");
     }
-  } else {
-    // Check if empty
-
-    // Request user input if option force was not set
+  } else {   //Directory exists
+    int entries = countDirEntries(_odir.c_str());
+    if (entries>0)
+    {
+      std::fprintf(stdout,"WARNING: Output directory (%s) not empty!\nZPriMATE will delete all contents if confirmed (yes/no)\n", _odir.c_str());
+      char answer[3];
+      INPUT: std::cin >> answer;
+      std::string stranswer(answer);
+      if (stranswer=="no")
+      {
+        std::fprintf(stdout,"Terminating\n");
+        throw 1;
+      }
+      else if (stranswer=="yes")
+      {
+        deleteDirEntries(_odir.c_str());
+        std::fprintf(stdout,"Files deleted.\n");
+      }
+      else
+      {
+        std::fprintf(stdout,"Invalid input: %s\nTry again (yes/no)!\n", answer);
+        goto INPUT;
+      }
+    }
+//     std::fprintf(stdout,"Directory %s has %i entries! \n", _odir.c_str(), entries);
   }
   
   
