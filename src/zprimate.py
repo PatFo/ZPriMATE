@@ -53,7 +53,7 @@ def startZPriMATE(
   else:
     core = subprocess.Popen([CORE,settingsFile,tmpFile])
   (core_out, core_err) = core.communicate()
-  return core_out, core_err
+  return core_out, core_err, core.returncode
 
 
 def getDirs():
@@ -158,14 +158,18 @@ def main(settingsFile, options):
   #Check whether inputfile was given with absolute path
   settingsFile = os.path.abspath(settingsFile)
 
-  (core_out,core_err) = startZPriMATE(settingsFile)
-
+  (core_out,core_err,core_returnval) = startZPriMATE(settingsFile)
+  
   # Read out directories from temporary file
   getDirs()
 
   with open(os.path.join(odir,logname), 'w') as log:
     log.write("%s"%core_err)
 
+  if not core_returnval==0:
+    print """
+Calculation terminated unsuccessful. Please check the logfile for more details.
+"""
 
   comfile = os.path.join(odir,"combined.dat")
   combineEvents(comfile,plot=True)

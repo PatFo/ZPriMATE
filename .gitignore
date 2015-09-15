@@ -32,3 +32,4 @@ mstw/.*
 /unset.sh
 /bin/get_s95
 /#README.md#
+/zprimate.log

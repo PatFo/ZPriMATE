@@ -7,6 +7,8 @@
 #include <stdlib.h>
 #include <sys/stat.h>
 #include <unistd.h>
+#include <algorithm>
+
 #if MAC_SYS
 #include <mach-o/dyld.h>
 #endif
@@ -479,12 +481,98 @@ std::string abs_path(std::string path, std::string base)
 }
 
 
+// Check if file exists
+
+inline bool fileExists(const std::string& name) {
+  struct stat buffer;   
+  return (stat (name.c_str(), &buffer) == 0); 
+}
+
+void usage() {
+  std::fprintf(stdout,"\n Usage: zprimate inFile [tmpFile] [options]\n\n");
+  std::fprintf(stdout," inFile:\t\tSettings file with run specific parameters and paths\n");
+  std::fprintf(stdout," tmpFile (optional):\tTemporary file for communication to python process.\n");
+  std::fprintf(stdout, "\t\t\tIf non is given, a default is chosen.\n\n");
+  std::fprintf(stdout, " Available options are:\n");
+  std::fprintf(stdout, "\t-v (--verbose)\t: Launch in verbose mode.\n");
+  std::fprintf(stdout, "\t-f (--force)\t: If output directory already exists, delete folder without asking.\n");
+  std::fprintf(stdout, "\t-h (--help)\t: Print this usage message and exit.\n\n");
+
+  throw 1;
+}
+
+bool isOption(const char* argument,const char* option){
+  int index=0;
+  int length=sizeof(argument)/sizeof(char);
+  for (index=0;index<length;index++){
+    char ch = argument[index];
+    if(ch=='\0') break;
+    if(argument[index]!=option[index]){
+      return false;
+    }
+  }
+  return true;
+}
+
+// Sets the option. If option with argument, e.g. -o outFile increase index
+int settings::setOption(char ** arguments, int index) {
+  const char * argument = arguments[index];
+  if( isOption(argument,"-h") || isOption(argument,"--help")){
+    usage();
+  } else if ( isOption(argument,"-f") || isOption(argument,"--force")) {
+    options["force"]="true";
+    //_force=true;
+  } else if ( isOption(argument,"") || isOption(argument,"--verbose")) {
+    options["verbose"]="true";
+  }else if ( isOption(argument,"-o") || isOption(argument,"--output")) {
+    // This is not used but shows how the syntax works if cmdLine option with argument is desired
+    index++;
+    options["output"]=arguments[index];
+  } else {
+    std::fprintf(stderr,"\nCommand line option '%s' was not recognized\n\n",argument);
+    throw 1;
+  }
+  return index;
+}
+
+void settings::initOptions(){
+  options["force"]="false";
+  options["verbose"]="false";
+}
+
+int settings::parseCmdLine(int argc,char** argv) {
+
+  // Set default values
+  initOptions();
+  
+  if(argc<2){
+    usage();
+    throw 1;
+  }
+  for (int index=1; index<argc; index++ ) {
+    const char * argument = argv[index];
+    // Check if argument is an operand, i.e. it begins with a '-'
+    const char begin = argument[0];
+    if( begin=='-' ) {
+      index = setOption(argv,index);
+    } else {
+      // Else it should be a simple argument
+      arguments.push_back(argument);
+    }
+  }
+  
+}
 
 
 ///Read input file and extrac settings
-settings::settings(const char* startfile)
+settings::settings(int argc,char** argv)
 {
-  std::fprintf(stderr, "Reading from input file %s ...\n", startfile);       
+
+  parseCmdLine(argc,argv);
+
+  std::string startfile = arguments.at(0);
+  
+  std::fprintf(stderr, "Reading from input file %s\n", startfile.c_str());       
   
   std::ifstream input(startfile);
   //Check whether specified file is readable. Else raise error and exit.
@@ -495,12 +583,17 @@ settings::settings(const char* startfile)
   fill_map(&inmap, &input);
   //Get base path to program dir
   std::string basepath = package_root_path();    
-  
-  
+
   ///Get VERBOSITY mode
   strmap::iterator it = inmap.find("$VERBOSE");
   if(it == inmap.end()) _verb = false;
   else _verb = atoi(((it->second)[0]).c_str());
+
+  
+  ///Get FORCE OVERWRITE mode
+  it = inmap.find("$FORCE");
+  if(it == inmap.end()) _force = false;
+  else _force = atoi(((it->second)[0]).c_str());
   
   
   ///Get MODEL file 
@@ -561,7 +654,7 @@ settings::settings(const char* startfile)
     if(_verb) std::fprintf(stderr,"INFO: No output directoy specified. Defaults to %s\n\n\t Else define on input as: \'$ODIR = /absolute/path/to/dir\'\n\n", _odir.c_str());
   }
   else  _odir = abs_path((it->second)[0], basepath);   
-  //Check whether _odir exists; if not mkdir
+  //Check whether _odir exists; if not mkdir, else check for files and delete if necessary
   if(stat(_odir.c_str(),&st) != 0)
   {
     int status = mkdir(_odir.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH); 
@@ -571,6 +664,10 @@ settings::settings(const char* startfile)
       std::printf("ERROR: Could not create directoy %s \n", _odir.c_str());
       throw std::runtime_error("ERROR: Output directory not created\n");
     }
+  } else {
+    // Check if empty
+
+    // Request user input if option force was not set
   }
   
   
@@ -663,11 +760,22 @@ bool settings::use_ssm()
   return _use_ssm;
 }
 
+bool settings::force(){
+  if(options["force"]=="true" || _force) {
+    return true;
+  } else if(options["force"]=="false" || !_force) {
+    return false;
+  }
+}
 
 bool settings::verbose()
 ///Return verbosity mode
 {
-  return _verb;
+  if(options["verbose"]=="true" || _verb) {
+    return true;
+  } else if(options["verbose"]=="false" || !_verb) {
+    return false;
+  }
 }
 
 

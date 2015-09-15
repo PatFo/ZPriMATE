@@ -63,6 +63,7 @@ class conf_reader{
   private:
     bool _use_ssm;
     bool _verb;
+    bool _force;
     int _proc_id; 
     double _acc;
     double _ebeam;
@@ -74,7 +75,20 @@ class conf_reader{
     std::string _model;
     std::string _odir;
     std::string _pdfset;
+
+    void initOptions();
+    int parseCmdLine(int argc,char** argv);
+    int getOptions(char ** begin, char ** end, const std::string & option);
+    int getArguments(char ** begin, char ** end, const std::string & option);
+    int setOption(char**,int index);
   public:
+    // Options with operands, e.g. '-h'
+    std::map<std::string, std::string> options;
+    // Arguments of command line without operands
+    // position 0: settingsFile
+    // position 1: tmpFile (optional)
+    std::vector<std::string> arguments;
+    bool force();
     bool use_ssm();
     bool verbose();
     int proc_id();    
@@ -89,7 +103,7 @@ class conf_reader{
     std::string odir();
     std::string pdfset();
     //Constructor
-    settings(const char* startfile);
+    settings(int argc,char** argv);
   };
 
 
