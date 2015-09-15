@@ -1,8 +1,0 @@
-#!/usr/bin/python
-import os
-
-
-os.system("./test/test example/example.conf")
-os.system("./bin/simple_plot.py /scratch/foldenauer/data/xscan/hadron_scan.dat")
-os.system("./bin/simple_hist.py /scratch/foldenauer/data/xscan/hist0.dat")
-os.system("./bin/simple_hist.py /scratch/foldenauer/data/xscan/hist_smear.dat")

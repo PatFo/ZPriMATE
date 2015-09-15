@@ -848,9 +848,10 @@ all: all-local
 #From the Cuba package build only the libcub.a; rest is not necessary
 all-local:
 	cd $(CUBADIR) && $(MAKE) $(AM_MAKEFLAGS) libcuba.a
-	mkdir -p results
-	mkdir -p bin
-	for file in $(PYFILES); \
+	@mkdir -p results
+	@echo "Setting up python scripts"
+	@mkdir -p bin
+	@for file in $(PYFILES); \
 	do \
 	sed "1s:*.*:#!$(PYTHON):" src/$${file}.py > bin/$${file}; \
 	chmod +x bin/$${file} ; \
@@ -863,7 +864,7 @@ all-local:
 	then \
 		rm -f zprimate ; \
 	fi;
-	ln -s bin/zprimate
+	@ln -s bin/zprimate
 
 # Create a symbolic link to the executable in the srcdir
 # Check whether the bindir already is in the SYSTEMS PATH variable
