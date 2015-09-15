@@ -33,3 +33,4 @@ mstw/.*
 /bin/get_s95
 /#README.md#
 /zprimate.log
+/zprimate

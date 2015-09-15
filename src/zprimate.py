@@ -31,6 +31,7 @@ logname="zprimate.log"
 eventFiles=[]
 tmpFile="" # If nothing is set the file is generated automatically
 debug=False
+force=False
 
 def startZPriMATE(
     settingsFile,
@@ -38,7 +39,7 @@ def startZPriMATE(
     CORE="./src/core"
 ):
   global tmpFile
-
+  global force
   # If temporary file is not explicitly set, open a random one
   if tmpFile=="":
     # First, file descriptor is not used
@@ -46,12 +47,15 @@ def startZPriMATE(
   #Cross section calculation
 
   os.chdir(ZPMSYS)
+  cmd=[CORE,settingsFile,tmpFile]
+  if force:
+    cmd.append("--force")
 
   print "\nCalculating cross section ...\n"
   if not debug:
-    core = subprocess.Popen([CORE,settingsFile,tmpFile],stderr=subprocess.PIPE)
+    core = subprocess.Popen(cmd,stderr=subprocess.PIPE)
   else:
-    core = subprocess.Popen([CORE,settingsFile,tmpFile])
+    core = subprocess.Popen(cmd)
   (core_out, core_err) = core.communicate()
   return core_out, core_err, core.returncode
 
@@ -170,6 +174,7 @@ def main(settingsFile, options):
     print """
 Calculation terminated unsuccessful. Please check the logfile for more details.
 """
+    return 1
 
   comfile = os.path.join(odir,"combined.dat")
   combineEvents(comfile,plot=True)
@@ -191,6 +196,7 @@ zprimate [options] settingsFile
 
 Available options are:
   -h (--help)    : Display this usage message
+  -f (--force)   : Force deletion of files in output directory
   -v (--verbose) : Start ZPriMATE in verbose mode
   -d (--debug)   : Display additional debugging information
 """
@@ -198,7 +204,7 @@ Available options are:
 def getOptions(argv):
 
   # At this point the returning of the options is redundant but keep mechanics for now...
-  
+  global force
   global debug
   options = dict()  
   try:
@@ -212,13 +218,13 @@ You didn't supply any arguments!"""
       opts=[("-h","")]
       args=[]
     else:
-      opts,args = getopt.getopt(argv,"hvd",["help","verbose","debug"])
+      opts,args = getopt.getopt(argv,"hvdf",["help","verbose","debug","force"])
 
     # If there are too many arguments recognized, check if input was given in the wrong order
     if len(args)>1:
       newInput = args[1:]
       newInput.append(args[0])
-      opts,args = getopt.getopt(newInput,"hvd",["help","verbose","debug"])
+      opts,args = getopt.getopt(newInput,"hvdf",["help","verbose","debug","force"])
 
     # If there are still too many arguments raise exception
     if len(args)>1:
@@ -246,11 +252,14 @@ Input error encountered:"""
     if opt in ("-h","--help"):
       usage()
       return "",[]
-    elif("-d","--debug","-v","--verbose"):
+    elif opt in ("-d","--debug","-v","--verbose"):
       print "Starting in debugging mode"
       debug=True
       options["debug"]=True
       options["verbose"]=True
+    elif opt in ("-f","--force"):
+      options["force"]=True
+      force=True
   return args[0],options
 
 

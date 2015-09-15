@@ -492,7 +492,7 @@ inline bool fileExists(const std::string& name) {
 }
 
 void usage() {
-  std::fprintf(stdout,"\n Usage: zprimate inFile [tmpFile] [options]\n\n");
+  std::fprintf(stdout,"\n Usage: core inFile [tmpFile] [options]\n\n");
   std::fprintf(stdout," inFile:\t\tSettings file with run specific parameters and paths\n");
   std::fprintf(stdout," tmpFile (optional):\tTemporary file for communication to python process.\n");
   std::fprintf(stdout, "\t\t\tIf non is given, a default is chosen.\n\n");
@@ -699,27 +699,33 @@ settings::settings(int argc,char** argv)
     int entries = countDirEntries(_odir.c_str());
     if (entries>0)
     {
-      std::fprintf(stdout,"WARNING: Output directory (%s) not empty!\nZPriMATE will delete all contents if confirmed (yes/no)\n", _odir.c_str());
-      char answer[3];
+      if (force()){
+	deleteDirEntries(_odir.c_str());
+      }else {
+	std::fprintf(stdout,"WARNING: Output directory (%s) not empty!\n", _odir.c_str());
+	std::fprintf(stdout,"To force deletion use command line flag '-f' or set $FORCE to 1 in the settings file.\n\n");
+	std::fprintf(stdout,"ZPriMATE will delete all contents if confirmed (yes/no)\n");
+	char answer[3];
       INPUT: std::cin >> answer;
-      std::string stranswer(answer);
-      if (stranswer=="no")
+	std::string stranswer(answer);
+	if (stranswer=="no")
       {
         std::fprintf(stdout,"Terminating\n");
         throw 1;
       }
-      else if (stranswer=="yes")
-      {
-        deleteDirEntries(_odir.c_str());
-        std::fprintf(stdout,"Files deleted.\n");
-      }
-      else
-      {
-        std::fprintf(stdout,"Invalid input: %s\nTry again (yes/no)!\n", answer);
-        goto INPUT;
+	else if (stranswer=="yes")
+	  {
+	    deleteDirEntries(_odir.c_str());
+	    std::fprintf(stdout,"Files deleted.\n");
+	  }
+	else
+	  {
+	    std::fprintf(stdout,"Invalid input: %s\nTry again (yes/no)!\n", answer);
+	    goto INPUT;
+	  }
       }
     }
-//     std::fprintf(stdout,"Directory %s has %i entries! \n", _odir.c_str(), entries);
+      //     std::fprintf(stdout,"Directory %s has %i entries! \n", _odir.c_str(), entries);
   }
   
   

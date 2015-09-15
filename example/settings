@@ -3,6 +3,7 @@
 
 //PROGRAM PARAMETERS
 // $VERBOSE       = 1
+// $FORCE = 1
 // $ACC           = 1e-2
 // $ODIR          = <outdir>
 // $PDF           = mstw/grid/mstw2008lo.00.dat
