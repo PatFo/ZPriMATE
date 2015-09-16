@@ -30,6 +30,7 @@ effFile = ""
 logname="zprimate.log"
 eventFiles=[]
 tmpFile="" # If nothing is set the file is generated automatically
+plotEvents=False
 debug=False
 force=False
 
@@ -88,6 +89,9 @@ def plotEvents(
     logname,
     plotExec="./bin/plot_signal"
 ):
+  global plotEvents
+  if not plotEvents:
+    return
   logFile = os.path.join(odir,logname)
   if os.path.exists(logFile):
     with open(logFile, 'a') as log:
@@ -206,6 +210,7 @@ def getOptions(argv):
   # At this point the returning of the options is redundant but keep mechanics for now...
   global force
   global debug
+  global plotEvents
   options = dict()  
   try:
     
@@ -218,7 +223,7 @@ You didn't supply any arguments!"""
       opts=[("-h","")]
       args=[]
     else:
-      opts,args = getopt.getopt(argv,"hvdf",["help","verbose","debug","force"])
+      opts,args = getopt.getopt(argv,"phvdf",["plot","help","verbose","debug","force"])
 
     # If there are too many arguments recognized, check if input was given in the wrong order
     if len(args)>1:
@@ -260,6 +265,8 @@ Input error encountered:"""
     elif opt in ("-f","--force"):
       options["force"]=True
       force=True
+    elif opt in ("-p","--plot"):
+      plotEvents=True
   return args[0],options
 
 
