@@ -44,49 +44,49 @@ def trace_unhandled_exceptions(func):
 
 #Function that writes input file for zprimate
 def writeSettingsFile(filepath, outdir, acc, modelfile, proc):
-  f=open(filepath, 'w')
+    f=open(filepath, 'w')
 
-  if proc ==1:
-    lum = 20.3
-    effs = "eff_el.dat"
-    lims = "el_lims"
-  elif proc ==2:
-    lum = 20.5
-    effs = "eff_mu.dat"
-    lims = "mu_lims"    
-    
-  params="""$VERBOSE = 1
-  $ACC = %(acc)s
-  $FORCE = 1
-  $ODIR = %(outdir)s
-  $MODEL = %(model)s
-  $PROC = %(proc)s
-  $EBEAM = 8000
-  $LUM = %(lum)s
-  $BINS =  analyses/arXiv_1405_4123/bins.dat
-  $EFFICIENCIES = analyses/arXiv_1405_4123/%(effs)s
-  $LIMITS = analyses/arXiv_1405_4123/%(lims)s"""
+    if proc ==1:
+        lum = 20.3
+        effs = "eff_el.dat"
+        lims = "el_lims"
+    elif proc ==2:
+        lum = 20.5
+        effs = "eff_mu.dat"
+        lims = "mu_lims"    
+        
+    params="""$VERBOSE = 1
+    $ACC = %(acc)s
+    $FORCE = 1
+    $ODIR = %(outdir)s
+    $MODEL = %(model)s
+    $PROC = %(proc)s
+    $EBEAM = 8000
+    $LUM = %(lum)s
+    $BINS =  analyses/arXiv_1405_4123/bins.dat
+    $EFFICIENCIES = analyses/arXiv_1405_4123/%(effs)s
+    $LIMITS = analyses/arXiv_1405_4123/%(lims)s"""
 
-  dictionary = { 'acc' : acc, 'outdir':outdir, 'model' : modelfile, 'proc':proc, 'lum':lum, 'effs':effs, 'lims':lims}          
-  f.write(params % dictionary)
-  f.close()
+    dictionary = { 'acc' : acc, 'outdir':outdir, 'model' : modelfile, 'proc':proc, 'lum':lum, 'effs':effs, 'lims':lims}          
+    f.write(params % dictionary)
+    f.close()
 
   
   
 #Function that writes Z' model file
 def writeModel(filepath, mass, mixing, coupling, HWidth = 0):
-  f=open(filepath, 'w')    
+    f=open(filepath, 'w')    
     
-  params="""$GENERAL
+    params="""$GENERAL
 mzp = %(mzp)s
 gx = %(gx)s
 chi = %(chi)s
 whid = %(HWidth)s
 $END
 """
-  dictionary = { 'mzp' : mass, 'gx': coupling, 'chi' : mixing, 'HWidth' : HWidth}
-  f.write(params % dictionary)
-  f.close()  
+    dictionary = { 'mzp' : mass, 'gx': coupling, 'chi' : mixing, 'HWidth' : HWidth}
+    f.write(params % dictionary)
+    f.close()  
 
 """
 Tries to find the limiting R value by employing bisection
@@ -101,55 +101,55 @@ where *Limit are the values closest to R=1.0 and Rarray are all calculated R val
 """
 @trace_unhandled_exceptions
 def startZpBisection(mass,wHidPercent,outDir,maxIteration=20,accGoal=1e-3):
-  if not os.path.exists(outDir):
-    os.mkdir(outDir)
-  # First calculate Robs for crude grid
-  # Use the grid since it produces log-const spacing to quickly scan region
-  cdim=4
-  lowGrid=-2.3
-  upperGrid=1.0
-  mixings = np.logspace(lowGrid,upperGrid,cdim)
-  Rdict=dict()
-  iteration=0
-  Robs=-1
-  arrR=[-1,-1]
-  arrChi=[-1,-1]
-  grid=True
+    if not os.path.exists(outDir):
+        os.mkdir(outDir)
+    # First calculate Robs for crude grid
+    # Use the grid since it produces log-const spacing to quickly scan region
+    cdim=4
+    lowGrid=-2.3
+    upperGrid=1.0
+    mixings = np.logspace(lowGrid,upperGrid,cdim)
+    Rdict=dict()
+    iteration=0
+    Robs=-1
+    arrR=[-1,-1]
+    arrChi=[-1,-1]
+    grid=True
   
-  while(iteration<maxIteration and abs(1.0-Robs)>accGoal):
-    for ichi, chi in enumerate(mixings):
-      flip=False
-      Robs = startZPriMATE(mass,chi,wHidPercent,gx,outDir)
-      iteration+=1
-      
-      arrR=[Robs,arrR[0]]
-      Rdict[chi]=Robs
-      # Check if we passed R=1.0 and update boundaries accordingly
-      if (1-arrR[0])*(1-arrR[1]) < 0.0:
-        flip=True
-        arrChi=[chi,arrChi[0]]
-        break
-      elif not grid:
-        arrChi=[chi,arrChi[1]]
-        break
-      else:
-        arrChi=[chi,arrChi[0]]
-    else:
-      if not keepGoing:
-        break
-      # If turning point wasn't reached we probably stepped
-      # into a mass region where we need very strong couplings
-      # to exclude. This is probably not necessary
-
-      print "Extending grid..."
-      lowGrid=upperGrid
-      upperGrid=lowGrid+1.0
-      mixings = np.logspace(lowGrid,upperGrid,cdim)
-      continue
+    while(iteration<maxIteration and abs(1.0-Robs)>accGoal):
+        for ichi, chi in enumerate(mixings):
+            flip=False
+            Robs = startZPriMATE(mass,chi,wHidPercent,gx,outDir)
+            iteration+=1
+            
+            arrR=[Robs,arrR[0]]
+            Rdict[chi]=Robs
+        # Check if we passed R=1.0 and update boundaries accordingly
+        if (1-arrR[0])*(1-arrR[1]) < 0.0:
+            flip=True
+            arrChi=[chi,arrChi[0]]
+            break
+        elif not grid:
+            arrChi=[chi,arrChi[1]]
+            break
+        else:
+            arrChi=[chi,arrChi[0]]
+        else:
+            if not keepGoing:
+            break
+        # If turning point wasn't reached we probably stepped
+        # into a mass region where we need very strong couplings
+        # to exclude. This is probably not necessary
+        
+        print "Extending grid..."
+        lowGrid=upperGrid
+        upperGrid=lowGrid+1.0
+        mixings = np.logspace(lowGrid,upperGrid,cdim)
+        continue
 
     if abs(arrChi[0]/arrChi[1]-1.0)<accGoal:
-      print "Accuracy goal was reached"
-      break
+        print "Accuracy goal was reached"
+        break
     chi=(arrChi[0]+arrChi[1])/2.0
 
     # If new value is at most accGoal away from the old one terminate
@@ -157,47 +157,46 @@ def startZpBisection(mass,wHidPercent,outDir,maxIteration=20,accGoal=1e-3):
     
     mixings=[chi]
     grid=False
-  print "Iterations",iteration
-
-  return OrderedDict(sorted(Rdict.items(), key=lambda t: t[0])), mass
+    print "Iterations",iteration
+    return OrderedDict(sorted(Rdict.items(), key=lambda t: t[0])), mass
 
 def startZPriMATE(mass,chi,wHidPercent,gx,wdir):
-  #Zprimate executable and package directory  
-  ZPMX = "./zprimate"
+    #Zprimate executable and package directory  
+    ZPMX = "./zprimate"
 
-  os.chdir(ZPMSYS)
-  #Directory for zprimate output  
-  zdir = os.path.join(wdir,"ZPM")
+    os.chdir(ZPMSYS)
+    #Directory for zprimate output  
+    zdir = os.path.join(wdir,"ZPM")
 
-  if not os.path.isdir(zdir):
-    os.mkdir(zdir)
-  #Directory to store startup files  
-  indir = os.path.join(wdir, "input")
-  if not os.path.isdir(indir):
-    os.mkdir(indir)
-  modelfile = os.path.join(indir,"model")
-  settingsFile = os.path.join(indir, "settings")
+    if not os.path.isdir(zdir):
+        os.mkdir(zdir)
+    #Directory to store startup files  
+    indir = os.path.join(wdir, "input")
+    if not os.path.isdir(indir):
+        os.mkdir(indir)
+    modelfile = os.path.join(indir,"model")
+    settingsFile = os.path.join(indir, "settings")
 
-  #Write settings
-  whid=mass*wHidPercent
-  writeModel(modelfile, mass, chi, gx, whid)
-  writeSettingsFile(settingsFile, zdir, 1e-2, modelfile, procID)
-  zpm = subprocess.Popen(["%s %s" %(ZPMX, settingsFile) ], stdout=subprocess.PIPE, shell=True)
+    #Write settings
+    whid=mass*wHidPercent
+    writeModel(modelfile, mass, chi, gx, whid)
+    writeSettingsFile(settingsFile, zdir, 1e-2, modelfile, procID)
+    zpm = subprocess.Popen(["%s %s" %(ZPMX, settingsFile) ], stdout=subprocess.PIPE, shell=True)
 
-  (out, err) = zpm.communicate() #Catch output and error if sent to PIPE
+    (out, err) = zpm.communicate() #Catch output and error if sent to PIPE
 
-  #Get exclusion limits for current model
-  robs = 0
-  f= open(zdir + "/results", 'r')
-  lno = 0
-  for line in f:
-    tab = line.split('|')
+    #Get exclusion limits for current model
+    robs = 0
+    f= open(zdir + "/results", 'r')
+    lno = 0
+    for line in f:
+        tab = line.split('|')
     if lno== 7:
-      robs = np.double(tab[1])
-      print "\nRobs",robs
-      print "Chi",chi
-    lno += 1
-  return robs
+        robs = np.double(tab[1])
+        print "\nRobs",robs
+        print "Chi",chi
+        lno += 1
+    return robs
 
 
     
@@ -205,119 +204,119 @@ def startZPriMATE(mass,chi,wHidPercent,gx,wdir):
 
     
 def main(procID,resultDir="KINETIC_MIXING"):
-  global wdir
-  #Time the total execution
-  start = time.time()
+    global wdir
+    #Time the total execution
+    start = time.time()
 
-  #Create Result directoy in user's home 
+    #Create Result directoy in user's home 
  
-  if procID==1:
-    wdir=resultDir+"_EE"
-  elif procID==2:
-    wdir=resultDir+"_MM"
-  else:
-    sys.exit("\nERROR: INVALID INPUT!\nProcess key on input:\n\t1 = ee\n\t2 = mu mu\n")
+    if procID==1:
+        wdir=resultDir+"_EE"
+    elif procID==2:
+        wdir=resultDir+"_MM"
+    else:
+        sys.exit("\nERROR: INVALID INPUT!\nProcess key on input:\n\t1 = ee\n\t2 = mu mu\n")
 
-  wdir = os.path.join(os.path.expanduser("~"),wdir)
-  if not os.path.isdir(wdir):
-    os.mkdir(wdir)
+    wdir = os.path.join(os.path.expanduser("~"),wdir)
+    if not os.path.isdir(wdir):
+        os.mkdir(wdir)
 
 
-  masses = np.logspace(2, 3.544, mdim)  
-  mixings = np.logspace(-2.3, 0, cdim)
-  results=dict()
-  for iw, whid in enumerate(widths):
-    limfile = os.path.join(wdir,"limits"+str(int(whid*100))+".dat")
+    masses = np.logspace(2, 3.544, mdim)  
+    mixings = np.logspace(-2.3, 0, cdim)
+    results=dict()
+    for iw, whid in enumerate(widths):
+        limfile = os.path.join(wdir,"limits"+str(int(whid*100))+".dat")
     
     
     pool = Pool(cpu_count())
     processes=[]
     if gridMode:
-      lobs =  np.zeros((cdim, mdim))
-      limits = open(limfile, 'w')
-      line0 = "%-20s"%"Chi\M[GeV]"
-      for m in masses:
-        line0 += "%-10.1f"%m
-      limits.write(line0+"\n")
-      limits.close()
-      for ic, mix in enumerate(mixings):
-        string = "%-20.4g"%mix
-        for im, mzp in enumerate(masses):
-          robs=startZPriMATE(mzp,mix,whid,gx,wdir)
-          #Append results to lists and file
-          lobs[ic, im] = robs
-          results[whid]=lobs
-          string += "%-10.2g"%robs
-      limits = open(limfile, 'a')
-      limits.write(string+"\n")
-      limits.close()
+        lobs =  np.zeros((cdim, mdim))
+        limits = open(limfile, 'w')
+        line0 = "%-20s"%"Chi\M[GeV]"
+        for m in masses:
+            line0 += "%-10.1f"%m
+        limits.write(line0+"\n")
+        limits.close()
+        for ic, mix in enumerate(mixings):
+            string = "%-20.4g"%mix
+            for im, mzp in enumerate(masses):
+                robs=startZPriMATE(mzp,mix,whid,gx,wdir)
+                #Append results to lists and file
+                lobs[ic, im] = robs
+                results[whid]=lobs
+                string += "%-10.2g"%robs
+        limits = open(limfile, 'a')
+        limits.write(string+"\n")
+        limits.close()
     else:
-      lobs=OrderedDict()
-      with open(limfile,'w') as limFile:
-        limFile.write("# Limits generated using bisection method\n")
-      for iMass, mass in enumerate(masses):
-        p=pool.apply_async(
-          startZpBisection,
-          args=(mass,
-                whid,
-                os.path.join(wdir,"output/tmp"+str(iMass))
-              )
-          )
-        processes.append(p)
+        lobs=OrderedDict()
+        with open(limfile,'w') as limFile:
+            limFile.write("# Limits generated using bisection method\n")
+        for iMass, mass in enumerate(masses):
+            p=pool.apply_async(
+                startZpBisection,
+                args=(mass,
+                      whid,
+                      os.path.join(wdir,"output/tmp"+str(iMass))
+                  )
+            )
+            processes.append(p)
 
-      for p in processes:
-        p.wait()
-        assert p.successful()
-        rValues, mass = p.get()
-        lobs[mass]=rValues
-        with open( limfile,'a') as limFile:
-          limFile.write("$MASS %-10.1f\n"%mass)
-          for key in rValues:
-            line = "%-20.4g\t%-10.4g\n"%(key,rValues[key])
-            limFile.write(line)
-          limFile.write("\n\n")
-      pool.close()
-      pool.join()
+        for p in processes:
+            p.wait()
+            assert p.successful()
+            rValues, mass = p.get()
+            lobs[mass]=rValues
+            with open( limfile,'a') as limFile:
+                limFile.write("$MASS %-10.1f\n"%mass)
+            for key in rValues:
+                line = "%-20.4g\t%-10.4g\n"%(key,rValues[key])
+                limFile.write(line)
+            limFile.write("\n\n")
+        pool.close()
+        pool.join()
     # Plotting handled by external function to enable re-plotting
     if gridMode:
-      contourLogPlot(
-        lobs,
-        masses,
-        mixings,
+        contourLogPlot(
+            lobs,
+            masses,
+            mixings,
         os.path.join(wdir,"limits"+str(int(whid*100))+".pdf"),
-        ZPMSYS
-    )
+            ZPMSYS
+        )
     else:
-      for key in lobs:
-        print lobs[key]
-      plotBisectResult(
-        lobs,
-        whid,
-        os.path.join(wdir,"limits"+str(int(whid*100))+".pdf"),
-        ZPMSYS
-      )
-  #Write parameters file 
-  parfile = open(wdir+"/parameters.txt", 'w')
-  parfile.write("Parameters of limit calculation\n%s\n\n"%('-'*25))
-  if procID==1:
-    channel="e+e-"
-  else:
-    channel="mu+mu-"
-  parfile.write("%-20s | %-5s\n"%("Channel", channel))  
-  parfile.write("%-20s | %-5s\n"%("Grid (mass x mix)", "%s x %s"%(mdim, cdim)))
-  parfile.close()
+        for key in lobs:
+            print lobs[key]
+        plotBisectResult(
+            lobs,
+            whid,
+            os.path.join(wdir,"limits"+str(int(whid*100))+".pdf"),
+            ZPMSYS
+        )
+    #Write parameters file 
+    parfile = open(wdir+"/parameters.txt", 'w')
+    parfile.write("Parameters of limit calculation\n%s\n\n"%('-'*25))
+    if procID==1:
+        channel="e+e-"
+    else:
+        channel="mu+mu-"
+    parfile.write("%-20s | %-5s\n"%("Channel", channel))  
+    parfile.write("%-20s | %-5s\n"%("Grid (mass x mix)", "%s x %s"%(mdim, cdim)))
+    parfile.close()
 
-  #Print execution time
-  end = time.time()
-  diff =   (end- start)
-  seconds = diff%60
-  minutes = float(diff - seconds)/60
-  print "FINISHED!\nExecution took %i m %.1f sec\n"%(int(minutes), seconds)  
+    #Print execution time
+    end = time.time()
+    diff =   (end- start)
+    seconds = diff%60
+    minutes = float(diff - seconds)/60
+    print "FINISHED!\nExecution took %i m %.1f sec\n"%(int(minutes), seconds)  
 
 if __name__=="__main__":
-  argc=len(sys.argv)
-  if argc!=2:
-    sys.exit("\nERROR: WRONG NUMBER OF ARGUMENTS!\nOne argument expected - process key:\n\t1 = ee\n\t2 = mu mu\n")
-  procID = int(sys.argv[1])
+    argc=len(sys.argv)
+    if argc!=2:
+        sys.exit("\nERROR: WRONG NUMBER OF ARGUMENTS!\nOne argument expected - process key:\n\t1 = ee\n\t2 = mu mu\n")
+    procID = int(sys.argv[1])
 
-  main(procID)
+    main(procID)
