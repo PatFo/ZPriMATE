@@ -4,16 +4,26 @@ import os
 import subprocess
 import sys
 import time
+from collections import OrderedDict
 from plotLimits import contourLogPlot
 
 ZPMSYS =  os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
+wdir=''
 
-#Grid parameters  
-mdim = 3 #50
-cdim = 2 #40
-masses = np.logspace(2, 3.544, mdim)  
-mixings = np.logspace(-2.3, 0, cdim)
+# Set Grid parameters
+mdim = 4 # Mass
+cdim = 2 # Mixing
+
 widths = [0.0,0.01]#,0.05,0.1,0.25,0.5,1.0]
+
+# Set weather to use bisection method
+# to scan mixing or use fixed grid
+gridMode = False
+# If in bisection mode and max chi doesn't exclude: Keep looking for exlusion?
+keepGoing=False
+
+#Loop over Z' masses and mixings
+gx= 0.01  #Influences width (set it small)
 
 #Function that writes input file for zprimate
 def writeSettingsFile(filepath, outdir, acc, modelfile, proc):
@@ -72,74 +82,64 @@ ChiLimit,RLimit,Rarray
 
 where *Limit are the values closest to R=1.0 and Rarray are all calculated R values store in a dict
 """
-def bisection(mass,wHidPercent,gx,wdir,maxIteration=20,accGoal=1e-3):
+def startZpBisection(mass,wHidPercent,maxIteration=20,accGoal=1e-3):
   # First calculate Robs for crude grid
+  # Use the grid since it produces log-const spacing to quickly scan region
   cdim=4
   lowGrid=-2.3
   upperGrid=1.0
   mixings = np.logspace(lowGrid,upperGrid,cdim)
-  Rarray=dict()
+  Rdict=dict()
   iteration=0
-  oldChi=-1
   Robs=-1
-  oldR=-1
+  arrR=[-1,-1]
+  arrChi=[-1,-1]
+  grid=True
   
-  while(iteration<maxIteration or abs(1-Robs)>accGoal):
+  while(iteration<maxIteration and abs(1.0-Robs)>accGoal):
     for ichi, chi in enumerate(mixings):
-      veryOldR=oldR
-      oldR=Robs
+      flip=False
       Robs = startZPriMATE(mass,chi,wHidPercent,gx,wdir)
       iteration+=1
-      Rarray[chi]=Robs
-      print (1-oldR)*(1-Robs)
-      # Once I pass R=1.0 reiterate
-      if (1-oldR)*(1-Robs) < 0.0:
-        break
       
-      veryOldChi=oldChi
-      oldChi=chi
+      arrR=[Robs,arrR[0]]
+      Rdict[chi]=Robs
+      # Check if we passed R=1.0 and update boundaries accordingly
+      if (1-arrR[0])*(1-arrR[1]) < 0.0:
+        flip=True
+        arrChi=[chi,arrChi[0]]
+        break
+      elif not grid:
+        arrChi=[chi,arrChi[1]]
+        break
+      else:
+        arrChi=[chi,arrChi[0]]
     else:
-      # If turning point wasn't reached we probably steped
+      if not keepGoing:
+        break
+      # If turning point wasn't reached we probably stepped
       # into a mass region where we need very strong couplings
-      # to exclude
+      # to exclude. This is probably not necessary
+
       print "Extending grid..."
       lowGrid=upperGrid
       upperGrid=lowGrid+1.0
       mixings = np.logspace(lowGrid,upperGrid,cdim)
       continue
-    print "Found transition"
+
+    if abs(arrChi[0]/arrChi[1]-1.0)<accGoal:
+      print "Accuracy goal was reached"
+      break
+    chi=(arrChi[0]+arrChi[1])/2.0
+
+    # If new value is at most accGoal away from the old one terminate
+
     
-    print "chi",chi
-    print "oldChi",oldChi
+    mixings=[chi]
+    grid=False
+  print "Iterations",iteration
 
-    tmp=chi
-    chi=abs(chi+oldChi)/2.0
-    oldChi=tmp
-
-    print "new mixing at",chi
-    assert chi!=0.0
-    veryOldR=oldR
-    oldR=Robs
-    Robs = startZPriMATE(mass,chi,wHidPercent,gx,wdir)
-    iteration+=1
-    Rarray[chi]=Robs
-    print (1-oldR)*(1-Robs)
-    # If at this point it changes sign define interval between this chi and the old chi
-    # If not, define interval between this and the one 2 steps before
-    if (1-oldR)*(1-Robs) < 0.0:
-      mixings=np.linspace(oldChi,chi,cdim)
-    else:
-      mixings = np.linspace(veryOldChi,oldChi,cdim)
-    # Reset R tracking
-    veryOldR=-1
-    oldR=-1
-    veryOldChi=oldChi
-    oldChi=chi
-    print "New grid:",mixings
-    # At this point evaluate ZPrimate and check for the sign
-    # after sign is known, define new grid and start over
-
-  return chi,Robs,Rarray
+  return OrderedDict(sorted(Rdict.items(), key=lambda t: t[0]))
 
 def startZPriMATE(mass,chi,wHidPercent,gx,wdir):
   #Zprimate executable and package directory  
@@ -179,8 +179,13 @@ def startZPriMATE(mass,chi,wHidPercent,gx,wdir):
     lno += 1
   return robs
 
+
+    
+
+
+    
 def main(procID,resultDir="KINETIC_MIXING"):
-  
+  global wdir
   #Time the total execution
   start = time.time()
 
@@ -196,45 +201,58 @@ def main(procID,resultDir="KINETIC_MIXING"):
   wdir = os.path.join(os.path.expanduser("~"),wdir)
   if not os.path.isdir(wdir):
     os.mkdir(wdir)
-    
-  #Loop over Z' masses and mixings
-  gx= 0.01  #Influences width (set it small)
-  lobs =  np.zeros((cdim, mdim))
 
-  chi , Robs, Rarray = bisection(500,2.0,gx,wdir)
-  print "Chi",chi
-  print "Robs",Robs
-  print "Rarray",Rarray
-  return
-  
+
+  masses = np.logspace(2, 3.544, mdim)  
+  mixings = np.logspace(-2.3, 0, cdim)
+  results=dict()
   for iw, whid in enumerate(widths):
     limfile = os.path.join(wdir,"limits"+str(int(whid*100))+".dat")
-    limits = open(limfile, 'w')
-    line0 = "%-20s"%"Chi\M[GeV]"
-    for m in masses:
-      line0 += "%-10.1f"%m
-    limits.write(line0+"\n")
-    limits.close()
-    for ic, mix in enumerate(mixings):
-      string = "%-20.4g"%mix
-      for im, mzp in enumerate(masses):
-        robs=startZPriMATE(mzp,mix,whid,gx,wdir)
-        #Append results to lists and file
-        lobs[ic, im] = robs
-        string += "%-10.2g"%robs
-    limits = open(limfile, 'a')
-    limits.write(string+"\n")
-    limits.close()
-
+    
+    
+    if gridMode:
+      lobs =  np.zeros((cdim, mdim))
+      limits = open(limfile, 'w')
+      line0 = "%-20s"%"Chi\M[GeV]"
+      for m in masses:
+        line0 += "%-10.1f"%m
+      limits.write(line0+"\n")
+      limits.close()
+      for ic, mix in enumerate(mixings):
+        string = "%-20.4g"%mix
+        for im, mzp in enumerate(masses):
+          robs=startZPriMATE(mzp,mix,whid,gx,wdir)
+          #Append results to lists and file
+          lobs[ic, im] = robs
+          results[whid]=lobs
+          string += "%-10.2g"%robs
+      limits = open(limfile, 'a')
+      limits.write(string+"\n")
+      limits.close()
+    else:
+      lobs=dict()
+      with open(limfile,'w') as limFile:
+        limFile.write("# Limits generated using bisection method\n")
+      for iMass, mass in enumerate(masses):
+        rValues = startZpBisection(mass,whid)
+        results[whid]=[iMass,rValues]
+        with open( limfile,'a') as limFile:
+          limFile.write("$MASS %-10.1f\n"%mass)
+          for key in rValues:
+            line = "%-20.4g\t%-10.2g\n"%(key,rValues[key])
+            limFile.write(line)
+          limFile.write("\n\n")
     # Plotting handled by external function to enable re-plotting
-    contourLogPlot(
-      lobs,
-      masses,
-      mixings,
-      os.path.join(wdir,"limits"+str(int(whid*100))+".pdf"),
-      ZPMSYS
+    if gridMode:
+      contourLogPlot(
+        lobs,
+        masses,
+        mixings,
+        os.path.join(wdir,"limits"+str(int(whid*100))+".pdf"),
+        ZPMSYS
     )
 
+    
   #Write parameters file 
   parfile = open(wdir+"/parameters.txt", 'w')
   parfile.write("Parameters of limit calculation\n%s\n\n"%('-'*25))
