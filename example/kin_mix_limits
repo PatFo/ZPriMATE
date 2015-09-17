@@ -5,25 +5,41 @@ import subprocess
 import sys
 import time
 from collections import OrderedDict
-from plotLimits import contourLogPlot
+from plotLimits import contourLogPlot, plotBisectResult
+from multiprocessing import Pool
+import traceback
+import functools
 
 ZPMSYS =  os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
 wdir=''
 
 # Set Grid parameters
-mdim = 4 # Mass
-cdim = 2 # Mixing
+mdim = 10 # Mass
+cdim = 40 # Mixing
 
 widths = [0.0,0.01]#,0.05,0.1,0.25,0.5,1.0]
 
 # Set weather to use bisection method
 # to scan mixing or use fixed grid
 gridMode = False
-# If in bisection mode and max chi doesn't exclude: Keep looking for exlusion?
+# If in bisection mode and max chi doesn't exclude: Keep looking for exclusion?
 keepGoing=False
 
 #Loop over Z' masses and mixings
 gx= 0.01  #Influences width (set it small)
+
+
+# Decorator for passing exceptions in parallel to output
+def trace_unhandled_exceptions(func):
+    @functools.wraps(func)
+    def wrapped_func(*args, **kwargs):
+        try:
+            return func(*args, **kwargs)
+        except:
+            print 'Exception in '+func.__name__
+            traceback.print_exc()
+            raise
+    return wrapped_func
 
 #Function that writes input file for zprimate
 def writeSettingsFile(filepath, outdir, acc, modelfile, proc):
@@ -139,7 +155,7 @@ def startZpBisection(mass,wHidPercent,maxIteration=20,accGoal=1e-3):
     grid=False
   print "Iterations",iteration
 
-  return OrderedDict(sorted(Rdict.items(), key=lambda t: t[0]))
+  return OrderedDict(sorted(Rdict.items(), key=lambda t: t[0])), mass
 
 def startZPriMATE(mass,chi,wHidPercent,gx,wdir):
   #Zprimate executable and package directory  
@@ -210,6 +226,8 @@ def main(procID,resultDir="KINETIC_MIXING"):
     limfile = os.path.join(wdir,"limits"+str(int(whid*100))+".dat")
     
     
+    pool = Pool(multiproc.cpu_count())
+    processes=[]
     if gridMode:
       lobs =  np.zeros((cdim, mdim))
       limits = open(limfile, 'w')
@@ -234,12 +252,13 @@ def main(procID,resultDir="KINETIC_MIXING"):
       with open(limfile,'w') as limFile:
         limFile.write("# Limits generated using bisection method\n")
       for iMass, mass in enumerate(masses):
+        
         rValues = startZpBisection(mass,whid)
-        results[whid]=[iMass,rValues]
+        lobs[mass]=rValues
         with open( limfile,'a') as limFile:
           limFile.write("$MASS %-10.1f\n"%mass)
           for key in rValues:
-            line = "%-20.4g\t%-10.2g\n"%(key,rValues[key])
+            line = "%-20.4g\t%-10.4g\n"%(key,rValues[key])
             limFile.write(line)
           limFile.write("\n\n")
     # Plotting handled by external function to enable re-plotting
@@ -251,8 +270,15 @@ def main(procID,resultDir="KINETIC_MIXING"):
         os.path.join(wdir,"limits"+str(int(whid*100))+".pdf"),
         ZPMSYS
     )
-
-    
+    else:
+      for key in lobs:
+        print lobs[key]
+      plotBisectResult(
+        lobs,
+        whid,
+        os.path.join(wdir,"limits"+str(int(whid*100))+".pdf"),
+        ZPMSYS
+      )
   #Write parameters file 
   parfile = open(wdir+"/parameters.txt", 'w')
   parfile.write("Parameters of limit calculation\n%s\n\n"%('-'*25))
