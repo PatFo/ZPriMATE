@@ -1,11 +1,14 @@
 #!/usr/bin/python
 import numpy as np
+import os
 from collections import OrderedDict
 from matplotlib import pyplot as plt
 from matplotlib.colors import LogNorm
 from matplotlib.ticker import LogFormatter
 
-def contourLogPlot(lobs,masses,mixings,outFile,ZPMSYS):
+ZSYS =  os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
+
+def contourLogPlot(lobs,masses,mixings,outFile,ZPMSYS=ZSYS):
     #Contour plot of limits
 
     #levels = np.linspace(0, np.amax(lobs) , 40)
@@ -34,7 +37,7 @@ def contourLogPlot(lobs,masses,mixings,outFile,ZPMSYS):
     plt.savefig(outFile, dpi=300)
     plt.close()
 
-def plotBisectResult(lobs,whid,outFile,ZPMSYS):
+def plotBisectResult(lobs,whid,outFile,ZPMSYS=ZSYS):
     lobs = OrderedDict(sorted(lobs.items(), key=lambda t: t[0]))
     data=OrderedDict()
     massCount=0
@@ -46,11 +49,8 @@ def plotBisectResult(lobs,whid,outFile,ZPMSYS):
             Robs = rValues[chi]
             # rValues is Ordered dict. Once I pass 1.0 I can extract
             # relevant mixing angle
-            print "Robs scan",Robs
             if Robs>1.0:
-
                 tmp=(chiOld+chi)/2.0
-                print "done",tmp
                 data[mass]=tmp
                 break
             chiOld=chi
@@ -64,11 +64,8 @@ def plotBisectResult(lobs,whid,outFile,ZPMSYS):
         masses[index]=mass
         mixings[index]=data[mass]
         index+=1
-
-    print masses
-    print mixings
-
-    fig, axs = plt.subplots()
+        
+        fig, axs = plt.subplots()
     axs.plot(masses,mixings,"^-",label=str(whid))
     plt.xlabel(r"$M_{Z^\prime}$ [GeV]")
     plt.ylabel(r'Kin. mixing $\chi$')
@@ -80,11 +77,20 @@ def plotBisectResult(lobs,whid,outFile,ZPMSYS):
     ax.imshow(im)
     ax.axis('off')
 
-    
-    plt.savefig(outFile, dpi=300)
+    if outFile:
+        plt.savefig(outFile, dpi=300)
+        plt.close()
+    return plt
+
+
+def plotBisectComplete(fileStem,widths,outFile,ZPMSYS=ZSYS):
+
+    for wHid in widths:
+        lobs = parseOutput(fileStem+str(int(100*wHid))+".dat")
+        plt=plotBisectResult(lobs,wHid,None,ZPMSYS)
+    plt=savefig(outFile,dpi=300)
     plt.close()
-
-
+    
 def parseBisectOutput(fileName):
     lobs=dict()
     rValues=dict()
@@ -104,4 +110,5 @@ def parseBisectOutput(fileName):
                 Robs=float(line.split()[1])
                 rValues[chi]=Robs
                 
-    return lobs
+    return OrderedDict(sorted(lobs.items(), key=lambda t: t[0]))
+
