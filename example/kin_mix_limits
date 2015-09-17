@@ -1,29 +1,22 @@
 #!/usr/bin/python
-from matplotlib import pyplot as plt
-from matplotlib.colors import LogNorm
-from matplotlib.ticker import LogFormatter
 import numpy as np
 import os
 import subprocess
 import sys
 import time
+from plotLimits import contourLogPlot
 
-
-
+ZPMSYS =  os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
 
 #Grid parameters  
-mdim = 50
-cdim = 40
+mdim = 3 #50
+cdim = 2 #40
 masses = np.logspace(2, 3.544, mdim)  
 mixings = np.logspace(-2.3, 0, cdim)
-
-
-
-
-
+widths = [0.0,0.01]#,0.05,0.1,0.25,0.5,1.0]
 
 #Function that writes input file for zprimate
-def write_startfile(filepath, outdir, acc, modelfile, proc):
+def writeSettingsFile(filepath, outdir, acc, modelfile, proc):
   f=open(filepath, 'w')
 
   if proc ==1:
@@ -54,156 +47,215 @@ def write_startfile(filepath, outdir, acc, modelfile, proc):
   
   
 #Function that writes Z' model file
-def write_model(filepath, mass, mixing, coupling):
+def writeModel(filepath, mass, mixing, coupling, HWidth = 0):
   f=open(filepath, 'w')    
     
   params="""$GENERAL
 mzp = %(mzp)s
 gx = %(gx)s
 chi = %(chi)s
+whid = %(HWidth)s
 $END
 """
-  dictionary = { 'mzp' : mass, 'gx': coupling, 'chi' : mixing}
+  dictionary = { 'mzp' : mass, 'gx': coupling, 'chi' : mixing, 'HWidth' : HWidth}
   f.write(params % dictionary)
   f.close()  
 
-  
-  
-  
-  
-  
-  
-  
-#Time the total execution
-start = time.time()
+"""
+Tries to find the limiting R value by employing bisection
+All paramters except the width are fixed and should be supplied
 
-#Get process code: 1 = e+ e-  2 = mu+ mu-
-#proc = int(sys.argv[2])
-if len(sys.argv)!=2:
-  sys.exit("\nERROR: WRONG NUMBER OF ARGUMENTS!\nOne argument expected - process key:\n\t1 = ee\n\t2 = mu mu\n")
-proc = int(sys.argv[1])
+Asumes monotonicity in chi. This is not necessarily given
+
+Returns:
+ChiLimit,RLimit,Rarray
+
+where *Limit are the values closest to R=1.0 and Rarray are all calculated R values store in a dict
+"""
+def bisection(mass,wHidPercent,gx,wdir,maxIteration=20,accGoal=1e-3):
+  # First calculate Robs for crude grid
+  cdim=4
+  lowGrid=-2.3
+  upperGrid=1.0
+  mixings = np.logspace(lowGrid,upperGrid,cdim)
+  Rarray=dict()
+  iteration=0
+  oldChi=-1
+  Robs=-1
+  oldR=-1
   
-#Zprimate executable and package direcotry  
-ZPMX = "./zprimate"
-ZPMSYS =  os.path.dirname(os.path.dirname(os.path.realpath(__file__)))  
-
-
-#Create Result directoy in user's home 
-wdir = os.path.expanduser("~") +"/KINETIC_MIXING"
-if proc==1:
-  wdir=wdir + "_EE"
-elif proc==2:
-  wdir=wdir + "_MM"  
-else:
-  sys.exit("\nERROR: INVALID INPUT!\nProcess key on input:\n\t1 = ee\n\t2 = mu mu\n")
-  
-#wdir = sys.argv[1]
-if not os.path.isdir(wdir):
-  os.mkdir(wdir)
-  
-#Directory for zprimate output  
-zdir = wdir + "/ZPM"  
-if not os.path.isdir(zdir):
-  os.mkdir(zdir)
-#Directory to store startup files  
-indir = wdir + "/input"  
-if not os.path.isdir(indir):
-  os.mkdir(indir)  
-
-
-  
-  
-startfile = indir + "/settings"
-modelfile = indir + "/model"
-limfile = wdir + "/limits.dat" 
-
-
-
-limits = open(limfile, 'w')
-line0 = "%-20s"%"Chi\M[GeV]"
-for m in masses:
-  line0 += "%-10.1f"%m
-limits.write(line0+"\n")
-limits.close()
-
-#Loop over Z' masses and mixings
-gx= 0.01  #Influences width (set it small)
-lobs =  np.zeros((cdim, mdim))
-os.chdir(ZPMSYS)
-for ic, mix in enumerate(mixings):
-  string = "%-20.4g"%mix
-  for im, mzp in enumerate(masses):
-    #Write settings
-    write_model(modelfile, mzp, mix, gx)
-    write_startfile(startfile, zdir, 1e-2, modelfile, proc)
-    zpm = subprocess.Popen(["%s %s" %(ZPMX, startfile) ], stdout=subprocess.PIPE, shell=True)
-    #zpm.wait() # Wait till finished
-    (out, err) = zpm.communicate() #Catch output and error if send to PIPE
-    print out     
+  while(iteration<maxIteration or abs(1-Robs)>accGoal):
+    for ichi, chi in enumerate(mixings):
+      veryOldR=oldR
+      oldR=Robs
+      Robs = startZPriMATE(mass,chi,wHidPercent,gx,wdir)
+      iteration+=1
+      Rarray[chi]=Robs
+      print (1-oldR)*(1-Robs)
+      # Once I pass R=1.0 reiterate
+      if (1-oldR)*(1-Robs) < 0.0:
+        break
+      
+      veryOldChi=oldChi
+      oldChi=chi
+    else:
+      # If turning point wasn't reached we probably steped
+      # into a mass region where we need very strong couplings
+      # to exclude
+      print "Extending grid..."
+      lowGrid=upperGrid
+      upperGrid=lowGrid+1.0
+      mixings = np.logspace(lowGrid,upperGrid,cdim)
+      continue
+    print "Found transition"
     
-    #Get exclusion limits for current model
-    robs = 0
-    f= open(zdir + "/results", 'r')
-    lno = 0
-    for line in f:
-      tab = line.split('|')
-      if lno== 7:
-        robs = np.double(tab[1])
-      lno += 1
+    print "chi",chi
+    print "oldChi",oldChi
+
+    tmp=chi
+    chi=abs(chi+oldChi)/2.0
+    oldChi=tmp
+
+    print "new mixing at",chi
+    assert chi!=0.0
+    veryOldR=oldR
+    oldR=Robs
+    Robs = startZPriMATE(mass,chi,wHidPercent,gx,wdir)
+    iteration+=1
+    Rarray[chi]=Robs
+    print (1-oldR)*(1-Robs)
+    # If at this point it changes sign define interval between this chi and the old chi
+    # If not, define interval between this and the one 2 steps before
+    if (1-oldR)*(1-Robs) < 0.0:
+      mixings=np.linspace(oldChi,chi,cdim)
+    else:
+      mixings = np.linspace(veryOldChi,oldChi,cdim)
+    # Reset R tracking
+    veryOldR=-1
+    oldR=-1
+    veryOldChi=oldChi
+    oldChi=chi
+    print "New grid:",mixings
+    # At this point evaluate ZPrimate and check for the sign
+    # after sign is known, define new grid and start over
+
+  return chi,Robs,Rarray
+
+def startZPriMATE(mass,chi,wHidPercent,gx,wdir):
+  #Zprimate executable and package directory  
+  ZPMX = "./zprimate"
+
+  os.chdir(ZPMSYS)
+  #Directory for zprimate output  
+  zdir = os.path.join(wdir,"ZPM")
+
+  if not os.path.isdir(zdir):
+    os.mkdir(zdir)
+  #Directory to store startup files  
+  indir = os.path.join(wdir, "input")
+  if not os.path.isdir(indir):
+    os.mkdir(indir)
+  modelfile = os.path.join(indir,"model")
+  settingsFile = os.path.join(indir, "settings")
+
+  #Write settings
+  whid=mass*wHidPercent
+  writeModel(modelfile, mass, chi, gx, whid)
+  writeSettingsFile(settingsFile, zdir, 1e-2, modelfile, procID)
+  zpm = subprocess.Popen(["%s %s" %(ZPMX, settingsFile) ], stdout=subprocess.PIPE, shell=True)
+
+  (out, err) = zpm.communicate() #Catch output and error if sent to PIPE
+
+  #Get exclusion limits for current model
+  robs = 0
+  f= open(zdir + "/results", 'r')
+  lno = 0
+  for line in f:
+    tab = line.split('|')
+    if lno== 7:
+      robs = np.double(tab[1])
+      print "\nRobs",robs
+      print "Chi",chi
+    lno += 1
+  return robs
+
+def main(procID,resultDir="KINETIC_MIXING"):
+  
+  #Time the total execution
+  start = time.time()
+
+  #Create Result directoy in user's home 
+ 
+  if procID==1:
+    wdir=resultDir+"_EE"
+  elif procID==2:
+    wdir=resultDir+"_MM"
+  else:
+    sys.exit("\nERROR: INVALID INPUT!\nProcess key on input:\n\t1 = ee\n\t2 = mu mu\n")
+
+  wdir = os.path.join(os.path.expanduser("~"),wdir)
+  if not os.path.isdir(wdir):
+    os.mkdir(wdir)
     
-    #Append results to lists and file
-    lobs[ic, im] = robs
-    string += "%-10.2g"%robs
-  limits = open(limfile, 'a')
-  limits.write(string+"\n")
-  limits.close()
+  #Loop over Z' masses and mixings
+  gx= 0.01  #Influences width (set it small)
+  lobs =  np.zeros((cdim, mdim))
+
+  chi , Robs, Rarray = bisection(500,2.0,gx,wdir)
+  print "Chi",chi
+  print "Robs",Robs
+  print "Rarray",Rarray
+  return
   
-  
+  for iw, whid in enumerate(widths):
+    limfile = os.path.join(wdir,"limits"+str(int(whid*100))+".dat")
+    limits = open(limfile, 'w')
+    line0 = "%-20s"%"Chi\M[GeV]"
+    for m in masses:
+      line0 += "%-10.1f"%m
+    limits.write(line0+"\n")
+    limits.close()
+    for ic, mix in enumerate(mixings):
+      string = "%-20.4g"%mix
+      for im, mzp in enumerate(masses):
+        robs=startZPriMATE(mzp,mix,whid,gx,wdir)
+        #Append results to lists and file
+        lobs[ic, im] = robs
+        string += "%-10.2g"%robs
+    limits = open(limfile, 'a')
+    limits.write(string+"\n")
+    limits.close()
 
-#Contour plot of limits
+    # Plotting handled by external function to enable re-plotting
+    contourLogPlot(
+      lobs,
+      masses,
+      mixings,
+      os.path.join(wdir,"limits"+str(int(whid*100))+".pdf"),
+      ZPMSYS
+    )
 
-#levels = np.linspace(0, np.amax(lobs) , 40)
-loglevels = np.logspace(np.log(np.amin(lobs)), np.log(np.amax(lobs)) , 20)
-l_f = LogFormatter(10, labelOnlyBase=False)
+  #Write parameters file 
+  parfile = open(wdir+"/parameters.txt", 'w')
+  parfile.write("Parameters of limit calculation\n%s\n\n"%('-'*25))
+  if procID==1:
+    channel="e+e-"
+  else:
+    channel="mu+mu-"
+  parfile.write("%-20s | %-5s\n"%("Channel", channel))  
+  parfile.write("%-20s | %-5s\n"%("Grid (mass x mix)", "%s x %s"%(mdim, cdim)))
+  parfile.close()
 
-fig, axs = plt.subplots(1,1)
-cs = axs.contourf(masses, mixings, lobs, 
-                  norm = LogNorm(),
-                  levels=loglevels)
-cs2 = axs.contour(masses, mixings, lobs, [1], colors='k')
-#bar = fig.colorbar(cs, ax=axs, format="%.2f")
-bar = fig.colorbar(cs, ticks=loglevels, format=l_f)
-bar.set_label('R-Value')
+  #Print execution time
+  end = time.time()
+  diff =   (end- start)
+  seconds = diff%60
+  minutes = float(diff - seconds)/60
+  print "FINISHED!\nExecution took %i m %.1f sec\n"%(int(minutes), seconds)  
 
-plt.title('Contour plot for kinetic mixing')
-axs.set_yscale("log") 
-plt.xlabel(r"$M_{Z^\prime}$ [GeV]")
-plt.ylabel(r'Kin. mixing $\chi$')
-#plt.legend()
-##Include ZPriMATE logo on plot
-im = plt.imread(ZPMSYS + "/icons/logotype.png")
-ax = plt.axes([0.53,0.1, 0.2, 0.2], frameon=False)  # Change the numbers in this array to position your image [left, bottom, width, height])
-ax.imshow(im)
-ax.axis('off')  # get rid of the ticks and ticklabels
-plt.savefig(wdir + "/limits.pdf", dpi=300) 
-
-
-#Write parameters file 
-parfile = open(wdir+"/parameters.txt", 'w')
-parfile.write("Parameters of limit calculation\n%s\n\n"%('-'*25))
-if proc==1:
-  channel="e+e-"
-else:
-  channel="mu+mu-"
-parfile.write("%-20s | %-5s\n"%("Channel", channel))  
-parfile.write("%-20s | %-5s\n"%("Grid (mass x mix)", "%s x %s"%(mdim, cdim)))
-parfile.close()
-  
-
-
-#Print execution time
-end = time.time()
-diff =   (end- start)
-seconds = diff%60
-minutes = float(diff - seconds)/60
-print "FINISHED!\nExectution took %i m %.1f sec\n"%(int(minutes), seconds)  
+if __name__=="__main__":
+  argc=len(sys.argv)
+  if argc!=2:
+    sys.exit("\nERROR: WRONG NUMBER OF ARGUMENTS!\nOne argument expected - process key:\n\t1 = ee\n\t2 = mu mu\n")
+  procID = int(sys.argv[1])
+  main(procID)

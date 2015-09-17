@@ -30,7 +30,11 @@ effFile = ""
 logname="zprimate.log"
 eventFiles=[]
 tmpFile="" # If nothing is set the file is generated automatically
+<<<<<<< hiddenWidth
 plotEvents=False
+=======
+plot=False
+>>>>>>> local
 debug=False
 force=False
 
@@ -89,8 +93,13 @@ def plotEvents(
     logname,
     plotExec="./bin/plot_signal"
 ):
+<<<<<<< hiddenWidth
   global plotEvents
   if not plotEvents:
+=======
+  global plot
+  if not plot:
+>>>>>>> local
     return
   logFile = os.path.join(odir,logname)
   if os.path.exists(logFile):
@@ -99,7 +108,7 @@ def plotEvents(
   plot = subprocess.Popen(["%s %s" %(plotExec, eventFile)], stdout=None, shell=True)
 
 
-def combineEvents(combinedFile,eventFiles=eventFiles,plot=True):
+def combineEvents(combinedFile,eventFiles=eventFiles):
   xl   = []
   xr   = []
   nev  = []
@@ -137,8 +146,7 @@ def combineEvents(combinedFile,eventFiles=eventFiles,plot=True):
     combined.write("%s\t%s\t%s\n"%(xl[i], xr[i], nev[i]*eff_fit(midpoint)))
   combined.close()
   
-  if plot:
-    plotEvents(combinedFile,logname)
+  plotEvents(combinedFile,logname)
 
 
   
@@ -181,7 +189,7 @@ Calculation terminated unsuccessful. Please check the logfile for more details.
     return 1
 
   comfile = os.path.join(odir,"combined.dat")
-  combineEvents(comfile,plot=True)
+  combineEvents(comfile)
 
   #Calculate best exclusion limit
   limit = subprocess.Popen(["%s %s %s" %("./bin/calc_limit", limFile, comfile) ], stdout=None, shell=True)
@@ -210,10 +218,15 @@ def getOptions(argv):
   # At this point the returning of the options is redundant but keep mechanics for now...
   global force
   global debug
+<<<<<<< hiddenWidth
   global plotEvents
+=======
+  global plot
+>>>>>>> local
   options = dict()  
   try:
-    
+    shortOptions="phvdf"
+    longOptions=["plot","help","verbose","debug","force"]
     if(len(argv)==1):
       return argv[0],[]
     
@@ -223,13 +236,17 @@ You didn't supply any arguments!"""
       opts=[("-h","")]
       args=[]
     else:
+<<<<<<< hiddenWidth
       opts,args = getopt.getopt(argv,"phvdf",["plot","help","verbose","debug","force"])
+=======
+      opts,args = getopt.getopt(argv,shortOptions,longOptions)
+>>>>>>> local
 
     # If there are too many arguments recognized, check if input was given in the wrong order
     if len(args)>1:
       newInput = args[1:]
       newInput.append(args[0])
-      opts,args = getopt.getopt(newInput,"hvdf",["help","verbose","debug","force"])
+      opts,args = getopt.getopt(newInput,shortOptions,longOptions)
 
     # If there are still too many arguments raise exception
     if len(args)>1:
@@ -266,7 +283,11 @@ Input error encountered:"""
       options["force"]=True
       force=True
     elif opt in ("-p","--plot"):
+<<<<<<< hiddenWidth
       plotEvents=True
+=======
+      plot=True
+>>>>>>> local
   return args[0],options
 
 
