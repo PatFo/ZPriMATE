@@ -36,3 +36,4 @@ mstw/.*
 /zprimate.log
 /zprimate
 /example/plotLimits.pyc
+/example/misc.pyc

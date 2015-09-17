@@ -30,7 +30,7 @@ effFile = ""
 logname="zprimate.log"
 eventFiles=[]
 tmpFile="" # If nothing is set the file is generated automatically
-plotEvents=False
+plot=False
 
 debug=False
 force=False
@@ -91,8 +91,8 @@ def plotEvents(
     plotExec="./bin/plot_signal"
 ):
   
-  global plotEvents
-  if not plotEvents:
+  global plot
+  if not plot:
     return
   logFile = os.path.join(odir,logname)
   if os.path.exists(logFile):
@@ -210,7 +210,7 @@ def getOptions(argv):
   # At this point the returning of the options is redundant but keep mechanics for now...
   global force
   global debug
-  global plotEvents
+  global plot
 
   options = dict()  
   try:
@@ -269,7 +269,7 @@ Input error encountered:"""
       options["force"]=True
       force=True
     elif opt in ("-p","--plot"):
-      plotEvents=True
+      plot=True
 
   return args[0],options
 
@@ -281,4 +281,3 @@ if __name__=="__main__":
 
   if not settingsFile=="":  
     main(settingsFile,options)
-  

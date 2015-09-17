@@ -37,63 +37,81 @@ def contourLogPlot(lobs,masses,mixings,outFile,ZPMSYS=ZSYS):
     plt.savefig(outFile, dpi=300)
     plt.close()
 
-def plotBisectResult(lobs,whid,outFile,ZPMSYS=ZSYS):
-    lobs = OrderedDict(sorted(lobs.items(), key=lambda t: t[0]))
-    data=OrderedDict()
-    massCount=0
-    for mass in lobs:
-        massCount+=1
-        rValues=lobs[mass]
-        chiOld=-1
-        for chi in rValues:
-            Robs = rValues[chi]
-            # rValues is Ordered dict. Once I pass 1.0 I can extract
-            # relevant mixing angle
-            if Robs>1.0:
-                tmp=(chiOld+chi)/2.0
-                data[mass]=tmp
-                break
-            chiOld=chi
-        else:
-            # Model not excluded
-            data[mass]=None
-    masses = np.zeros(massCount)
-    mixings = np.zeros(massCount)
-    index=0
-    for mass in data:
-        masses[index]=mass
-        mixings[index]=data[mass]
-        index+=1
-        
-        fig, axs = plt.subplots()
-    axs.plot(masses,mixings,"^-",label=str(whid))
-    plt.xlabel(r"$M_{Z^\prime}$ [GeV]")
-    plt.ylabel(r'Kin. mixing $\chi$')
-    axs.set_ylim([1e-3,1.0])
-    axs.set_yscale("log")
-    axs.legend(loc='best')
-    im = plt.imread(ZPMSYS + "/icons/logotype.png")
-    ax = plt.axes([0.7,0.1, 0.2, 0.2], frameon=False)  # Change the numbers in this array to position your image [left, bottom, width, height])
-    ax.imshow(im)
-    ax.axis('off')
 
-    if outFile:
+
+def floatToString(number):
+    return str(float(number)).replace('.','d')
+
+"""
+Plot the results for bisection run. 
+'inp' argument is either file stem for width loop 
+or directly 'lops' for a single plot
+"""
+def plotBisectResult(inp,whid,outFile,ZPMSYS=ZSYS):
+
+    if type(whid) in [int,float]:
+        whid=[whid]
+    for width in whid:
+        if type(inp)!=str:
+            lobs = OrderedDict(sorted(inp.items(), key=lambda t: t[0]))
+        else:
+            lobs = parseBisectOutput(inp+floatToString(width*100)+".dat")
+            print "Lobs",lobs
+        data=OrderedDict()
+        massCount=0
+        for mass in lobs:
+            massCount+=1
+            print "Width",width
+            print "Len Lobs",len(lobs)
+            print "mass",mass
+            rValues=lobs[mass]
+            print "rValues",rValues
+            print "MassCount",massCount
+            chiOld=-1
+            for chi in rValues:
+                Robs = rValues[chi]
+                # rValues is Ordered dict. Once I pass 1.0 I can extract
+                # relevant mixing angle
+                if Robs>1.0:
+                    tmp=(chiOld+chi)/2.0
+                    data[mass]=tmp
+                    break
+                chiOld=chi
+            else:
+                # Model not excluded
+                # Set to None s.t. matlab doesn't plot value
+                data[mass]=None
+        masses = np.zeros(massCount)
+        mixings = np.zeros(massCount)
+        index=0
+        for mass in data:
+            masses[index]=mass
+            mixings[index]=data[mass]
+            index+=1
+
+        fig, axs = plt.subplots()
+        axs.plot(masses,mixings,"^-",label=str(whid))
+        plt.xlabel(r"$M_{Z^\prime}$ [GeV]")
+        plt.ylabel(r'Kin. mixing $\chi$')
+        axs.set_ylim([1e-3,1.0])
+        axs.set_yscale("log")
+        axs.legend(loc='best')
+        im = plt.imread(ZPMSYS + "/icons/logotype.png")
+        ax = plt.axes([0.7,0.1, 0.2, 0.2], frameon=False)  # Change the numbers in this array to position your image [left, bottom, width, height])
+        ax.imshow(im)
+        ax.axis('off')
+
         plt.savefig(outFile, dpi=300)
-        plt.close()
+
+    plt.close()
     return plt
 
 
-def plotBisectComplete(fileStem,widths,outFile,ZPMSYS=ZSYS):
-
-    for wHid in widths:
-        lobs = parseOutput(fileStem+str(int(100*wHid))+".dat")
-        plt=plotBisectResult(lobs,wHid,None,ZPMSYS)
-    plt=savefig(outFile,dpi=300)
-    plt.close()
     
 def parseBisectOutput(fileName):
     lobs=dict()
     rValues=dict()
+    parse=False
     with open(fileName,'r') as inputFile:
         for line in inputFile:
             if line.startswith('$'):
@@ -101,13 +119,16 @@ def parseBisectOutput(fileName):
                 mass = float(line.split()[1])
                 continue
             if parse:
-                if len(line.strip())==0:
-                    parse=False
+                if len(line.split())<2:
                     rValues=OrderedDict(sorted(rValues.items(), key=lambda t: t[0]))
                     lobs[mass]=rValues
-                    break
+                    rValues=dict()
+                    parse=False
+                    continue
                 chi=float(line.split()[0])
+                
                 Robs=float(line.split()[1])
+                
                 rValues[chi]=Robs
                 
     return OrderedDict(sorted(lobs.items(), key=lambda t: t[0]))
