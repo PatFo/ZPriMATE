@@ -30,11 +30,8 @@ effFile = ""
 logname="zprimate.log"
 eventFiles=[]
 tmpFile="" # If nothing is set the file is generated automatically
-<<<<<<< hiddenWidth
 plotEvents=False
-=======
-plot=False
->>>>>>> local
+
 debug=False
 force=False
 
@@ -93,13 +90,9 @@ def plotEvents(
     logname,
     plotExec="./bin/plot_signal"
 ):
-<<<<<<< hiddenWidth
+  
   global plotEvents
   if not plotEvents:
-=======
-  global plot
-  if not plot:
->>>>>>> local
     return
   logFile = os.path.join(odir,logname)
   if os.path.exists(logFile):
@@ -116,8 +109,7 @@ def combineEvents(combinedFile,eventFiles=eventFiles):
   eventNum=0
   for event in eventFiles:
     eventNum+=1
-    if plot:
-      plotEvents(event,logname)
+    plotEvents(event,logname)
     #Combine events for global analysis
     with open(event, 'r') as eventfile:
       lno = 0
@@ -218,11 +210,8 @@ def getOptions(argv):
   # At this point the returning of the options is redundant but keep mechanics for now...
   global force
   global debug
-<<<<<<< hiddenWidth
   global plotEvents
-=======
-  global plot
->>>>>>> local
+
   options = dict()  
   try:
     shortOptions="phvdf"
@@ -236,11 +225,8 @@ You didn't supply any arguments!"""
       opts=[("-h","")]
       args=[]
     else:
-<<<<<<< hiddenWidth
-      opts,args = getopt.getopt(argv,"phvdf",["plot","help","verbose","debug","force"])
-=======
+
       opts,args = getopt.getopt(argv,shortOptions,longOptions)
->>>>>>> local
 
     # If there are too many arguments recognized, check if input was given in the wrong order
     if len(args)>1:
@@ -283,11 +269,8 @@ Input error encountered:"""
       options["force"]=True
       force=True
     elif opt in ("-p","--plot"):
-<<<<<<< hiddenWidth
       plotEvents=True
-=======
-      plot=True
->>>>>>> local
+
   return args[0],options
 
 

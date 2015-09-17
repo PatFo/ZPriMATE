@@ -35,6 +35,7 @@ def contourLogPlot(lobs,masses,mixings,outFile,ZPMSYS):
     plt.close()
 
 def plotBisectResult(lobs,whid,outFile,ZPMSYS):
+    lobs = OrderedDict(sorted(lobs.items(), key=lambda t: t[0]))
     data=OrderedDict()
     massCount=0
     for mass in lobs:
@@ -75,10 +76,32 @@ def plotBisectResult(lobs,whid,outFile,ZPMSYS):
     axs.set_yscale("log")
     axs.legend(loc='best')
     im = plt.imread(ZPMSYS + "/icons/logotype.png")
-    ax = plt.axes([0.75,0.1, 0.2, 0.2], frameon=False)  # Change the numbers in this array to position your image [left, bottom, width, height])
+    ax = plt.axes([0.7,0.1, 0.2, 0.2], frameon=False)  # Change the numbers in this array to position your image [left, bottom, width, height])
     ax.imshow(im)
     ax.axis('off')
 
     
     plt.savefig(outFile, dpi=300)
     plt.close()
+
+
+def parseBisectOutput(fileName):
+    lobs=dict()
+    rValues=dict()
+    with open(fileName,'r') as inputFile:
+        for line in inputFile:
+            if line.startswith('$'):
+                parse=True
+                mass = float(line.split()[1])
+                continue
+            if parse:
+                if len(line.strip())==0:
+                    parse=False
+                    rValues=OrderedDict(sorted(rValues.items(), key=lambda t: t[0]))
+                    lobs[mass]=rValues
+                    break
+                chi=float(line.split()[0])
+                Robs=float(line.split()[1])
+                rValues[chi]=Robs
+                
+    return lobs

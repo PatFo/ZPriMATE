@@ -6,6 +6,7 @@ import sys
 import time
 from collections import OrderedDict
 from plotLimits import contourLogPlot, plotBisectResult
+from multiprocessing import cpu_count
 from multiprocessing import Pool
 import traceback
 import functools
@@ -14,14 +15,14 @@ ZPMSYS =  os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
 wdir=''
 
 # Set Grid parameters
-mdim = 10 # Mass
-cdim = 40 # Mixing
+mdim = 3 # Mass
+cdim = 2 # Mixing
 
-widths = [0.0,0.01]#,0.05,0.1,0.25,0.5,1.0]
+widths = [0.0,0.001]#,0.005,0.01,0.05,0.1,0.25,0.5]
 
 # Set weather to use bisection method
 # to scan mixing or use fixed grid
-gridMode = False
+gridMode = True
 # If in bisection mode and max chi doesn't exclude: Keep looking for exclusion?
 keepGoing=False
 
@@ -98,7 +99,10 @@ ChiLimit,RLimit,Rarray
 
 where *Limit are the values closest to R=1.0 and Rarray are all calculated R values store in a dict
 """
-def startZpBisection(mass,wHidPercent,maxIteration=20,accGoal=1e-3):
+@trace_unhandled_exceptions
+def startZpBisection(mass,wHidPercent,outDir,maxIteration=20,accGoal=1e-3):
+  if not os.path.exists(outDir):
+    os.mkdir(outDir)
   # First calculate Robs for crude grid
   # Use the grid since it produces log-const spacing to quickly scan region
   cdim=4
@@ -115,7 +119,7 @@ def startZpBisection(mass,wHidPercent,maxIteration=20,accGoal=1e-3):
   while(iteration<maxIteration and abs(1.0-Robs)>accGoal):
     for ichi, chi in enumerate(mixings):
       flip=False
-      Robs = startZPriMATE(mass,chi,wHidPercent,gx,wdir)
+      Robs = startZPriMATE(mass,chi,wHidPercent,gx,outDir)
       iteration+=1
       
       arrR=[Robs,arrR[0]]
@@ -226,7 +230,7 @@ def main(procID,resultDir="KINETIC_MIXING"):
     limfile = os.path.join(wdir,"limits"+str(int(whid*100))+".dat")
     
     
-    pool = Pool(multiproc.cpu_count())
+    pool = Pool(cpu_count())
     processes=[]
     if gridMode:
       lobs =  np.zeros((cdim, mdim))
@@ -248,12 +252,23 @@ def main(procID,resultDir="KINETIC_MIXING"):
       limits.write(string+"\n")
       limits.close()
     else:
-      lobs=dict()
+      lobs=OrderedDict()
       with open(limfile,'w') as limFile:
         limFile.write("# Limits generated using bisection method\n")
       for iMass, mass in enumerate(masses):
-        
-        rValues = startZpBisection(mass,whid)
+        p=pool.apply_async(
+          startZpBisection,
+          args=(mass,
+                whid,
+                os.path.join(wdir,"output/tmp"+str(iMass))
+              )
+          )
+        processes.append(p)
+
+      for p in processes:
+        p.wait()
+        assert p.successful()
+        rValues, mass = p.get()
         lobs[mass]=rValues
         with open( limfile,'a') as limFile:
           limFile.write("$MASS %-10.1f\n"%mass)
@@ -261,6 +276,8 @@ def main(procID,resultDir="KINETIC_MIXING"):
             line = "%-20.4g\t%-10.4g\n"%(key,rValues[key])
             limFile.write(line)
           limFile.write("\n\n")
+      pool.close()
+      pool.join()
     # Plotting handled by external function to enable re-plotting
     if gridMode:
       contourLogPlot(
@@ -302,4 +319,5 @@ if __name__=="__main__":
   if argc!=2:
     sys.exit("\nERROR: WRONG NUMBER OF ARGUMENTS!\nOne argument expected - process key:\n\t1 = ee\n\t2 = mu mu\n")
   procID = int(sys.argv[1])
+
   main(procID)

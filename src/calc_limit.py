@@ -105,7 +105,7 @@ for pair in limdict:
 try:
   ratio = best_exclusion[5]/best_exclusion[4]
 except:
-  ratio=99999999999
+  ratio=1e6
 table  = "SUMMARY TABLE:\n%s"%('-'*25)
 table += "\n" + table_entry("No. of bins", best_exclusion[6])
 table += "\n" + table_entry("Best bin", [best_exclusion[0], best_exclusion[1]])
