@@ -5,18 +5,19 @@ import subprocess
 import sys
 import time
 from collections import OrderedDict
-from misc import contourLogPlot, plotBisectResult, floatToString, progressBar
+from misc import contourLogPlot, plotBisectResult, floatToString, progressBar, plotBisectContour
 from multiprocessing import cpu_count
 from multiprocessing import Pool
 import traceback
 import functools
 
+
 ZPMSYS =  os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
 wdir=''
 
 # Set Grid parameters
-mdim = 5 # Mass
-cdim = 2 # Mixing
+mdim = 50 # Mass
+cdim = 40 # Mixing
 
 widths = [0.0,0.001,0.005,0.01,0.05,0.1,0.25,0.5,1.0]
 
@@ -304,11 +305,13 @@ def main(procID,resultDir="KINETIC_MIXING"):
                 os.path.join(wdir,"limits"+floatToString(whid*100)+".pdf"),
                 ZPMSYS
                 )
-    plotBisectResult(
-        os.path.join(wdir,"limits"),
-        widths,
-        os.path.join(wdir,"limitTot.pdf")
+    if not gridMode:
+        plotBisectResult(
+            os.path.join(wdir,"limits"),
+            widths,
+            os.path.join(wdir,"limitTot.pdf")
         )
+        plotBisectContour(wdir,'bisectContour.pdf')
     #Write parameters file 
     parfile = open(wdir+"/parameters.txt", 'w')
     parfile.write("Parameters of limit calculation\n%s\n\n"%('-'*25))

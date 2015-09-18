@@ -1,11 +1,17 @@
 #!/usr/bin/python
 import numpy as np
 import os
+from os.path import join as pjoin
 import sys
 from collections import OrderedDict
 from matplotlib import pyplot as plt
+import matplotlib
+from matplotlib import ticker
 from matplotlib.colors import LogNorm
 from matplotlib.ticker import LogFormatter
+from mpl_toolkits.axes_grid1.inset_locator import zoomed_inset_axes
+from mpl_toolkits.axes_grid1.inset_locator import mark_inset
+
 
 ZSYS =  os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
 
@@ -43,6 +49,88 @@ def contourLogPlot(lobs,masses,mixings,outFile,ZPMSYS=ZSYS):
 def floatToString(number):
     return str(float(number)).replace('.','d')
 
+def getWidthsDirectory(directory):
+    files = [f for f in os.listdir(directory) if os.path.isfile(os.path.join(directory,f))]
+    whid=[]
+    for f in files:
+        fileName, fileExtension = os.path.splitext(f)
+        if fileExtension=='.dat':
+            try:
+                whid.append(float(fileName.replace('limits','').replace('d','.'))/100.0)
+            except:
+                print "Automatic extraction of widths not possible."
+                raise
+    return sorted(whid)
+
+def plotBisectContour(directory,outFile):
+    widths = getWidthsDirectory(directory)
+    mixings = None
+    Initialized = False
+    masses=[]
+    for iWidth, width in enumerate(widths):
+        lobs=parseBisectOutput(pjoin(directory,"limits"+floatToString(width*100.0)+".dat"))
+        # Can initilize array only after knowing nubmer of masses
+        if not Initialized:
+            mixings = np.zeros((len(widths),len(lobs)))
+            Initialized=True
+        iMass = 0
+        for mass in lobs:
+            mixings[iWidth,iMass]=getBestChi(lobs[mass])
+            iMass+=1
+
+        masses=[mass[0] for mass in lobs.items()]
+    #levels = np.linspace(0, np.amax(lobs) , 40)
+    loglevels = np.logspace(np.log(np.amin(mixings)), np.log(np.amax(mixings)) , 20)
+    l_f = LogFormatter(10, labelOnlyBase=False)
+
+    fig, axs = plt.subplots(1,1)
+    print masses
+    print widths
+    print mixings
+    cmap=matplotlib.pyplot.cm.jet
+    cs = axs.contourf(masses,widths, mixings,
+                      locator=ticker.LogLocator(),
+                      levels=loglevels
+                  )
+
+    plt.title('Contour plot for kinetic mixing')
+    axs.set_xscale("log") 
+    plt.xlabel(r"$M_{Z^\prime}$ [GeV]")
+    plt.ylabel(r"Hidden width [\%]")
+    inset=False
+    if inset:
+        axins = zoomed_inset_axes(axs,4,loc=2)
+        axins.contourf(masses,widths, mixings,
+                       locator=ticker.LogLocator(),
+                       levels=loglevels
+                   )
+        axins.set_xlabel('')
+        axins.set_ylabel('')
+        axins.set_xticklabels([])
+        axins.set_yticklabels([])
+        x1, x2, y1, y2 = 100.0, 200.0, 0.0, 0.05
+        axins.set_xlim(x1, x2)
+        axins.set_ylim(y1, y2)
+        mark_inset(axs, axins, loc1=2, loc2=4
+               , fc="none", ec="0.5"
+               )
+    #cs2 = axs.contour(masses, widths, mixings, [1e-3,1e-2,1e-1,1e-0], colors='k')
+    #bar = fig.colorbar(cs, ax=axs, format="%.2f")
+
+    bar = fig.colorbar(cs,
+                       ax=axs,
+                       ticks=loglevels,
+                       format=l_f
+                   )
+    bar.set_label(r'Kin. mixing $\chi$')
+    
+
+    #plt.legend()
+    ##Include ZPriMATE logo on plot
+    
+    plt.savefig(outFile, dpi=300)
+    plt.close()
+
 """
 Plot the results for bisection run. 
 'inp' argument is either file stem for width loop 
@@ -54,16 +142,8 @@ def plotBisectResult(inp,whid,outFile,ZPMSYS=ZSYS,logo=True):
         whid=[whid]
     elif whid==None:
         wdir=os.path.dirname(inp)
-        files = [f for f in os.listdir(wdir) if os.path.isfile(os.path.join(wdir,f))]
-        whid=[]
-        for f in files:
-            fileName, fileExtension = os.path.splitext(f)
-            if fileExtension=='.dat':
-                try:
-                    whid.append(float(fileName.replace('limits','').replace('d','.'))/100.0)
-                except:
-                    print "Automatic extraction of widths not possible."
-                    raise
+        whid = getWidthsDirectory(wdir)
+
 
     whid = sorted(whid)
     maxMass=-1
@@ -84,20 +164,8 @@ def plotBisectResult(inp,whid,outFile,ZPMSYS=ZSYS,logo=True):
                 minMass=mass
             massCount+=1
             rValues=lobs[mass]
-            chiOld=-1
-            for chi in rValues:
-                Robs = rValues[chi]
-                # rValues is Ordered dict. Once I pass 1.0 I can extract
-                # relevant mixing angle
-                if Robs>1.0:
-                    tmp=(chiOld+chi)/2.0
-                    data[mass]=tmp
-                    break
-                chiOld=chi
-            else:
-                # Model not excluded
-                # Set to None s.t. matlab doesn't plot this value
-                data[mass]=None
+            data[mass]=getBestChi(rValues)
+
         masses = np.zeros(massCount)
         mixings = np.zeros(massCount)
         index=0
@@ -131,6 +199,20 @@ def plotBisectResult(inp,whid,outFile,ZPMSYS=ZSYS,logo=True):
     plt.close()
     return plt
 
+def getBestChi(rValues):
+    chiOld=-1
+    for chi in rValues:
+        Robs = rValues[chi]
+        # rValues is Ordered dict. Once I pass 1.0 I can extract
+        # relevant mixing angle
+        if Robs>1.0:
+            tmp=(chiOld+chi)/2.0
+            return tmp
+        chiOld=chi
+    else:
+        # Model not excluded
+        # Set to None s.t. matlab doesn't plot this value
+        return None
 
     
 def parseBisectOutput(fileName):
