@@ -64,7 +64,8 @@ def writeSettingsFile(filepath, outdir, acc, modelfile, proc):
         lum = 20.5
         effs = "eff_mu.dat"
         lims = "mu_lims"    
-        
+     
+            
     params="""$VERBOSE = 1
     $ACC = %(acc)s
     $FORCE = 1
@@ -146,8 +147,8 @@ def startZpBisection(mass,wHidPercent,outDir,maxIteration=25,accGoal=1e-3,gridSt
             # If turning point wasn't reached we probably stepped
             # into a mass region where we need very strong couplings
             # to exclude. This is probably not necessary
-        
-            print "Extending grid..."
+            
+            #print "Extending grid..."
             lowGrid=upperGrid
             upperGrid=lowGrid+1.0
             mixings = np.logspace(lowGrid,upperGrid,cdim)
@@ -192,8 +193,7 @@ def startZPriMATE(mass,chi,wHidPercent,gx,wdir):
     robs = -1
     resultFile = os.path.join(zdir,"results")
     # Wait a second for file to be written
-    if not os.path.exists(resultFile):
-        time.sleep(1)
+
     with open(resultFile, 'r') as f:
         lno = 0
         for line in f:
@@ -270,17 +270,19 @@ def main(procID,resultDir="KINETIC_MIXING"):
                 progressBar(0.0,status="%d/%d"%(prog,procNum))
                 for p in processes:
                     p.wait()
-                    assert p.successful()
                     prog+=1
                     progressBar(float(prog)/float(procNum),status="%d/%d"%(prog,procNum))
-                    rValues, mass = p.get()
-                    lobs[mass]=rValues
-                    with open(limfile,'a') as limFile:
-                        limFile.write("$MASS %-10.1f\n"%mass)
-                        for key in rValues:
-                            line = "%-20.4g\t%-10.4g\n"%(key,rValues[key])
-                            limFile.write(line)
-                        limFile.write("\n\n")
+                    if p.successful():
+                        rValues, mass = p.get()
+                        lobs[mass]=rValues
+                        with open(limfile,'a') as limFile:
+                            limFile.write("$MASS %-10.1f\n"%mass)
+                            for key in rValues:
+                                line = "%-20.4g\t%-10.4g\n"%(key,rValues[key])
+                                limFile.write(line)
+                            limFile.write("\n\n")
+                    else:
+                        limFile.write("§Mass run for %f unsuccessful"%masses[prog-1])        
             except:
                 print "Terminating pool."
                 pool.terminate()

@@ -221,6 +221,8 @@ def parseBisectOutput(fileName):
     parse=False
     with open(fileName,'r') as inputFile:
         for line in inputFile:
+            if line.startswith('§'):
+                continue
             if line.startswith('$'):
                 parse=True
                 mass = float(line.split()[1])
