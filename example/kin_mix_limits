@@ -282,7 +282,7 @@ def main(procID,resultDir="KINETIC_MIXING"):
                                 limFile.write(line)
                             limFile.write("\n\n")
                     else:
-                        limFile.write("§Mass run for %s unsuccessful"%str(masses[prog-1]))        
+                        limFile.write("$$Mass run for %s unsuccessful"%str(masses[prog-1]))        
             except:
                 print "Terminating pool."
                 pool.terminate()

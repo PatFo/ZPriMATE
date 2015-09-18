@@ -221,7 +221,7 @@ def parseBisectOutput(fileName):
     parse=False
     with open(fileName,'r') as inputFile:
         for line in inputFile:
-            if line.startswith('§'):
+            if line.startswith('$$'):
                 continue
             if line.startswith('$'):
                 parse=True
