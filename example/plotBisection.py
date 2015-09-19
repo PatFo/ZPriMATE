@@ -29,4 +29,9 @@ misc.plotBisectResult(
     logo=False # Logo is in conflict with legend
 )
 
-misc.plotBisectContour(directory,pjoin(directory,"CountourBisection.pdf"))
+misc.plotMixVsWidth(
+    300.0,
+    pjoin(directory,"limits"),
+    pjoin(directory,"MixingVsWidth.pdf")
+)
+#misc.plotBisectContour(directory,pjoin(directory,"CountourBisection.pdf"))
