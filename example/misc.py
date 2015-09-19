@@ -83,9 +83,6 @@ def plotMixVsWidth(masses,fileStem,outFile):
                 # loop until we pass 'mass'
                 # take take average between this and the last chi
                 for m in lobs:
-                    print m
-                    print mass
-                    print m==mass
                     if m > mass:
                         chi = getBestChi(lobs[m])
                         mixings.append((chi+chiOld)/2.0)
@@ -93,8 +90,6 @@ def plotMixVsWidth(masses,fileStem,outFile):
                     else:
                         chiOld = getBestChi(lobs[m])
         fig, axs = plt.subplots()
-        print widths
-        print mixings
         axs.plot(np.multiply(widths,100.0),mixings,label='Mass %s'%str(mass))
     
     axs.legend(loc='best')
