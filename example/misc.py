@@ -90,18 +90,21 @@ def plotBisectContour(directory,outFile):
     fig, axs = plt.subplots(1,1)
 
     cmap=mpl.pyplot.cm.jet
-    cs = axs.contourf(masses,widths, mixings,
+    widthsWoutZero=widths[1:]
+    mixingsWoutZero=mixings[1:,:]
+    cs = axs.contourf(masses,widthsWoutZero, mixingsWoutZero,
                       locator=ticker.LogLocator(),
                       levels=loglevels
                   )
 
     plt.title('Contour plot for kinetic mixing')
+    axs.set_yscale("log")
     axs.set_xscale("log") 
     plt.xlabel(r"$M_{Z^\prime}$ [GeV]")
     plt.ylabel(r"Hidden width [\%]")
     inset=False
     if inset:
-        axins = zoomed_inset_axes(axs,4,loc=2)
+        axins = plt.axes([0.2,0.3,0.2,0.2])#zoomed_inset_axes(axs,1,loc=2)
         axins.contourf(masses,widths, mixings,
                        locator=ticker.LogLocator(),
                        levels=loglevels
@@ -110,12 +113,12 @@ def plotBisectContour(directory,outFile):
         axins.set_ylabel('')
         axins.set_xticklabels([])
         axins.set_yticklabels([])
-        x1, x2, y1, y2 = 100.0, 200.0, 0.0, 0.05
+        x1, x2, y1, y2 = 100.0, 200.0, 0.0, 0.01
         axins.set_xlim(x1, x2)
         axins.set_ylim(y1, y2)
-        mark_inset(axs, axins, loc1=2, loc2=4
-               , fc="none", ec="0.5"
-               )
+        #mark_inset(axs, axins, loc1=2, loc2=4
+         #      , fc="none", ec="0.5"
+          #     )
     #cs2 = axs.contour(masses, widths, mixings, [1e-3,1e-2,1e-1,1e-0], colors='k')
     #bar = fig.colorbar(cs, ax=axs, format="%.2f")
 
@@ -177,14 +180,19 @@ def plotBisectResult(inp,whid,outFile,ZPMSYS=ZSYS,logo=True):
             index+=1
 
         axs.plot(masses,mixings,"-",label=str(width*100)+'%')
-        
+
     plt.xlabel(r"$M_{Z^\prime}$ [GeV]")
     plt.ylabel(r'Kin. mixing $\chi$')
     
-    axs.set_xlim([None,maxMass*1.02])
+    axs.set_xlim([100.0,maxMass*1.02])
     axs.set_ylim([1e-3,2.0])
     axs.set_yscale("log")
+    axs.set_xscale("log")
 
+    axs.set_xticks([100,200,500,1000,2000,3000])
+    axs.set_xticklabels([100,200,500,1000,2000,3000])
+    axs.minorticks_off()
+    
     # Print logo
     if logo:
         im = plt.imread(ZPMSYS + "/icons/logotype.png")
@@ -195,7 +203,7 @@ def plotBisectResult(inp,whid,outFile,ZPMSYS=ZSYS,logo=True):
 
     
     axs.legend(
-        loc='best',
+        loc=4, # lower right 'best',
         title='Hidden width in percent of boson mass',
         frameon=True,
         ncol=2
