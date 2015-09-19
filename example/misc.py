@@ -194,7 +194,12 @@ def plotBisectResult(inp,whid,outFile,ZPMSYS=ZSYS,logo=True):
         ax.axis('off')
 
     
-    axs.legend(loc='best',title='Width in percent of mass',frameon=True)
+    axs.legend(
+        loc='best',
+        title='Hidden width in percent of boson mass',
+        frameon=True,
+        ncol=2
+    )
     
     plt.savefig(outFile, dpi=300)
 

@@ -19,7 +19,7 @@ wdir=''
 mdim = 50 # Mass
 cdim = 40 # Mixing
 
-widths = [0.0,0.001,0.005,0.01,0.05,0.1,0.25,0.5,1.0]
+widths = [0.0,0.001,0.005,0.01,0.05,0.1,0.25,0.5]
 
 # Set weather to use bisection method
 # to scan mixing or use fixed grid
@@ -146,7 +146,7 @@ def startZpBisection(mass,wHidPercent,outDir,maxIteration=25,accGoal=1e-3,gridSt
                 break
             # If turning point wasn't reached we probably stepped
             # into a mass region where we need very strong couplings
-            # to exclude. This is probably not necessary
+            # to exclude. 
             
             #print "Extending grid..."
             lowGrid=upperGrid
@@ -290,31 +290,42 @@ def main(procID,resultDir="KINETIC_MIXING"):
                 pool.join()
                 raise
             pool.close()
-            # wait for processes to be properlly terminated/closed
+            # wait for processes to be properly terminated/closed
             pool.join() 
-            # Plotting handled by external function to enable re-plotting
-        if gridMode:
-            contourLogPlot(
-                lobs,
-                masses,
-                mixings,
-                os.path.join(wdir,"limits"+floatToString(whid*100)+".pdf"),
-                ZPMSYS
-            )
-        else:
-            plotBisectResult(
-                lobs,
-                whid,
-                os.path.join(wdir,"limits"+floatToString(whid*100)+".pdf"),
-                ZPMSYS
+            # Plotting is handled by external function to enable re-plotting
+            # without re-calculation
+        try:
+            if gridMode:
+                contourLogPlot(
+                    lobs,
+                    masses,
+                    mixings,
+                    os.path.join(wdir,"limits"+floatToString(whid*100)+".pdf"),
+                    ZPMSYS
                 )
-    if not gridMode:
-        plotBisectResult(
-            os.path.join(wdir,"limits"),
-            widths,
-            os.path.join(wdir,"limitTot.pdf")
-        )
-        plotBisectContour(wdir,'bisectContour.pdf')
+            else:
+                plotBisectResult(
+                    lobs,
+                    whid,
+                    os.path.join(wdir,"limits"+floatToString(whid*100)+".pdf"),
+                    ZPMSYS
+                )
+        except Exception as e:
+            print e
+            print "Plotting was not possible. Continue."
+
+    try:
+        if not gridMode:
+            plotBisectResult(
+                os.path.join(wdir,"limits"),
+                widths,
+                os.path.join(wdir,"limitTot.pdf")
+            )
+            plotBisectContour(wdir,'bisectContour.pdf')
+    except Exception as e:
+        print e
+        print "Plotting was not possible."
+        
     #Write parameters file 
     parfile = open(wdir+"/parameters.txt", 'w')
     parfile.write("Parameters of limit calculation\n%s\n\n"%('-'*25))
