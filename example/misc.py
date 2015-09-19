@@ -76,17 +76,22 @@ def plotMixVsWidth(masses,fileStem,outFile):
         mixings=[]
         for iWidth,width in enumerate(widths):
             lobs = parseBisectOutput(fileStem+floatToString(width*100)+".dat")
-            for m in lobs:
-                print m
-                print mass
-                print m==mass
-                if not m == mass:
-                    continue
-                rValues=lobs[m]
-                mixings.append(getBestChi(rValues))
-                break
+
+            if mass in lobs:
+                mixings.append(getBestChi(lobs[mass]))
             else:
-                mixings.append(None)    
+                # loop until we pass 'mass'
+                # take take average between this and the last chi
+                for m in lobs:
+                    print m
+                    print mass
+                    print m==mass
+                    if m > mass:
+                        chi = getBestChi(lobs[m])
+                        mixings.append((chi+chiOld)/2.0)
+                        break
+                    else:
+                        chiOld = getBestChi(lobs[m])
         fig, axs = plt.subplots()
         print widths
         print mixings
