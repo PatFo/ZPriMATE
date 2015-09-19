@@ -4,8 +4,12 @@ import os
 from os.path import join as pjoin
 import sys
 from collections import OrderedDict
+import matplotlib as mpl
+# Set mpl backend. This way no running X-server is needed
+# Has to be done before pyplot is imported!
+mpl.use('Agg')
+
 from matplotlib import pyplot as plt
-import matplotlib
 from matplotlib import ticker
 from matplotlib.colors import LogNorm
 from matplotlib.ticker import LogFormatter
@@ -84,10 +88,8 @@ def plotBisectContour(directory,outFile):
     l_f = LogFormatter(10, labelOnlyBase=False)
 
     fig, axs = plt.subplots(1,1)
-    print masses
-    print widths
-    print mixings
-    cmap=matplotlib.pyplot.cm.jet
+
+    cmap=mpl.pyplot.cm.jet
     cs = axs.contourf(masses,widths, mixings,
                       locator=ticker.LogLocator(),
                       levels=loglevels
@@ -174,7 +176,7 @@ def plotBisectResult(inp,whid,outFile,ZPMSYS=ZSYS,logo=True):
             mixings[index]=data[mass]
             index+=1
 
-        axs.plot(masses,mixings,"^-",label=str(width*100)+'%')
+        axs.plot(masses,mixings,"-",label=str(width*100)+'%')
         
     plt.xlabel(r"$M_{Z^\prime}$ [GeV]")
     plt.ylabel(r'Kin. mixing $\chi$')
