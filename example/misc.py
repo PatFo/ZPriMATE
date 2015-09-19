@@ -84,7 +84,9 @@ def plotMixVsWidth(mass,fileStem,outFile):
         else:
             mixings.append(None)    
     fig, axs = plt.subplots()
+
     axs.plot(widths,mixings)
+    
     axs.savefig(outFile,dpi=300)
 
 def plotBisectContour(directory,outFile):
