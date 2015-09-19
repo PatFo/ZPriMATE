@@ -66,27 +66,36 @@ def getWidthsDirectory(directory):
                 raise
     return sorted(whid)
 
-def plotMixVsWidth(mass,fileStem,outFile):
-
+def plotMixVsWidth(masses,fileStem,outFile):
+    if type(masses) in [int,float]:
+        masses=[masses]
     # A lot of duplicate code incoming...
     wdir = os.path.dirname(fileStem)
     widths=sorted(getWidthsDirectory(wdir))
+    for mass in masses:
+        mixings=[]
+        for iWidth,width in enumerate(widths):
+            lobs = parseBisectOutput(fileStem+floatToString(width*100)+".dat")
+            for m in lobs:
+                print m
+                print mass
+                print m==mass
+                if not m == mass:
+                    continue
+                rValues=lobs[m]
+                mixings.append(getBestChi(rValues))
+                break
+            else:
+                mixings.append(None)    
+        fig, axs = plt.subplots()
+        print widths
+        print mixings
+        axs.plot(np.multiply(widths,100.0),mixings,label='Mass %s'%str(mass))
     
-    mixings=[]
-    for iWidth,width in enumerate(widths):
-        lobs = parseBisectOutput(fileStem+floatToString(width*100)+".dat")
-        for m in lobs:
-            if not m is mass:
-                continue
-            rValues=lobs[m]
-            mixings.append(getBestChi(rValues))
-            break
-        else:
-            mixings.append(None)    
-    fig, axs = plt.subplots()
-
-    axs.plot(widths,mixings)
+    axs.legend(loc='best')
     
+    plt.xlabel(r"Hidden width [%]")
+    plt.ylabel(r'Kin. mixing $\chi$')
     plt.savefig(outFile,dpi=300)
     plt.close()
 
