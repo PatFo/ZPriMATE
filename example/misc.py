@@ -1,5 +1,6 @@
 #!/usr/bin/python
 import numpy as np
+from scipy.optimize import curve_fit
 import os
 from os.path import join as pjoin
 import sys
@@ -45,7 +46,7 @@ def contourLogPlot(lobs,masses,mixings,outFile,ZPMSYS=ZSYS):
     ax = plt.axes([0.53,0.1, 0.2, 0.2], frameon=False)  # Change the numbers in this array to position your image [left, bottom, width, height])
     ax.imshow(im)
     ax.axis('off')  # get rid of the ticks and ticklabels
-    plt.savefig(outFile, dpi=300)
+    plt.savefig(outFile, dpi=300,bbox_inches='tight')
     plt.close()
 
 
@@ -66,14 +67,16 @@ def getWidthsDirectory(directory):
                 raise
     return sorted(whid)
 
-def plotMixVsWidth(masses,fileStem,outFile):
+def plotMixVsWidth(masses,fileStem,outFile,fit=True):
     if type(masses) in [int,float]:
         masses=[masses]
     # A lot of duplicate code incoming...
     wdir = os.path.dirname(fileStem)
     widths=sorted(getWidthsDirectory(wdir))
+    fig, axs = plt.subplots()
     for mass in masses:
         mixings=[]
+        finalWidths=widths[:]
         for iWidth,width in enumerate(widths):
             lobs = parseBisectOutput(fileStem+floatToString(width*100)+".dat")
 
@@ -81,7 +84,7 @@ def plotMixVsWidth(masses,fileStem,outFile):
                 mixings.append(getBestChi(lobs[mass]))
             else:
                 # loop until we pass 'mass'
-                # take take average between this and the last chi
+                # take average between this and the last chi
                 for m in lobs:
                     if m > mass:
                         chi = getBestChi(lobs[m])
@@ -89,15 +92,44 @@ def plotMixVsWidth(masses,fileStem,outFile):
                         break
                     else:
                         chiOld = getBestChi(lobs[m])
-        fig, axs = plt.subplots()
-        axs.plot(np.multiply(widths,100.0),mixings,label='Mass %s'%str(mass))
+                else:
+                    finalWidths.remove(width)
+        if fit:
+            func=mySqrt
+            popt,pcov =curve_fit(func,finalWidths,mixings,[1.0,1.0,1.0])
+            axs.plot(np.multiply(finalWidths,100.0),func(widths,popt),label='fit mass %s'%str(mass))
+
+        axs.plot(np.multiply(finalWidths,100.0),mixings,label='%s'%str(mass))
+    if outFile[-6:][:2]=="EE":
+        textTitle="Dielectron channel"
+    elif outFile[-6:][:2]=="MM":
+        textTitle="Dimuon channel"
+    else:
+        textTitle="Unknown channel"
+    axs.text(2,0.825,textTitle,fontsize=15)
+    #axs.set_ylim([0.0,1.1])
+    handles, labels = axs.get_legend_handles_labels()
+
+    # reverse the order
+    axs.legend(handles[::-1], labels[::-1],loc=4,title="Boson mass [GeV]")
+
     
-    axs.legend(loc='best')
-    
-    plt.xlabel(r"Hidden width [%]")
+    plt.xlabel(r"Hidden width \Gamma_{\text{hid}} [\%]")
     plt.ylabel(r'Kin. mixing $\chi$')
-    plt.savefig(outFile,dpi=300)
+    plt.savefig(outFile,dpi=300,bbox_inches='tight')
     plt.close()
+
+def myLog(x, *pars):
+    if type(pars[0]) == np.ndarray:
+        pars=pars[0]
+
+    return pars[0]+pars[1]*np.log(x+np.abs(pars[2]))
+
+def mySqrt(x,*pars):
+    if type(pars[0]) == np.ndarray:
+        pars=pars[0]
+
+    return pars[0]+pars[1]*np.sqrt(np.sqrt(x+np.abs(pars[2])))
 
 def plotBisectContour(directory,outFile):
     widths = getWidthsDirectory(directory)
@@ -166,7 +198,7 @@ def plotBisectContour(directory,outFile):
     #plt.legend()
     ##Include ZPriMATE logo on plot
     
-    plt.savefig(outFile, dpi=300)
+    plt.savefig(outFile, dpi=300,bbox_inches='tight')
     plt.close()
 
 """
@@ -216,6 +248,16 @@ def plotBisectResult(inp,whid,outFile,ZPMSYS=ZSYS,logo=True):
 
     plt.xlabel(r"$M_{Z^\prime}$ [GeV]")
     plt.ylabel(r'Kin. mixing $\chi$')
+
+    if outFile[-6:][:2]=="EE":
+        textTitle="Dielectron channel"
+    elif outFile[-6:][:2]=="MM":
+        textTitle="Dimuon channel"
+    else:
+        print outFile[-2:]
+        textTitle="Unknown channel"
+    axs.text(120,1.0,textTitle,fontsize=15,verticalalignment="bottom",horizontalalignment="left")
+
     
     axs.set_xlim([100.0,maxMass*1.02])
     axs.set_ylim([1e-3,2.0])
@@ -242,7 +284,7 @@ def plotBisectResult(inp,whid,outFile,ZPMSYS=ZSYS,logo=True):
         ncol=2
     )
     
-    plt.savefig(outFile, dpi=300)
+    plt.savefig(outFile, dpi=300,bbox_inches='tight')
 
     plt.close()
     return plt

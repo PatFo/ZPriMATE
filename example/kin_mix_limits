@@ -16,10 +16,12 @@ ZPMSYS =  os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
 wdir=''
 
 # Set Grid parameters
-mdim = 50 # Mass
+mdim = 100 # Mass
 cdim = 40 # Mixing
 
-widths = [0.0,0.001,0.005,0.01,0.05,0.1,0.25,0.5]
+# Widths in percent of boson mass
+widths = [0.0,1e-4,1e-3,0.005,0.01,0.05,0.1,0.25,0.5]
+
 
 # Set weather to use bisection method
 # to scan mixing or use fixed grid
@@ -28,8 +30,8 @@ gridMode = False
 # keep looking for exclusion limit:
 keepGoing=False
 
-#Loop over Z' masses and mixings
-gx= 0.01  #Influences width (set it small)
+# No influence since all couplings are mixing induced
+gx= 0.01  
 
 """
 Python pool is buggy for passing exceptions except
@@ -350,7 +352,12 @@ def main(procID,resultDir="KINETIC_MIXING"):
 if __name__=="__main__":
     argc=len(sys.argv)
     if argc!=2:
-        sys.exit("\nERROR: WRONG NUMBER OF ARGUMENTS!\nOne argument expected - process key:\n\t1 = ee\n\t2 = mu mu\n")
-    procID = int(sys.argv[1])
-
-    main(procID)
+        sys.exit("\nERROR: WRONG NUMBER OF ARGUMENTS!\nOne argument expected - process key:\n\t1 = e e\n\t2 = mu mu\n\t0 = both sequentially")
+    proc = int(sys.argv[1])
+    if proc==0:
+        proc=[1,2]
+    else:
+        proc=[proc]
+    for procID in proc:
+        print procID,type(procID)
+        main(procID)
