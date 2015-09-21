@@ -72,6 +72,8 @@ def plotMixVsWidth(masses,fileStem,outFile):
     # A lot of duplicate code incoming...
     wdir = os.path.dirname(fileStem)
     widths=sorted(getWidthsDirectory(wdir))
+    
+    fig, axs = plt.subplots()
     for mass in masses:
         mixings=[]
         for iWidth,width in enumerate(widths):
@@ -89,7 +91,6 @@ def plotMixVsWidth(masses,fileStem,outFile):
                         break
                     else:
                         chiOld = getBestChi(lobs[m])
-        fig, axs = plt.subplots()
         axs.plot(np.multiply(widths,100.0),mixings,label='Mass %s'%str(mass))
     
     axs.legend(loc='best')
