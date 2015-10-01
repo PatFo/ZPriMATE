@@ -168,6 +168,7 @@ def main(settingsFile, options):
   getDirs()
 
   with open(os.path.join(odir,logname), 'w') as log:
+    log.write("%s"%core_out)
     log.write("%s"%core_err)
 
   if not core_returnval==0:
