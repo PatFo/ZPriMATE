@@ -74,6 +74,11 @@ def plotMixVsWidth(masses,fileStem,outFile,fit=True):
     wdir = os.path.dirname(fileStem)
     widths=sorted(getWidthsDirectory(wdir))
     fig, axs = plt.subplots()
+    plt.grid(True,which="both")
+    inset=True
+    if inset:
+        axins = plt.axes([0.255,0.215,0.35,0.3])#zoomed_inset_axes(axs,1,loc=2)
+        #axins.yaxis.grid(True,which="major")
     for mass in masses:
         mixings=[]
         finalWidths=widths[:]
@@ -94,43 +99,76 @@ def plotMixVsWidth(masses,fileStem,outFile,fit=True):
                         chiOld = getBestChi(lobs[m])
                 else:
                     finalWidths.remove(width)
+                    
+        data,=axs.plot(np.multiply(finalWidths,100.0),mixings,'d',label='%s'%str(mass))
+        print "finalWidths",finalWidths
+        print "Difference on the limit of kinetic mixing between 0.0% and "+str(finalWidths[4]*100)+"% of hidden width"
+        print "Mass:",mass
+        print "Diff:",(mixings[4])/mixings[0]
+        print "Difference on the limit of kinetic mixing between 0.0% and 5.0% of hidden width"
+        print "Mass:",mass
+        print "Diff:",(mixings[5])/mixings[0]
+        print ""
         if fit:
             func=mySqrt
             popt,pcov =curve_fit(func,finalWidths,mixings,[1.0,1.0,1.0])
-            axs.plot(np.multiply(finalWidths,100.0),func(widths,popt),label='fit mass %s'%str(mass))
+            axs.plot(np.multiply(finalWidths,100.0),func(widths,popt),color=data.get_color())
+            if inset:
+                axins.plot(np.multiply(finalWidths,100.0),func(widths,popt),color=data.get_color())
 
-        axs.plot(np.multiply(finalWidths,100.0),mixings,label='%s'%str(mass))
+        if inset:
+            axins.plot(np.multiply(finalWidths,100.0),mixings,'d')
+            x1, x2, y1, y2 = 0.0, 10.0, 3e-2, 1.0
+            axins.set_yscale("log")
+            axins.set_xscale("log")
+            axins.set_xlim(x1, x2)
+            axins.set_ylim(y1, y2)
+            axins.set_xlabel('')
+            axins.set_ylabel('')
+            xticks=[1e-1,1.0,10]
+            axins.set_xticks(xticks)
+            axins.set_xticklabels(xticks)
+            #axins.set_yticklabels([])
+            
     if outFile[-6:][:2]=="EE":
-        textTitle="Dielectron channel"
+        textTitle=r"\noindent\textbf{Dielectron channel}\newline"
     elif outFile[-6:][:2]=="MM":
-        textTitle="Dimuon channel"
+        textTitle=r"\noindent\textbf{Dimuon channel}\newline"
     else:
-        textTitle="Unknown channel"
-    axs.text(2,0.825,textTitle,fontsize=15)
-    #axs.set_ylim([0.0,1.1])
+        textTitle=r"Unknown channel"
+
+    # ypos = 0.1
+    # axs.text(30,ypos,textTitle,fontsize=15)
+    # #axs.set_ylim([0.0,1.1])
+    axs.set_yscale("log")
+    # #axs.set_xscale("log")
+
+    
+
+
     handles, labels = axs.get_legend_handles_labels()
 
     # reverse the order
-    axs.legend(handles[::-1], labels[::-1],loc=4,title="Boson mass [GeV]")
-
+    axs.legend(handles[::-1], labels[::-1],loc=4,title=textTitle+"$Z^\prime$ mass [GeV]",frameon=True)
     
-    plt.xlabel(r"Hidden width \Gamma_{\text{hid}} [\%]")
-    plt.ylabel(r'Kin. mixing $\chi$')
+    axs.set_xlabel(r"Hidden width \Gamma_{\text{hid}} [\%]")
+    axs.set_ylabel(r'Kin. mixing $\chi$')
     plt.savefig(outFile,dpi=300,bbox_inches='tight')
     plt.close()
 
-def myLog(x, *pars):
-    if type(pars[0]) == np.ndarray:
-        pars=pars[0]
-
-    return pars[0]+pars[1]*np.log(x+np.abs(pars[2]))
-
 def mySqrt(x,*pars):
+
     if type(pars[0]) == np.ndarray:
         pars=pars[0]
 
     return pars[0]+pars[1]*np.sqrt(np.sqrt(x+np.abs(pars[2])))
 
+
+"""
+I tried to implement a countour plot for the bisection method. 
+I succeded but it looks aweful and doesn't present the data
+in a meaningful way.
+"""
 def plotBisectContour(directory,outFile):
     widths = getWidthsDirectory(directory)
     mixings = None
@@ -206,7 +244,7 @@ Plot the results for bisection run.
 'inp' argument is either file stem for width loop 
 or directly 'lops' for a single plot
 """
-def plotBisectResult(inp,whid,outFile,ZPMSYS=ZSYS,logo=True):
+def plotBisectResult(inp,whid,outFile,ZPMSYS=ZSYS,logo=True,exclude=[]):
     fig, axs = plt.subplots()
     if type(whid) in [int,float]:
         whid=[whid]
@@ -214,11 +252,16 @@ def plotBisectResult(inp,whid,outFile,ZPMSYS=ZSYS,logo=True):
         wdir=os.path.dirname(inp)
         whid = getWidthsDirectory(wdir)
 
-
+    plt.grid(True)
     whid = sorted(whid)
     maxMass=-1
     minMass=1e10
     for width in whid:
+        if width in exclude:
+            print "Excluded",width
+            continue
+        else:
+            print "Not excluded",width
         if type(inp)!=str:
             lobs = OrderedDict(sorted(inp.items(), key=lambda t: t[0]))
         else:
@@ -244,19 +287,19 @@ def plotBisectResult(inp,whid,outFile,ZPMSYS=ZSYS,logo=True):
             mixings[index]=data[mass]
             index+=1
 
-        axs.plot(masses,mixings,"-",label=str(width*100)+'%')
+        axs.plot(masses,mixings,"-",label=str(width*100)+'\%')
 
     plt.xlabel(r"$M_{Z^\prime}$ [GeV]")
     plt.ylabel(r'Kin. mixing $\chi$')
 
     if outFile[-6:][:2]=="EE":
-        textTitle="Dielectron channel"
+        textTitle=r"\noindent\textbf{Dielectron channel}"
     elif outFile[-6:][:2]=="MM":
-        textTitle="Dimuon channel"
+        textTitle=r"\noindent\textbf{Dimuon channel}"
     else:
         print outFile[-2:]
         textTitle="Unknown channel"
-    axs.text(120,1.0,textTitle,fontsize=15,verticalalignment="bottom",horizontalalignment="left")
+    # axs.text(120,1.0,textTitle,fontsize=15,verticalalignment="bottom",horizontalalignment="left")
 
     
     axs.set_xlim([100.0,maxMass*1.02])
@@ -266,7 +309,8 @@ def plotBisectResult(inp,whid,outFile,ZPMSYS=ZSYS,logo=True):
 
     axs.set_xticks([100,200,500,1000,2000,3000])
     axs.set_xticklabels([100,200,500,1000,2000,3000])
-    axs.minorticks_off()
+    axs.tick_params(axis='x',which='minor',bottom='off')
+    # axs.minorticks_off()
     
     # Print logo
     if logo:
@@ -279,7 +323,7 @@ def plotBisectResult(inp,whid,outFile,ZPMSYS=ZSYS,logo=True):
     
     axs.legend(
         loc=4, # lower right 'best',
-        title='Hidden width in percent of boson mass',
+        title=textTitle+r'\newline Hidden width in percent of $Z^\prime$ mass',
         frameon=True,
         ncol=2
     )

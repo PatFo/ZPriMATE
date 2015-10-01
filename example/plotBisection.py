@@ -11,14 +11,15 @@ def main(suffix):
         pjoin(directory,"limits"),
         None,
         pjoin(directory,"limitsTotBisection"+suffix+".pdf"),
-        logo=False # Logo is in conflict with legend
+        logo=False, # Logo is in conflict with legend,
+        exclude=[0.005,0.05,0.25]
     )
     
     misc.plotMixVsWidth(
-        [300.0,500.0,1000.0,2000.0],
+        [200.0,500.0,1000.0,2000.0],
         pjoin(directory,"limits"),
         pjoin(directory,"MixingVsWidth"+suffix+".pdf"),
-        fit=False
+        fit=True
     )
     #misc.plotBisectContour(directory,pjoin(directory,"CountourBisection.pdf"))
 
