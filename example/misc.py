@@ -73,12 +73,17 @@ def plotMixVsWidth(masses,fileStem,outFile,fit=True):
     # A lot of duplicate code incoming...
     wdir = os.path.dirname(fileStem)
     widths=sorted(getWidthsDirectory(wdir))
+<<<<<<< HEAD
     fig, axs = plt.subplots()
     plt.grid(True,which="both")
     inset=True
     if inset:
         axins = plt.axes([0.255,0.215,0.35,0.3])#zoomed_inset_axes(axs,1,loc=2)
         #axins.yaxis.grid(True,which="major")
+=======
+    
+    fig, axs = plt.subplots()
+>>>>>>> aa891a029227c318757fe98abc4d4da916003bb6
     for mass in masses:
         mixings=[]
         finalWidths=widths[:]
@@ -97,6 +102,7 @@ def plotMixVsWidth(masses,fileStem,outFile,fit=True):
                         break
                     else:
                         chiOld = getBestChi(lobs[m])
+
                 else:
                     finalWidths.remove(width)
                     
